@@ -1,0 +1,235 @@
+.donation-progress-card {
+  background-color: var(--background-card);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: all 0.2s ease;
+  margin-bottom: 1.5rem;
+}
+
+.donation-progress-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+
+.donation-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.donation-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+  border-radius: 8px;
+  color: white;
+}
+
+.donation-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.donation-card-content {
+  padding: 1.25rem;
+}
+
+.donation-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.donation-skeleton {
+  height: 20px;
+  background: linear-gradient(90deg, var(--gray-200) 25%, var(--gray-100) 50%, var(--gray-200) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.donation-skeleton.short {
+  width: 60%;
+  height: 16px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.donation-amounts {
+  margin-bottom: 1rem;
+}
+
+.amount-raised {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.amount-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  line-height: 1;
+}
+
+.amount-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.amount-goal {
+  margin-bottom: 0.5rem;
+}
+
+.goal-text {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.progress-section {
+  margin-bottom: 1rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: var(--gray-200);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ec4899 0%, #f97316 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  animation: progress-shine 2s infinite;
+}
+
+@keyframes progress-shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  50%, 100% {
+    transform: translateX(100%);
+  }
+}
+
+.progress-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-percentage {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.donation-count {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.donation-description {
+  margin-bottom: 0.5rem;
+}
+
+.donation-description p {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.donation-card-footer {
+  padding: 0 1.25rem 1.25rem;
+}
+
+.donation-view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary-color);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  background-color: transparent;
+}
+
+.donation-view-all:hover {
+  background-color: var(--gray-50);
+  color: var(--primary-dark);
+  transform: translateX(2px);
+}
+
+.donation-view-all svg {
+  transition: transform 0.2s ease;
+}
+
+.donation-view-all:hover svg {
+  transform: translateX(2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .donation-progress-card {
+    margin-bottom: 1rem;
+  }
+
+  .donation-card-header,
+  .donation-card-content,
+  .donation-card-footer {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .amount-value {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .progress-stats {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .donation-description p {
+    font-size: 0.8rem;
+  }
+}

@@ -1,0 +1,142 @@
+.followers-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.followers-modal {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 400px;
+  max-width: 90vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.followers-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.followers-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.followers-list {
+  padding: 12px;
+  overflow-y: auto;
+  max-height: calc(80vh - 60px);
+}
+
+.followers-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: #666;
+}
+
+.follower-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.follower-item:hover {
+  background-color: #f8f9fa;
+}
+
+.follower-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 12px;
+}
+
+.follower-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.follower-info {
+  flex: 1;
+}
+
+.follower-info h4 {
+  margin: 0 0 4px 0;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.follower-info p {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+}
+
+/* Smaller button styles for the list items */
+.follow-btn.small,
+.unfollow-btn.small {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* Prevent the click event on buttons from propagating to the parent */
+.follow-btn.small,
+.unfollow-btn.small {
+  cursor: pointer;
+}
+
+.follow-btn.small:hover,
+.unfollow-btn.small:hover {
+  opacity: 0.9;
+}
+
+/* Responsive styling */
+@media (max-width: 768px) {
+  .followers-modal {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    height: 100vh;
+    max-height: 100vh;
+  }
+  
+  .followers-list {
+    max-height: calc(100vh - 60px);
+  }
+} 

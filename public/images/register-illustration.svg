@@ -1,0 +1,17 @@
+<svg width="300" height="250" viewBox="0 0 300 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="250" fill="#EFF6FF" />
+  <rect x="60" y="40" width="180" height="170" rx="10" fill="#3B82F6" />
+  <rect x="80" y="60" width="140" height="20" rx="4" fill="white" />
+  <rect x="80" y="90" width="140" height="20" rx="4" fill="white" />
+  <rect x="80" y="120" width="140" height="20" rx="4" fill="white" />
+  <rect x="80" y="150" width="70" height="30" rx="5" fill="#2563EB" />
+  <circle cx="95" cy="165" r="10" fill="#60A5FA" />
+  <path d="M91 165L94 168L100 162" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  <text x="110" y="170" font-family="Arial" font-size="12" fill="white">Submit</text>
+  <circle cx="220" cy="40" r="20" fill="#60A5FA" />
+  <circle cx="240" cy="200" r="25" fill="#60A5FA" />
+  <circle cx="60" cy="210" r="15" fill="#93C5FD" />
+  <path d="M165 20C154.5 20 146 28.5 146 39C146 49.5 154.5 58 165 58C175.5 58 184 49.5 184 39C184 28.5 175.5 20 165 20ZM165 54C156.7 54 150 47.3 150 39C150 30.7 156.7 24 165 24C173.3 24 180 30.7 180 39C180 47.3 173.3 54 165 54Z" fill="#93C5FD" />
+  <path d="M135 230C124.5 230 116 238.5 116 249C116 259.5 124.5 268 135 268C145.5 268 154 259.5 154 249C154 238.5 145.5 230 135 230ZM135 264C126.7 264 120 257.3 120 249C120 240.7 126.7 234 135 234C143.3 234 150 240.7 150 249C150 257.3 143.3 264 135 264Z" fill="#93C5FD" />
+  <path d="M30 40C19.5 40 11 48.5 11 59C11 69.5 19.5 78 30 78C40.5 78 49 69.5 49 59C49 48.5 40.5 40 30 40ZM30 74C21.7 74 15 67.3 15 59C15 50.7 21.7 44 30 44C38.3 44 45 50.7 45 59C45 67.3 38.3 74 30 74Z" fill="#60A5FA" />
+</svg> 

@@ -1,0 +1,202 @@
+.profile-posts {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.posts-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.posts-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.posts-content {
+  padding: 0;
+}
+
+/* Style for the post list when it's in the profile */
+.profile-posts .post-list {
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+}
+
+.profile-posts .post-item {
+  border-left: none;
+  border-right: none;
+  border-radius: 0;
+}
+
+.profile-posts .post-item:first-child {
+  border-top: none;
+}
+
+.profile-posts .post-item:last-child {
+  border-bottom: none;
+}
+
+/* Empty state styling */
+.empty-posts {
+  padding: 40px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 250px;
+}
+
+.empty-icon {
+  background-color: #f5f7fa;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.empty-icon svg {
+  color: #98a6ad;
+}
+
+.empty-posts h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.empty-posts p {
+  margin: 0;
+  color: #6c757d;
+  max-width: 400px;
+}
+
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+.post-card {
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.post-card:hover {
+  transform: none;
+  box-shadow: var(--shadow-md);
+  border-color: var(--gray-300);
+}
+
+.post-content {
+  padding: 1.25rem;
+  flex-grow: 1;
+}
+
+.post-content p {
+  margin: 0;
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+}
+
+.post-footer {
+  border-top: 1px solid var(--gray-100);
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--gray-50);
+}
+
+.post-date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.post-metrics {
+  display: flex;
+  gap: 1rem;
+}
+
+.post-metric {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.post-metric.likes {
+  color: #f43f5e;
+}
+
+.post-metric.likes svg {
+  color: #f43f5e;
+}
+
+.post-metric.comments {
+  color: var(--primary-color);
+}
+
+.post-metric.comments svg {
+  color: var(--primary-color);
+}
+
+.post-feeling {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0.375rem 0.625rem;
+  width: fit-content;
+  border-radius: var(--radius-full);
+  background-color: rgba(79, 70, 229, 0.08);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+}
+
+.post-feeling .feeling-emoji {
+  font-size: 1rem;
+}
+
+.post-feeling .feeling-text {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+  .posts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .post-card {
+    max-width: none;
+  }
+} 

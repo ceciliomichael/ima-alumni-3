@@ -1,0 +1,323 @@
+.profile-header {
+  position: relative;
+  margin-bottom: 30px;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.profile-cover {
+  height: 200px;
+  background-color: #8e44ad;
+  background-image: linear-gradient(45deg, #8e44ad, #3498db);
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.cover-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.3));
+}
+
+.change-cover-btn {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 30px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #333;
+  z-index: 1;
+}
+
+.change-cover-btn:hover {
+  background-color: white;
+  transform: translateY(-2px);
+}
+
+.profile-info-wrapper {
+  display: flex;
+  padding: 0 20px 20px;
+  position: relative;
+}
+
+.profile-avatar {
+  margin-top: -50px;
+  margin-right: 20px;
+  position: relative;
+  border-radius: 50%;
+  z-index: 2;
+  width: 120px;
+  height: 120px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: #8e44ad;
+  color: white;
+  font-size: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.change-avatar-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: white;
+  color: #333;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.change-avatar-btn:hover {
+  background-color: #f1f1f1;
+  transform: scale(1.1);
+}
+
+.profile-info {
+  flex: 1;
+  padding-top: 70px;
+}
+
+.profile-name-section {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.name-and-badge {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.profile-name-section h1 {
+  margin: 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.officer-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary-color);
+  padding: 4px 12px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.officer-badge .batch-year {
+  font-size: 11px;
+  opacity: 0.9;
+  margin-left: 4px;
+}
+
+.officer-details {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 5px;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  background-color: rgba(var(--primary-rgb), 0.05);
+  border-left: 3px solid var(--primary-color);
+  border-radius: 4px;
+}
+
+.officer-title {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--primary-color);
+}
+
+.officer-tenure {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.officer-visibility-note {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.edit-profile-btn, .follow-btn, .unfollow-btn {
+  padding: 8px 16px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.edit-profile-btn {
+  background-color: #f8f9fa;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.edit-profile-btn:hover {
+  background-color: #e9ecef;
+}
+
+.follow-btn {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.follow-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+.unfollow-btn {
+  background-color: white;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.unfollow-btn:hover {
+  background-color: #f8f9fa;
+  border-color: #ccc;
+}
+
+.profile-metadata {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.profile-batch, .profile-email, .profile-job, .profile-location {
+  color: #666;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 20px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-count {
+  font-weight: 600;
+  font-size: 18px;
+  color: #333;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clickable:hover {
+  color: var(--primary-color);
+}
+
+.hidden-input {
+  width: 0;
+  height: 0;
+  position: absolute;
+  opacity: 0;
+}
+
+@media (max-width: 600px) {
+  .profile-info-wrapper {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .profile-avatar {
+    margin-right: 0;
+  }
+  
+  .profile-info {
+    padding-top: 15px;
+    width: 100%;
+  }
+  
+  .profile-name-section {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .profile-metadata {
+    flex-direction: column;
+    align-items: center;
+  }
+} 

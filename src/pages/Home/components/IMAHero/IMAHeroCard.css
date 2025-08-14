@@ -1,0 +1,192 @@
+.ima-hero-card {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(79, 70, 229, 0.2);
+}
+
+.ima-hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(50%, -50%);
+}
+
+.ima-hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.ima-hero-header {
+  margin-bottom: 1.5rem;
+}
+
+.ima-logo-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ima-hero-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.ima-title-section {
+  flex: 1;
+}
+
+.ima-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ima-subtitle {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin: 0.25rem 0 0 0;
+  font-weight: 500;
+}
+
+.ima-hero-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.ima-description {
+  font-size: 1rem;
+  line-height: 1.6;
+  opacity: 0.95;
+  margin: 0;
+}
+
+.ima-stats {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.ima-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.ima-stat svg {
+  opacity: 0.8;
+}
+
+.ima-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ima-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.ima-action-btn.primary {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.ima-action-btn.primary:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ima-action-btn.secondary {
+  background-color: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.ima-action-btn.secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ima-hero-card {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .ima-logo-section {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .ima-title {
+    font-size: 1.5rem;
+  }
+
+  .ima-stats {
+    justify-content: center;
+    gap: 1.5rem;
+  }
+
+  .ima-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ima-action-btn {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .ima-hero-card {
+    padding: 1.25rem;
+  }
+
+  .ima-title {
+    font-size: 1.25rem;
+  }
+
+  .ima-description {
+    font-size: 0.9rem;
+  }
+
+  .ima-stats {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+  }
+}

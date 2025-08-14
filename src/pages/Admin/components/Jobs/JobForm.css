@@ -1,0 +1,165 @@
+/* Job Form Specific Styles */
+
+.admin-job-type-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.admin-job-type-option {
+  flex: 1 0 calc(50% - 0.375rem);
+  min-width: 120px;
+}
+
+.admin-job-type-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-job-type-label:hover {
+  background-color: var(--gray-50);
+}
+
+.admin-job-type-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.admin-job-type-input:checked + .admin-job-type-label {
+  background-color: rgba(99, 102, 241, 0.1);
+  border-color: var(--primary-color);
+}
+
+.admin-job-type-fullTime .admin-job-type-input:checked + .admin-job-type-label {
+  background-color: rgba(2, 132, 199, 0.1);
+  border-color: #0284c7;
+}
+
+.admin-job-type-partTime .admin-job-type-input:checked + .admin-job-type-label {
+  background-color: rgba(124, 58, 237, 0.1);
+  border-color: #7c3aed;
+}
+
+.admin-job-type-contract .admin-job-type-input:checked + .admin-job-type-label {
+  background-color: rgba(251, 146, 60, 0.1);
+  border-color: #fb923c;
+}
+
+.admin-job-type-internship .admin-job-type-input:checked + .admin-job-type-label {
+  background-color: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
+}
+
+.admin-job-application-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.admin-job-application-option {
+  flex: 1 0 calc(33.333% - 0.5rem);
+  min-width: 100px;
+}
+
+.admin-job-application-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.admin-job-application-label:hover {
+  background-color: var(--gray-50);
+}
+
+.admin-job-application-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.admin-job-application-input:checked + .admin-job-application-label {
+  background-color: rgba(99, 102, 241, 0.1);
+  border-color: var(--primary-color);
+}
+
+.admin-job-status-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--gray-50);
+  border-radius: var(--radius);
+  padding: 1rem;
+  border: 1px solid var(--gray-200);
+}
+
+.admin-job-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.admin-job-status-badge-approved {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.admin-job-status-badge-pending {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.admin-job-type-icon-fullTime {
+  color: #0284c7;
+}
+
+.admin-job-type-icon-partTime {
+  color: #7c3aed;
+}
+
+.admin-job-type-icon-contract {
+  color: #fb923c;
+}
+
+.admin-job-type-icon-internship {
+  color: #10b981;
+}
+
+@media (max-width: 768px) {
+  .admin-job-type-options {
+    flex-direction: column;
+  }
+  
+  .admin-job-type-option {
+    width: 100%;
+  }
+  
+  .admin-job-application-options {
+    flex-direction: column;
+  }
+  
+  .admin-job-application-option {
+    width: 100%;
+  }
+} 
