@@ -197,10 +197,13 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
         
         <div className="auth-illustration">
           <div className="illustration-content">
+            <div className="illustration-logo">
+              <img src="/images/alumni-conlogo.png" alt="IMA Alumni Logo" />
+            </div>
             <h2>Welcome to Immaculate Mary Academy (IMA)</h2>
             <p>Connect with fellow alumni and stay updated with your alma mater community.</p>
             <div className="illustration-image">
-              <img src="/images/alumni-illustration.svg" alt="Alumni Connection" />
+              <img src="/images/alumni-connection.svg" alt="Alumni Connection" />
             </div>
           </div>
         </div>

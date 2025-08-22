@@ -133,5 +133,48 @@ This document captures the full history of changes we implemented for the Immacu
 - Consider an admin safeguard to skip deleting specific system users in Firebase during “Clear All Data” (currently session is preserved rather than doc whitelisting).
 - Optional: Add server-side text search or an index-backed search for large user datasets.
 
+## Latest Update: Color Scheme Refresh (Current Session)
+
+### Implementation Summary
+- Updated the entire color system per client specifications:
+  - Primary: #31c1fd (Light Sky Blue)
+  - Primary Dark: #1b9cd8 (for hover/active states)
+  - Secondary: #fe6a20 (Orange)
+  - Background: #fefefe (Near White)
+  - Text Primary: #000000 (Black)
+
+### Files Modified
+- `src/index.css` – Updated all CSS variables in `:root` to new palette; replaced all rgba references with `rgba(var(--primary-rgb), alpha)` pattern.
+- `src/components/Layout/Layout.css` – Replaced hard-coded brand colors with variables; updated logo gradient to primary→secondary.
+- `src/pages/Auth/Auth.css` – Updated illustration gradient to use primary→primary-dark.
+- `src/pages/Home/Home.css` – Updated feed tab active state to use primary rgb variables.
+- `src/pages/Home/components/IMAHero/IMAHeroCard.css` – Replaced purple gradient with primary→secondary gradient.
+- `src/pages/Home/components/Sidebar/DonationProgressCard.css` – Updated donation icon and progress bar to use primary→secondary gradient.
+- `src/pages/Admin/components/Dashboard/Dashboard.css` – Updated subtle overlays to use new primary color variables.
+
+### Key Changes
+- All gradients now use the primary→secondary color combination for brand consistency.
+- Hover states consistently use `--primary-dark` (#1b9cd8).
+- Focus rings and alpha overlays use `rgba(var(--primary-rgb), alpha)` pattern.
+- Text contrast optimized for accessibility on the new near-white background.
+- Removed all hard-coded purple/indigo references (#4f46e5, #7c3aed, etc.).
+
+### Login Illustration & Branding Tweaks (Current Session)
+- Added alumni logo on the right-side illustration area in the login split screen (`src/pages/Auth/LoginPage.tsx`) with dedicated styles in `src/pages/Auth/Auth.css`.
+- Replaced the login illustration with a custom high-contrast SVG: `public/images/alumni-connection.svg` (dark background, bright elements, rounded 20px corners) for premium look and strong contrast.
+- Fixed hero logo visibility by removing the white-inverting filter from `.ima-hero-logo` in `src/pages/Home/components/IMAHero/IMAHeroCard.css`.
+
+### Files Created (Current Session)
+- `public/images/alumni-connection.svg` – custom alumni connection illustration (dark theme, rounded background).
+
+### Files Modified (Additional in This Session)
+- `src/pages/Auth/LoginPage.tsx` – added illustration-side logo and switched illustration to the new SVG.
+- `src/pages/Auth/Auth.css` – added `.illustration-logo` styles; kept focus/brand colors aligned to new tokens.
+- `src/pages/Home/components/IMAHero/IMAHeroCard.css` – updated gradient to new palette; removed logo invert filter.
+
+### Client Feedback Iterations
+- Increased SVG contrast; switched to a dark themed background and added rounded corners for a modern, polished frame.
+- Ensured login and hero logos render with original colors (no unintended white inversion).
+
 ---
 Document last updated: automatically maintained during the current development cycle.

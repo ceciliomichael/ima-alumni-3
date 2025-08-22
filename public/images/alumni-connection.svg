@@ -1,0 +1,146 @@
+<svg width="360" height="280" viewBox="0 0 360 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Dark background gradient -->
+    <radialGradient id="backgroundGradient" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" style="stop-color:rgba(0,0,0,0.25)"/>
+      <stop offset="100%" style="stop-color:rgba(0,0,0,0.4)"/>
+    </radialGradient>
+    
+    <!-- Light element gradients for contrast -->
+    <linearGradient id="lightGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.95)"/>
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0.85)"/>
+    </linearGradient>
+    
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.9)"/>
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0.7)"/>
+    </linearGradient>
+    
+    <!-- Enhanced glow filter -->
+    <filter id="lightGlow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Dark background with pattern and rounded edges -->
+  <rect width="360" height="280" rx="20" ry="20" fill="url(#backgroundGradient)"/>
+  
+  <!-- Dark background pattern -->
+  <g opacity="0.15">
+    <circle cx="80" cy="60" r="40" fill="rgba(0,0,0,0.3)"/>
+    <circle cx="280" cy="80" r="30" fill="rgba(0,0,0,0.2)"/>
+    <circle cx="60" cy="220" r="35" fill="rgba(0,0,0,0.25)"/>
+    <circle cx="300" cy="240" r="25" fill="rgba(0,0,0,0.2)"/>
+  </g>
+  
+  <!-- Main central graduation cap - bright on dark -->
+  <g transform="translate(180, 90)" filter="url(#lightGlow)">
+    <!-- Cap shadow -->
+    <ellipse cx="0" cy="18" rx="40" ry="10" fill="rgba(0,0,0,0.3)"/>
+    <!-- Cap base -->
+    <path d="M-35 0 Q-35 -6 -30 -10 L30 -10 Q35 -6 35 0 Q35 6 30 10 L-30 10 Q-35 6 -35 0 Z" fill="url(#lightGradient)" stroke="rgba(255,255,255,0.9)" stroke-width="2"/>
+    <!-- Cap top -->
+    <ellipse cx="0" cy="-10" rx="35" ry="18" fill="url(#lightGradient)" stroke="rgba(255,255,255,0.9)" stroke-width="2"/>
+    <!-- Button on top -->
+    <circle cx="0" cy="-10" r="4" fill="rgba(255,255,255,1)" stroke="rgba(255,255,255,0.9)" stroke-width="1"/>
+    <!-- Bright tassel -->
+    <path d="M30 -10 Q40 -7 35 12" stroke="rgba(255,255,255,1)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <circle cx="35" cy="12" r="5" fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,1)" stroke-width="1"/>
+  </g>
+  
+  <!-- Bright connection network -->
+  <path d="M80 140 Q140 115 180 140 Q220 165 280 140" 
+        stroke="rgba(255,255,255,0.8)" 
+        stroke-width="3" 
+        fill="none" 
+        stroke-linecap="round"/>
+  
+  <path d="M100 180 Q150 155 200 180 Q250 205 300 180" 
+        stroke="rgba(255,255,255,0.7)" 
+        stroke-width="2.5" 
+        fill="none" 
+        stroke-linecap="round"/>
+  
+  <!-- Bright people icons -->
+  <g opacity="1">
+    <!-- Person 1 -->
+    <g transform="translate(80, 150)">
+      <circle cx="0" cy="0" r="22" fill="url(#accentGradient)" stroke="rgba(255,255,255,1)" stroke-width="2" filter="url(#lightGlow)"/>
+      <circle cx="0" cy="-6" r="8" fill="rgba(255,255,255,1)" stroke="rgba(255,255,255,0.9)" stroke-width="1"/>
+      <path d="M-10 6 Q0 18 10 6" stroke="rgba(255,255,255,1)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </g>
+    
+    <!-- Person 2 -->
+    <g transform="translate(180, 170)">
+      <circle cx="0" cy="0" r="22" fill="url(#accentGradient)" stroke="rgba(255,255,255,1)" stroke-width="2" filter="url(#lightGlow)"/>
+      <circle cx="0" cy="-6" r="8" fill="rgba(255,255,255,1)" stroke="rgba(255,255,255,0.9)" stroke-width="1"/>
+      <path d="M-10 6 Q0 18 10 6" stroke="rgba(255,255,255,1)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </g>
+    
+    <!-- Person 3 -->
+    <g transform="translate(280, 150)">
+      <circle cx="0" cy="0" r="22" fill="url(#accentGradient)" stroke="rgba(255,255,255,1)" stroke-width="2" filter="url(#lightGlow)"/>
+      <circle cx="0" cy="-6" r="8" fill="rgba(255,255,255,1)" stroke="rgba(255,255,255,0.9)" stroke-width="1"/>
+      <path d="M-10 6 Q0 18 10 6" stroke="rgba(255,255,255,1)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </g>
+  </g>
+  
+  <!-- Bright connection dots -->
+  <circle cx="130" cy="130" r="5" fill="rgba(255,255,255,0.9)" stroke="rgba(255,255,255,1)" stroke-width="1"/>
+  <circle cx="230" cy="155" r="5" fill="rgba(255,255,255,0.9)" stroke="rgba(255,255,255,1)" stroke-width="1"/>
+  <circle cx="150" cy="190" r="5" fill="rgba(255,255,255,0.9)" stroke="rgba(255,255,255,1)" stroke-width="1"/>
+  <circle cx="250" cy="190" r="5" fill="rgba(255,255,255,0.9)" stroke="rgba(255,255,255,1)" stroke-width="1"/>
+  
+  <!-- Bright building -->
+  <g transform="translate(180, 230)" opacity="1">
+    <!-- Main structure -->
+    <rect x="-45" y="0" width="90" height="35" rx="6" fill="url(#accentGradient)" stroke="rgba(255,255,255,0.9)" stroke-width="2"/>
+    <!-- Bright columns -->
+    <rect x="-35" y="-12" width="8" height="47" rx="4" fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,0.8)" stroke-width="1"/>
+    <rect x="-15" y="-12" width="8" height="47" rx="4" fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,0.8)" stroke-width="1"/>
+    <rect x="5" y="-12" width="8" height="47" rx="4" fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,0.8)" stroke-width="1"/>
+    <rect x="25" y="-12" width="8" height="47" rx="4" fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,0.8)" stroke-width="1"/>
+    <!-- Bright roof -->
+    <path d="M-50 -12 L0 -28 L50 -12 Z" fill="url(#lightGradient)" stroke="rgba(255,255,255,0.9)" stroke-width="2"/>
+    <!-- Bright flag -->
+    <rect x="-3" y="-45" width="6" height="17" rx="3" fill="rgba(255,255,255,0.9)" stroke="rgba(255,255,255,0.8)" stroke-width="1"/>
+    <path d="M3 -45 L22 -38 L3 -32" fill="rgba(255,255,255,0.85)" stroke="rgba(255,255,255,0.8)" stroke-width="1"/>
+  </g>
+  
+  <!-- Bright floating elements -->
+  <g opacity="0.8">
+    <circle cx="60" cy="100" r="4" fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,0.8)" stroke-width="1"/>
+    <circle cx="320" cy="120" r="3" fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,0.8)" stroke-width="1"/>
+    <circle cx="40" cy="180" r="5" fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,0.8)" stroke-width="1"/>
+    <circle cx="340" cy="200" r="4" fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,0.8)" stroke-width="1"/>
+    <circle cx="30" cy="120" r="2" fill="rgba(255,255,255,0.9)"/>
+  </g>
+  
+  <!-- Bright success elements -->
+  <g opacity="1">
+    <g transform="translate(110, 200)">
+      <circle cx="0" cy="0" r="10" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="rgba(255,255,255,0.15)"/>
+      <path d="M-4 0 L-1 3 L4 -3" stroke="rgba(255,255,255,1)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </g>
+    
+    <g transform="translate(250, 200)">
+      <circle cx="0" cy="0" r="10" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="rgba(255,255,255,0.15)"/>
+      <path d="M-4 0 L-1 3 L4 -3" stroke="rgba(255,255,255,1)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </g>
+  </g>
+  
+  <!-- Bright stars -->
+  <g opacity="0.9">
+    <g transform="translate(70, 70)">
+      <path d="M0 -6 L1.5 -1.5 L6 0 L1.5 1.5 L0 6 L-1.5 1.5 L-6 0 L-1.5 -1.5 Z" fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,0.8)" stroke-width="1"/>
+    </g>
+    <g transform="translate(290, 80)">
+      <path d="M0 -5 L1 -1 L5 0 L1 1 L0 5 L-1 1 L-5 0 L-1 -1 Z" fill="rgba(255,255,255,0.95)" stroke="rgba(255,255,255,0.8)" stroke-width="1"/>
+    </g>
+  </g>
+</svg>

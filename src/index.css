@@ -10,13 +10,13 @@
 
 :root {
   /* Modern color palette */
-  --primary-color: #4f46e5;
-  --primary-dark: #4338ca;
-  --primary-light: #818cf8;
-  --primary-rgb: 79, 70, 229; /* RGB values for primary color */
-  --secondary-color: #8b5cf6;
-  --secondary-dark: #7c3aed;
-  --secondary-light: #a78bfa;
+  --primary-color: #31c1fd;
+  --primary-dark: #1b9cd8;
+  --primary-light: #7dd3fd;
+  --primary-rgb: 49, 193, 253; /* RGB values for primary color */
+  --secondary-color: #fe6a20;
+  --secondary-dark: #e55100;
+  --secondary-light: #ff9e80;
   
   /* Accents */
   --accent-1: #ec4899;
@@ -24,13 +24,13 @@
   --accent-3: #14b8a6;
   
   /* Text colors */
-  --text-primary: #1e293b;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  --text-primary: #000000;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
   
   /* Backgrounds */
-  --background: #f8fafc;
-  --background-alt: #f1f5f9;
+  --background: #fefefe;
+  --background-alt: #f9fafb;
   --background-card: #ffffff;
   
   /* Borders */
@@ -55,11 +55,11 @@
   --gray-900: #0f172a;
   
   /* Shadows - more refined */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
-  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.09), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.06), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
   
   /* Gradients */
   --gradient-primary: linear-gradient(to right, var(--primary-color), var(--secondary-color));
@@ -243,7 +243,7 @@ button {
 .form-control:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
 }
 
 .form-control::placeholder {
