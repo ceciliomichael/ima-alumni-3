@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, User, Mail, Calendar } from 'lucide-react';
+import { ArrowLeft, Save, User, Mail, Calendar, CreditCard, Upload, X } from 'lucide-react';
 import { 
   addAlumni, 
   getAlumniById, 
   updateAlumni,
-  initializeAlumniData
+  initializeAlumniData,
+  checkAlumniIdExistsInRecords
 } from '../../../../services/firebase/alumniService';
 import { AlumniRecord } from '../../../../types';
+import { generateAlumniId, validateAndFormatAlumniId, formatAlumniId, cleanAlumniId } from '../../../../utils/alumniIdUtils';
+import { processImageFile } from '../../../../utils/imageUtils';
 import AdminLayout from '../../layout/AdminLayout';
 import './AlumniRecords.css';
 
@@ -19,6 +22,7 @@ const AlumniForm = () => {
   const [formData, setFormData] = useState<Omit<AlumniRecord, 'id' | 'dateRegistered'>>({
     name: '',
     email: '',
+    alumniId: '',
     batch: '',
     isActive: true,
     profileImage: '',
@@ -28,6 +32,8 @@ const AlumniForm = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
   
   useEffect(() => {
     const init = async () => {
@@ -42,11 +48,25 @@ const AlumniForm = () => {
           if (alumniData) {
             // Exclude id and dateRegistered from the form
             const { id: _, dateRegistered: __, ...restData } = alumniData;
+            
+            // Format Alumni ID for display
+            if (restData.alumniId) {
+              restData.alumniId = formatAlumniId(restData.alumniId);
+            }
+            
             setFormData(restData);
+            
+            // Set image preview if profile image exists
+            if (restData.profileImage) {
+              setImagePreview(restData.profileImage);
+            }
           } else {
             // Handle case where alumni record doesn't exist
             navigate('/admin/alumni-records');
           }
+        } else {
+          // For new records, generate Alumni ID
+          await generateNewAlumniId();
         }
       } catch (error) {
         console.error('Error initializing or fetching alumni data:', error);
@@ -61,10 +81,21 @@ const AlumniForm = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
     
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-    }));
+    // Format Alumni ID as user types
+    if (name === 'alumniId') {
+      const digitsOnly = value.replace(/\D/g, '').slice(0, 12);
+      const formatted = formatAlumniId(digitsOnly);
+      
+      setFormData(prev => ({
+        ...prev,
+        [name]: formatted
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      }));
+    }
     
     // Clear error for the field being edited
     if (errors[name]) {
@@ -75,8 +106,79 @@ const AlumniForm = () => {
       });
     }
   };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const result = await processImageFile(file, true);
+      
+      if (result.success && result.base64) {
+        setSelectedImageFile(file);
+        setImagePreview(result.base64);
+        setFormData(prev => ({
+          ...prev,
+          profileImage: result.base64!
+        }));
+        
+        // Clear any existing image errors
+        if (errors.profileImage) {
+          setErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors.profileImage;
+            return newErrors;
+          });
+        }
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          profileImage: result.error || 'Failed to process image'
+        }));
+      }
+    } catch (error) {
+      setErrors(prev => ({
+        ...prev,
+        profileImage: 'Error processing image file'
+      }));
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImageFile(null);
+    setImagePreview('');
+    setFormData(prev => ({
+      ...prev,
+      profileImage: ''
+    }));
+    
+    // Clear file input
+    const fileInput = document.getElementById('profileImageFile') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
+  const generateNewAlumniId = async () => {
+    let newId = generateAlumniId();
+    let attempts = 0;
+    
+    // Ensure uniqueness (max 10 attempts)
+    while (attempts < 10) {
+      const exists = await checkAlumniIdExistsInRecords(newId);
+      if (!exists) break;
+      
+      newId = generateAlumniId();
+      attempts++;
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      alumniId: newId
+    }));
+  };
   
-  const validateForm = () => {
+  const validateForm = async () => {
     const newErrors: Record<string, string> = {};
     
     if (!formData.name.trim()) {
@@ -87,6 +189,22 @@ const AlumniForm = () => {
       newErrors.email = 'Email is required';
     } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
+    }
+
+    // Validate Alumni ID
+    if (!formData.alumniId?.trim()) {
+      newErrors.alumniId = 'Alumni ID is required';
+    } else {
+      const validation = validateAndFormatAlumniId(formData.alumniId);
+      if (!validation.isValid) {
+        newErrors.alumniId = validation.error || 'Invalid Alumni ID format';
+      } else if (!isEditing) {
+        // Check uniqueness for new records
+        const exists = await checkAlumniIdExistsInRecords(formData.alumniId);
+        if (exists) {
+          newErrors.alumniId = 'Alumni ID already exists. Please use a different ID.';
+        }
+      }
     }
     
     if (!formData.batch.trim()) {
@@ -102,16 +220,18 @@ const AlumniForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    const isValid = await validateForm();
+    if (!isValid) {
       return;
     }
     
     setIsSubmitting(true);
     
     try {
-      // Add dateRegistered field for new alumni
+      // Prepare alumni data with clean Alumni ID
       const alumniData = {
         ...formData,
+        alumniId: formData.alumniId ? cleanAlumniId(formData.alumniId) : '', // Store clean ID
         dateRegistered: new Date().toISOString()
       };
       
@@ -153,7 +273,7 @@ const AlumniForm = () => {
         </div>
         
         <div className="admin-card">
-          <form className="admin-form" onSubmit={handleSubmit}>
+                      <form className="admin-form" onSubmit={handleSubmit}>
             <div className="form-grid">
               <div className="form-section">
                 <label htmlFor="name" className="admin-form-label">
@@ -170,6 +290,40 @@ const AlumniForm = () => {
                   disabled={isSubmitting}
                 />
                 {errors.name && <div className="admin-form-error">{errors.name}</div>}
+              </div>
+
+              <div className="form-section">
+                <label htmlFor="alumniId" className="admin-form-label">
+                  <CreditCard size={16} className="form-icon" /> Alumni ID *
+                </label>
+                <div className="alumni-id-input-group">
+                  <input
+                    type="text"
+                    id="alumniId"
+                    name="alumniId"
+                    className={`admin-form-input ${errors.alumniId ? 'admin-input-error' : ''}`}
+                    value={formData.alumniId}
+                    onChange={handleChange}
+                    placeholder="1234 5678 9012"
+                    disabled={isSubmitting}
+                    maxLength={14}
+                  />
+                  {!isEditing && (
+                    <button
+                      type="button"
+                      className="generate-id-btn"
+                      onClick={generateNewAlumniId}
+                      disabled={isSubmitting}
+                      title="Generate new Alumni ID"
+                    >
+                      Generate
+                    </button>
+                  )}
+                </div>
+                {errors.alumniId && <div className="admin-form-error">{errors.alumniId}</div>}
+                <div className="form-hint">
+                  12-digit Alumni ID for user authentication
+                </div>
               </div>
               
               <div className="form-section">
@@ -221,18 +375,59 @@ const AlumniForm = () => {
               </div>
               
               <div className="form-section">
-                <label htmlFor="profileImage" className="admin-form-label">Profile Image URL</label>
-                <input
-                  type="text"
-                  id="profileImage"
-                  name="profileImage"
-                  className="admin-form-input"
-                  value={formData.profileImage || ''}
-                  onChange={handleChange}
-                  placeholder="Enter profile image URL"
-                  disabled={isSubmitting}
-                />
-                <div className="form-hint">Leave blank to use default avatar.</div>
+                <label className="admin-form-label">Profile Image</label>
+                
+                <div className="profile-image-section">
+                  <div className="profile-avatar-preview">
+                    {imagePreview ? (
+                      <img src={imagePreview} alt="Profile preview" className="profile-preview-image" />
+                    ) : (
+                      <div className="profile-placeholder">
+                        <User size={32} />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="profile-image-actions">
+                    <input
+                      type="file"
+                      id="profileImageFile"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={isSubmitting}
+                      style={{ display: 'none' }}
+                    />
+                    
+                    {imagePreview ? (
+                      <div className="profile-action-buttons">
+                        <label htmlFor="profileImageFile" className="profile-action-btn replace">
+                          <Upload size={16} />
+                          Replace
+                        </label>
+                        <button
+                          type="button"
+                          className="profile-action-btn remove"
+                          onClick={handleRemoveImage}
+                          disabled={isSubmitting}
+                        >
+                          <X size={16} />
+                          Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <label htmlFor="profileImageFile" className="profile-action-btn upload">
+                        <Upload size={16} />
+                        Upload Image
+                      </label>
+                    )}
+                    
+                    <div className="profile-image-hint">
+                      <small>JPEG, PNG, GIF, WebP (Max 5MB)</small>
+                    </div>
+                  </div>
+                </div>
+                
+                {errors.profileImage && <div className="admin-form-error">{errors.profileImage}</div>}
               </div>
               
               <div className="form-section checkbox-section">

@@ -1,4 +1,4 @@
-import { Briefcase, Building, MapPin, Link, Github, Linkedin, Twitter } from 'lucide-react';
+import { Briefcase, Building, MapPin, Link, Github, Linkedin, Twitter, Mail } from 'lucide-react';
 import './styles.css';
 
 interface SocialLinks {
@@ -9,16 +9,17 @@ interface SocialLinks {
 
 interface ProfileAboutProps {
   bio: string;
+  email?: string;
   job: string;
   company: string;
   location: string;
   socialLinks: SocialLinks;
 }
 
-const ProfileAbout = ({ bio, job, company, location, socialLinks }: ProfileAboutProps) => {
+const ProfileAbout = ({ bio, email, job, company, location, socialLinks }: ProfileAboutProps) => {
   const hasSocialLinks = socialLinks && (socialLinks.linkedin || socialLinks.twitter || socialLinks.website);
   const hasWorkInfo = job || company;
-  const hasInfo = bio || hasWorkInfo || location || hasSocialLinks;
+  const hasInfo = bio || email || hasWorkInfo || location || hasSocialLinks;
 
   return (
     <div className="profile-about">
@@ -35,6 +36,15 @@ const ProfileAbout = ({ bio, job, company, location, socialLinks }: ProfileAbout
           )}
           
           <div className="details">
+            {email && (
+              <div className="detail-item">
+                <Mail size={18} />
+                <div className="detail-text">
+                  <span>{email}</span>
+                </div>
+              </div>
+            )}
+            
             {hasWorkInfo && (
               <div className="detail-item">
                 <Briefcase size={18} />

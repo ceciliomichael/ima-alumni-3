@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Image, Calendar, CheckCircle, Clock, Upload, Plus, Filter } from 'lucide-react';
+import { ArrowLeft, Save, Image, Calendar, CheckCircle, Clock, Upload, Plus, Filter, Trash2, Images } from 'lucide-react';
 import { 
   addGalleryItem, 
   getGalleryItemById, 
-  updateGalleryItem
+  updateGalleryItem,
+  createAlbum
 } from '../../../../services/firebase/galleryService';
 import { GalleryPost } from '../../../../types';
 import { getAllEvents, Event } from '../../../../services/firebase/eventService';
@@ -23,6 +24,14 @@ const EVENT_CATEGORIES = [
   'Awards',
   'Community Service'
 ];
+
+interface UploadedImage {
+  id: string;
+  file: File;
+  url: string;
+  title: string;
+  base64?: string;
+}
 
 const GalleryForm = () => {
   const { id } = useParams<{ id: string }>();
@@ -45,8 +54,15 @@ const GalleryForm = () => {
   const [loading, setLoading] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  
+  // Album state - simplified
+  const [albumTitle, setAlbumTitle] = useState('');
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Automatically determine if this is an album based on number of images
+  const isAlbum = uploadedImages.length > 1 || (isEditing && formData.isAlbum);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,6 +80,11 @@ const GalleryForm = () => {
             // Exclude id and postedDate from the form
             const { id: _, postedDate: __, ...restData } = galleryData;
             setFormData(restData);
+            
+            // Set album title if it's an album
+            if (galleryData.isAlbum) {
+              setAlbumTitle(galleryData.albumTitle || '');
+            }
           } else {
             // Handle case where gallery item doesn't exist
             navigate('/admin/gallery');
@@ -103,34 +124,69 @@ const GalleryForm = () => {
       if (previewUrl && !previewUrl.startsWith('data:')) {
         URL.revokeObjectURL(previewUrl);
       }
+      // Clean up album image URLs
+      uploadedImages.forEach(img => {
+        if (img.url && !img.url.startsWith('data:')) {
+          URL.revokeObjectURL(img.url);
+        }
+      });
     };
-  }, [previewUrl]);
+  }, [previewUrl, uploadedImages]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files && files.length > 0) {
-      const file = files[0];
+    if (!files || files.length === 0) return;
+
+    const newImages: UploadedImage[] = [];
+    
+    // Handle multiple files
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
       
       // Validate file
       const validation = validateImageFile(file, 5); // 5MB max
       if (!validation.valid) {
-        alert(validation.message);
-        return;
+        alert(`${file.name}: ${validation.message}`);
+        continue;
       }
       
-      setUploadFile(file);
-      
-      // Create preview URL
       const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
+      const fileName = file.name.split('.')[0].replace(/[_-]/g, ' ');
+      
+      newImages.push({
+        id: `img_${Date.now()}_${i}`,
+        file,
+        url: objectUrl,
+        title: fileName
+      });
+    }
+    
+    if (newImages.length === 1) {
+      // Single image - use the original single image workflow
+      setUploadFile(newImages[0].file);
+      setPreviewUrl(newImages[0].url);
       
       // Auto-fill title from filename if empty
       if (!formData.title) {
-        const fileName = file.name.split('.')[0].replace(/[_-]/g, ' ');
         setFormData(prev => ({
           ...prev,
-          title: fileName
+          title: newImages[0].title
         }));
+      }
+    } else if (newImages.length > 1) {
+      // Multiple images - automatically switch to album mode
+      setUploadedImages(newImages);
+      
+      // Auto-fill album title if empty
+      if (!albumTitle) {
+        setAlbumTitle(`New Album - ${new Date().toLocaleDateString()}`);
+      }
+      
+      // Clear single image data
+      setUploadFile(null);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl('');
       }
     }
   };
@@ -144,29 +200,77 @@ const GalleryForm = () => {
   const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
     
-    // Format event value to match user-facing gallery
+    // Format category value to match user-facing gallery
     const formattedCategory = category.toLowerCase().replace(/\s+/g, '-');
     
     setFormData(prev => ({
       ...prev,
-      event: formattedCategory
+      albumCategory: formattedCategory // Set albumCategory field for proper categorization
     }));
+  };
+
+  const handleImageTitleChange = (imageId: string, newTitle: string) => {
+    setUploadedImages(prev => 
+      prev.map(img => 
+        img.id === imageId ? { ...img, title: newTitle } : img
+      )
+    );
+  };
+
+  const handleRemoveImage = (imageId: string) => {
+    setUploadedImages(prev => {
+      const imageToRemove = prev.find(img => img.id === imageId);
+      if (imageToRemove && imageToRemove.url && !imageToRemove.url.startsWith('data:')) {
+        URL.revokeObjectURL(imageToRemove.url);
+      }
+      const newImages = prev.filter(img => img.id !== imageId);
+      
+      // If only one image left, switch back to single image mode
+      if (newImages.length === 1) {
+        const singleImage = newImages[0];
+        setUploadFile(singleImage.file);
+        setPreviewUrl(singleImage.url);
+        setFormData(prevForm => ({
+          ...prevForm,
+          title: singleImage.title
+        }));
+        return [];
+      }
+      
+      return newImages;
+    });
   };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!formData.title.trim()) {
-      newErrors.title = 'Title is required';
-    }
-    
-    if (!formData.description.trim()) {
-      newErrors.description = 'Description is required';
-    }
-    
-    // Only require imageUrl if no file is being uploaded
-    if (!formData.imageUrl.trim() && !uploadFile) {
-      newErrors.imageUrl = 'Image is required - either upload a file or provide a URL';
+    if (isAlbum) {
+      if (!albumTitle.trim()) {
+        newErrors.albumTitle = 'Album title is required';
+      }
+      
+      if (uploadedImages.length === 0) {
+        newErrors.images = 'At least one image is required for an album';
+      }
+      
+      // Check if all images have titles
+      const imagesWithoutTitles = uploadedImages.filter(img => !img.title.trim());
+      if (imagesWithoutTitles.length > 0) {
+        newErrors.imageTitles = 'All images must have titles';
+      }
+    } else {
+      if (!formData.title.trim()) {
+        newErrors.title = 'Title is required';
+      }
+      
+      if (!formData.description.trim()) {
+        newErrors.description = 'Description is required';
+      }
+      
+      // Only require imageUrl if no file is being uploaded
+      if (!formData.imageUrl.trim() && !uploadFile) {
+        newErrors.imageUrl = 'Image is required - either upload a file or provide a URL';
+      }
     }
     
     setErrors(newErrors);
@@ -183,35 +287,64 @@ const GalleryForm = () => {
     setIsSubmitting(true);
     
     try {
-      // If a file was uploaded, process it
-      if (uploadFile) {
-        // Resize and convert to base64 with more aggressive compression
-        const base64Image = await resizeImage(uploadFile, 800, 800, 0.6, true);
+      if (isAlbum) {
+        // Process album creation
+        const processedImages: Array<{ url: string; title: string }> = [];
         
-        // Update the form data with the base64 image
-        setFormData(prev => ({
-          ...prev,
-          imageUrl: base64Image
-        }));
-        
-        // Save with the base64 image
-        if (isEditing && id) {
-          await updateGalleryItem(id, {
-            ...formData,
-            imageUrl: base64Image
-          });
-        } else {
-          await addGalleryItem({
-            ...formData,
-            imageUrl: base64Image
+        for (const image of uploadedImages) {
+          // Convert to base64 if not already processed
+          if (!image.base64) {
+            const base64Image = await resizeImage(image.file, 800, 800, 0.6, true);
+            image.base64 = base64Image;
+          }
+          
+          processedImages.push({
+            url: image.base64,
+            title: image.title
           });
         }
+        
+        // Create album
+        await createAlbum(
+          albumTitle,
+          formData.albumCategory || selectedCategory?.toLowerCase().replace(/\s+/g, '-') || EVENT_CATEGORIES[0].toLowerCase().replace(/\s+/g, '-'),
+          `Album with ${processedImages.length} images`,
+          processedImages,
+          'admin'
+        );
       } else {
-        // No file uploaded, use the URL provided
-        if (isEditing && id) {
-          await updateGalleryItem(id, formData);
+        // Process single image
+        if (uploadFile) {
+          // Resize and convert to base64 with more aggressive compression
+          const base64Image = await resizeImage(uploadFile, 800, 800, 0.6, true);
+          
+          // Save with the base64 image
+          if (isEditing && id) {
+            await updateGalleryItem(id, {
+              ...formData,
+              imageUrl: base64Image,
+              albumCategory: formData.albumCategory || selectedCategory?.toLowerCase().replace(/\s+/g, '-') || EVENT_CATEGORIES[0].toLowerCase().replace(/\s+/g, '-')
+            });
+          } else {
+            await addGalleryItem({
+              ...formData,
+              imageUrl: base64Image,
+              albumCategory: formData.albumCategory || selectedCategory?.toLowerCase().replace(/\s+/g, '-') || EVENT_CATEGORIES[0].toLowerCase().replace(/\s+/g, '-')
+            });
+          }
         } else {
-          await addGalleryItem(formData);
+          // No file uploaded, use the URL provided
+          if (isEditing && id) {
+            await updateGalleryItem(id, {
+              ...formData,
+              albumCategory: formData.albumCategory || selectedCategory?.toLowerCase().replace(/\s+/g, '-') || EVENT_CATEGORIES[0].toLowerCase().replace(/\s+/g, '-')
+            });
+          } else {
+            await addGalleryItem({
+              ...formData,
+              albumCategory: formData.albumCategory || selectedCategory?.toLowerCase().replace(/\s+/g, '-') || EVENT_CATEGORIES[0].toLowerCase().replace(/\s+/g, '-')
+            });
+          }
         }
       }
       
@@ -239,6 +372,13 @@ const GalleryForm = () => {
           <h2 className="admin-card-title">
             {isEditing ? 'Edit Gallery Item' : 'Add New Gallery Item'}
           </h2>
+          
+          {isAlbum && (
+            <div className="admin-album-indicator">
+              <Images size={16} />
+              <span>Album Mode ({uploadedImages.length} images)</span>
+            </div>
+          )}
         </div>
         
         {loading ? (
@@ -246,26 +386,69 @@ const GalleryForm = () => {
         ) : (
         <form className="admin-form" onSubmit={handleSubmit}>
           <div className="admin-form-section">
-            <h3 className="admin-form-section-title">Gallery Item Information</h3>
+            <h3 className="admin-form-section-title">
+              {isAlbum ? 'Album Information' : 'Gallery Item Information'}
+            </h3>
             
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label htmlFor="title" className="admin-form-label">
-                  <Image size={16} className="admin-form-icon" />
-                  Title *
-                </label>
-                <input
-                  type="text"
-                  id="title"
-                  name="title"
-                  className={`admin-form-input ${errors.title ? 'admin-input-error' : ''}`}
-                  value={formData.title}
-                  onChange={handleChange}
-                  placeholder="Enter gallery item title"
-                />
-                {errors.title && <div className="admin-form-error">{errors.title}</div>}
+            {isAlbum ? (
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label htmlFor="albumTitle" className="admin-form-label">
+                    <Images size={16} className="admin-form-icon" />
+                    Album Title *
+                  </label>
+                  <input
+                    type="text"
+                    id="albumTitle"
+                    value={albumTitle}
+                    onChange={(e) => setAlbumTitle(e.target.value)}
+                    className={`admin-form-input ${errors.albumTitle ? 'admin-input-error' : ''}`}
+                    placeholder="Enter album title"
+                  />
+                  {errors.albumTitle && <div className="admin-form-error">{errors.albumTitle}</div>}
+                </div>
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="admin-form-row">
+                  <div className="admin-form-group">
+                    <label htmlFor="title" className="admin-form-label">
+                      <Image size={16} className="admin-form-icon" />
+                      Title *
+                    </label>
+                    <input
+                      type="text"
+                      id="title"
+                      name="title"
+                      className={`admin-form-input ${errors.title ? 'admin-input-error' : ''}`}
+                      value={formData.title}
+                      onChange={handleChange}
+                      placeholder="Enter gallery item title"
+                    />
+                    {errors.title && <div className="admin-form-error">{errors.title}</div>}
+                  </div>
+                </div>
+                
+                <div className="admin-form-row">
+                  <div className="admin-form-group">
+                    <label htmlFor="description" className="admin-form-label">
+                      <Image size={16} className="admin-form-icon" />
+                      Description *
+                    </label>
+                    <textarea
+                      id="description"
+                      name="description"
+                      rows={4}
+                      className={`admin-form-textarea ${errors.description ? 'admin-input-error' : ''}`}
+                      value={formData.description}
+                      onChange={handleChange}
+                      placeholder="Enter description"
+                    ></textarea>
+                    {errors.description && <div className="admin-form-error">{errors.description}</div>}
+                  </div>
+                </div>
+              </>
+            )}
             
             <div className="admin-form-row">
               <div className="admin-form-group">
@@ -279,7 +462,7 @@ const GalleryForm = () => {
                       key={category}
                       className={`admin-gallery-category-item ${
                         selectedCategory === category || 
-                        (formData.event === category.toLowerCase().replace(/\s+/g, '-') && !selectedCategory) 
+                        (formData.albumCategory === category.toLowerCase().replace(/\s+/g, '-') && !selectedCategory) 
                           ? 'active' 
                           : ''
                       }`}
@@ -311,39 +494,22 @@ const GalleryForm = () => {
                   ))}
                 </select>
                 <div className="admin-form-hint">
-                  Note: This links the image to a specific event. Album category above is used for filtering.
+                  Note: This links the {isAlbum ? 'album' : 'image'} to a specific event. Album category above is used for filtering.
                 </div>
-              </div>
-            </div>
-            
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label htmlFor="description" className="admin-form-label">
-                  <Image size={16} className="admin-form-icon" />
-                  Description *
-                </label>
-                <textarea
-                  id="description"
-                  name="description"
-                  rows={4}
-                  className={`admin-form-textarea ${errors.description ? 'admin-input-error' : ''}`}
-                  value={formData.description}
-                  onChange={handleChange}
-                  placeholder="Enter description"
-                ></textarea>
-                {errors.description && <div className="admin-form-error">{errors.description}</div>}
               </div>
             </div>
           </div>
           
           <div className="admin-form-section">
-            <h3 className="admin-form-section-title">Image</h3>
+            <h3 className="admin-form-section-title">
+              {isAlbum ? 'Album Images' : 'Image Upload'}
+            </h3>
             
             <div className="admin-form-row">
               <div className="admin-form-group">
                 <label className="admin-form-label">
                   <Upload size={16} className="admin-form-icon" />
-                  Upload Image
+                  {isAlbum ? 'Manage Album Images' : 'Upload Image(s)'}
                 </label>
                 <div className="admin-upload-container">
                   <button 
@@ -352,47 +518,87 @@ const GalleryForm = () => {
                     onClick={triggerFileInput}
                   >
                     <Plus size={16} />
-                    Select Image File
+                    {isAlbum ? 'Add More Images' : 'Select Image(s)'}
                   </button>
                   <input
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileSelect}
                     accept="image/*"
+                    multiple
                     style={{ display: 'none' }}
                   />
-                  {uploadFile && (
-                    <div className="admin-selected-file">
-                      <span>{uploadFile.name}</span>
-                      <span className="admin-file-size">({(uploadFile.size / 1024 / 1024).toFixed(2)} MB)</span>
-                    </div>
-                  )}
                 </div>
-                <div className="admin-form-hint">Upload an image file (JPG, PNG, GIF). Maximum size: 5MB.</div>
+                <div className="admin-form-hint">
+                  {isAlbum 
+                    ? 'Add more images to this album. Each image can have its own title.'
+                    : 'Select one or multiple images. Multiple images will automatically create an album.'
+                  }
+                </div>
+                {errors.images && <div className="admin-form-error">{errors.images}</div>}
+                {errors.imageTitles && <div className="admin-form-error">{errors.imageTitles}</div>}
               </div>
             </div>
 
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label htmlFor="imageUrl" className="admin-form-label">
-                  <Image size={16} className="admin-form-icon" />
-                  Image URL {!uploadFile && '*'}
-                </label>
-                <input
-                  type="text"
-                  id="imageUrl"
-                  name="imageUrl"
-                  className={`admin-form-input ${errors.imageUrl ? 'admin-input-error' : ''}`}
-                  value={formData.imageUrl}
-                  onChange={handleChange}
-                  placeholder={uploadFile ? "Image will be uploaded from file" : "Enter image URL"}
-                  disabled={!!uploadFile}
-                />
-                {errors.imageUrl && <div className="admin-form-error">{errors.imageUrl}</div>}
-                <div className="admin-form-hint">
-                  {uploadFile 
-                    ? "Using uploaded image file instead of URL" 
-                    : "Enter the URL for the gallery image or upload a file above."}
+            {/* Album Images Grid */}
+            {isAlbum && uploadedImages.length > 0 && (
+              <div className="admin-album-images-grid">
+                {uploadedImages.map((image) => (
+                  <div key={image.id} className="admin-album-image-item">
+                    <div className="admin-album-image-preview">
+                      <img src={image.url} alt={image.title} />
+                      <button
+                        type="button"
+                        className="admin-album-image-remove"
+                        onClick={() => handleRemoveImage(image.id)}
+                        aria-label="Remove image"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                    <div className="admin-album-image-details">
+                      <input
+                        type="text"
+                        value={image.title}
+                        onChange={(e) => handleImageTitleChange(image.id, e.target.value)}
+                        className="admin-album-image-title"
+                        placeholder="Image title"
+                      />
+                      <div className="admin-album-image-info">
+                        <span>{(image.file.size / 1024 / 1024).toFixed(2)} MB</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Single Image Preview */}
+            {!isAlbum && (uploadFile || formData.imageUrl) && (
+              <>
+                <div className="admin-form-row">
+                  <div className="admin-form-group">
+                    <label htmlFor="imageUrl" className="admin-form-label">
+                      <Image size={16} className="admin-form-icon" />
+                      Image URL {!uploadFile && '*'}
+                    </label>
+                    <input
+                      type="text"
+                      id="imageUrl"
+                      name="imageUrl"
+                      className={`admin-form-input ${errors.imageUrl ? 'admin-input-error' : ''}`}
+                      value={formData.imageUrl}
+                      onChange={handleChange}
+                      placeholder={uploadFile ? "Image will be uploaded from file" : "Enter image URL"}
+                      disabled={!!uploadFile}
+                    />
+                    {errors.imageUrl && <div className="admin-form-error">{errors.imageUrl}</div>}
+                    <div className="admin-form-hint">
+                      {uploadFile 
+                        ? "Using uploaded image file instead of URL" 
+                        : "Enter the URL for the gallery image or upload a file above."}
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="admin-gallery-image-preview">
@@ -407,8 +613,8 @@ const GalleryForm = () => {
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
           
           <div className="admin-form-section">
@@ -440,10 +646,12 @@ const GalleryForm = () => {
                       checked={formData.isApproved}
                       onChange={handleChange}
                     />
-                    <span className="admin-form-checkbox-label">Approve Gallery Item</span>
+                    <span className="admin-form-checkbox-label">
+                      Approve {isAlbum ? 'Album' : 'Gallery Item'}
+                    </span>
                   </label>
                   <div className="admin-form-hint">
-                    Approved gallery items will be visible to all alumni. Unapproved items will be hidden.
+                    Approved {isAlbum ? 'albums' : 'gallery items'} will be visible to all alumni. Unapproved items will be hidden.
                   </div>
                 </div>
               </div>
@@ -464,7 +672,10 @@ const GalleryForm = () => {
               disabled={isSubmitting}
             >
               <Save size={18} />
-              {isEditing ? 'Update Gallery Item' : 'Save Gallery Item'}
+              {isAlbum 
+                ? (isEditing ? 'Update Album' : 'Create Album')
+                : (isEditing ? 'Update Gallery Item' : 'Save Gallery Item')
+              }
             </button>
           </div>
         </form>

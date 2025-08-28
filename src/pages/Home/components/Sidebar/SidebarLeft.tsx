@@ -1,4 +1,4 @@
-import { User, UserCircle, Users, Calendar, Briefcase, BookOpen, Building, Settings } from 'lucide-react';
+import { User, UserCircle, Users, BookOpen, Building, Settings } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { User as UserType } from '../../../../types';
 import ImagePlaceholder from '../../../../components/ImagePlaceholder/ImagePlaceholder';
@@ -60,18 +60,6 @@ const SidebarLeft = ({ user }: SidebarLeftProps) => {
             <Link to="/" className="sidebar-menu-link">
               <User size={20} />
               <span>My Feed</span>
-            </Link>
-          </li>
-          <li className={`sidebar-menu-item ${isActive('/events') ? 'active' : ''}`}>
-            <Link to="/events" className="sidebar-menu-link">
-              <Calendar size={20} />
-              <span>Events</span>
-            </Link>
-          </li>
-          <li className={`sidebar-menu-item ${isActive('/jobs') ? 'active' : ''}`}>
-            <Link to="/jobs" className="sidebar-menu-link">
-              <Briefcase size={20} />
-              <span>Jobs</span>
             </Link>
           </li>
         </ul>

@@ -1,5 +1,5 @@
 import { useState, ChangeEvent } from 'react';
-import { Camera, Edit, UserPlus, UserMinus, Award } from 'lucide-react';
+import { Camera, Edit, Award } from 'lucide-react';
 import { User } from '../../../../types';
 import ImagePlaceholder from '../../../../components/ImagePlaceholder/ImagePlaceholder';
 import './styles.css';
@@ -10,12 +10,7 @@ interface ProfileHeaderProps {
   showEditButton?: boolean;
   currentUserId?: string | null;
   isFollowing?: boolean;
-  onFollowClick?: () => void;
-  onUnfollowClick?: () => void;
-  followersCount?: number;
-  followingCount?: number;
-  onFollowersClick?: () => void;
-  onFollowingClick?: () => void;
+
   onImageChange?: (type: 'profile' | 'cover', imageData: string) => void;
 }
 
@@ -24,13 +19,6 @@ const ProfileHeader = ({
   onEditClick, 
   showEditButton = true,
   currentUserId,
-  isFollowing = false,
-  onFollowClick,
-  onUnfollowClick,
-  followersCount = 0,
-  followingCount = 0,
-  onFollowersClick,
-  onFollowingClick,
   onImageChange
 }: ProfileHeaderProps) => {
   const isViewingSelf = currentUserId === user.id;
@@ -156,32 +144,13 @@ const ProfileHeader = ({
                 </button>
               )}
               
-              {!isViewingSelf && currentUserId && (
-                isFollowing ? (
-                  <button 
-                    className="unfollow-btn"
-                    onClick={onUnfollowClick}
-                  >
-                    <UserMinus size={16} />
-                    <span>Following</span>
-                  </button>
-                ) : (
-                  <button 
-                    className="follow-btn"
-                    onClick={onFollowClick}
-                  >
-                    <UserPlus size={16} />
-                    <span>Follow</span>
-                  </button>
-                )
-              )}
+
             </div>
           </div>
           
           <div className="profile-metadata">
             <div className="user-info">
               <div className="profile-batch">Batch {user.batch}</div>
-              <div className="profile-email">{user.email}</div>
               
               {/* Officer details section - only show if user has enabled it */}
               {showOfficerInfo && user.officerPosition && (
@@ -201,30 +170,6 @@ const ProfileHeader = ({
                   )}
                 </div>
               )}
-              
-              {user.job && user.company && (
-                <div className="profile-job">{user.job} at {user.company}</div>
-              )}
-              {user.location && (
-                <div className="profile-location">{user.location}</div>
-              )}
-            </div>
-            
-            <div className="profile-stats">
-              <div 
-                className="stat-item clickable" 
-                onClick={onFollowersClick}
-              >
-                <span className="stat-count">{followersCount}</span>
-                <span className="stat-label">Followers</span>
-              </div>
-              <div 
-                className="stat-item clickable" 
-                onClick={onFollowingClick}
-              >
-                <span className="stat-count">{followingCount}</span>
-                <span className="stat-label">Following</span>
-              </div>
             </div>
           </div>
         </div>

@@ -62,7 +62,7 @@ const AdminLoginPage = () => {
     setIsSubmitting(true);
     
     try {
-      const user = await adminLogin(formData.username, formData.password);
+      const user = await adminLogin(formData.username, formData.password, formData.rememberMe);
       
       if (user) {
         navigate('/admin');
@@ -77,9 +77,9 @@ const AdminLoginPage = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-wrapper">
-        <div className="auth-card">
+    <div className="auth-container single-column">
+      <div className="auth-wrapper single-column">
+        <div className="auth-card single-column">
           <div className="auth-logo">
             <img src="/images/alumni-conlogo.png" alt="IMA Alumni Logo" />
           </div>
@@ -95,11 +95,12 @@ const AdminLoginPage = () => {
             
             {loginError && (
               <div style={{ 
-                backgroundColor: 'rgba(239, 68, 68, 0.1)', 
-                color: 'var(--error-color)',
+                backgroundColor: 'oklch(0.6 0.25 0 / 0.1)', 
+                color: 'oklch(0.6 0.25 0)',
                 padding: '0.75rem 1rem',
-                borderRadius: 'var(--radius-md)',
-                marginBottom: '1.5rem'
+                borderRadius: '12px',
+                marginBottom: '1.5rem',
+                border: '2px solid oklch(0.6 0.25 0 / 0.2)'
               }}>
                 {loginError}
               </div>
@@ -171,16 +172,6 @@ const AdminLoginPage = () => {
                 </p>
               </div>
             </form>
-          </div>
-        </div>
-        
-        <div className="auth-illustration">
-          <div className="illustration-content">
-            <h2>Administration Portal</h2>
-            <p>Manage alumni records, events, jobs, and more.</p>
-            <div className="illustration-image">
-              <img src="/images/admin-illustration.svg" alt="Admin Portal" />
-            </div>
           </div>
         </div>
       </div>

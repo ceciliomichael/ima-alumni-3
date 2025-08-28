@@ -1,5 +1,5 @@
 import { useState, ChangeEvent } from 'react';
-import { Save, X, User, AtSign, Briefcase, Building, MapPin, FileText, Linkedin, Twitter, Globe, Camera, Image } from 'lucide-react';
+import { Save, X, User, AtSign, Briefcase, Building, MapPin, FileText, Camera, Image } from 'lucide-react';
 import { User as UserType } from '../../../../types';
 import './styles.css';
 
@@ -7,6 +7,7 @@ interface ProfileFormProps {
   user: UserType;
   onSave: (formData: ProfileFormData) => void;
   onCancel: () => void;
+  isLoading?: boolean;
 }
 
 export interface ProfileFormData {
@@ -17,15 +18,12 @@ export interface ProfileFormData {
   company: string;
   location: string;
   bio: string;
-  linkedin: string;
-  twitter: string;
-  website: string;
   profileImage?: string;
   coverPhoto?: string;
   showOfficerInfo?: boolean;
 }
 
-const ProfileForm = ({ user, onSave, onCancel }: ProfileFormProps) => {
+const ProfileForm = ({ user, onSave, onCancel, isLoading = false }: ProfileFormProps) => {
   const [formData, setFormData] = useState<ProfileFormData>({
     name: user.name || '',
     email: user.email || '',
@@ -34,9 +32,6 @@ const ProfileForm = ({ user, onSave, onCancel }: ProfileFormProps) => {
     company: user.company || '',
     location: user.location || '',
     bio: user.bio || '',
-    linkedin: user.socialLinks?.linkedin || '',
-    twitter: user.socialLinks?.twitter || '',
-    website: user.socialLinks?.website || '',
     profileImage: user.profileImage,
     coverPhoto: user.coverPhoto,
     showOfficerInfo: user.showOfficerInfo !== undefined ? user.showOfficerInfo : true
@@ -64,7 +59,7 @@ const ProfileForm = ({ user, onSave, onCancel }: ProfileFormProps) => {
   // Function to crop image to desired aspect ratio
   const cropImage = (imageData: string, type: 'profile' | 'cover'): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const img = new Image();
+      const img = new window.Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -442,56 +437,7 @@ const ProfileForm = ({ user, onSave, onCancel }: ProfileFormProps) => {
           </div>
         </div>
         
-        <div className="form-section">
-          <h3>Social Media</h3>
-          
-          <div className="form-grid">
-            <div className="form-group">
-              <label htmlFor="linkedin">
-                <Linkedin size={16} />
-                <span>LinkedIn</span>
-              </label>
-              <input 
-                type="text" 
-                id="linkedin" 
-                name="linkedin" 
-                value={formData.linkedin} 
-                onChange={handleInputChange} 
-                placeholder="LinkedIn profile URL"
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="twitter">
-                <Twitter size={16} />
-                <span>Twitter</span>
-              </label>
-              <input 
-                type="text" 
-                id="twitter" 
-                name="twitter" 
-                value={formData.twitter} 
-                onChange={handleInputChange} 
-                placeholder="Twitter handle"
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="website">
-                <Globe size={16} />
-                <span>Website</span>
-              </label>
-              <input 
-                type="text" 
-                id="website" 
-                name="website" 
-                value={formData.website} 
-                onChange={handleInputChange} 
-                placeholder="Personal website URL"
-              />
-            </div>
-          </div>
-        </div>
+
         
         {/* Officer Information section - only show if user has an officer position */}
         {user.officerPosition && (
@@ -534,9 +480,21 @@ const ProfileForm = ({ user, onSave, onCancel }: ProfileFormProps) => {
           <button 
             type="submit" 
             className="save-button"
+            disabled={isLoading}
           >
-            <Save size={16} />
-            <span>Save Changes</span>
+            {isLoading ? (
+              <>
+                <svg className="spinner" viewBox="0 0 50 50">
+                  <circle className="path" cx="25" cy="25" r="20" fill="none" strokeWidth="5"></circle>
+                </svg>
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <Save size={16} />
+                <span>Save Changes</span>
+              </>
+            )}
           </button>
         </div>
       </form>

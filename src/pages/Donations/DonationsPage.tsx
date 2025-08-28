@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { DollarSign, Filter, Calendar, Search, Heart } from 'lucide-react';
-import { getPublicDonations } from '../../services/firebase/donationService';
+import { Filter, Calendar, Heart } from 'lucide-react';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db } from '../../firebase/config';
 import { Donation } from '../../types';
 import './Donations.css';
 
@@ -20,20 +21,38 @@ const DonationsPage = () => {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [filteredDonations, setFilteredDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('All Categories');
   const [totalAmount, setTotalAmount] = useState(0);
   
   useEffect(() => {
-    const fetchDonations = async () => {
-      setLoading(true);
+    setLoading(true);
+    
+    // Set up real-time listener for public donations
+    const donationsRef = collection(db, 'donations');
+    const q = query(
+      donationsRef,
+      where('isPublic', '==', true)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       try {
-        const publicDonations = await getPublicDonations();
-        setDonations(publicDonations);
-        setFilteredDonations(publicDonations);
+        const publicDonations = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Donation[];
+        
+        // Sort by donation date (newest first)
+        const sortedDonations = publicDonations.sort((a, b) => {
+          const dateA = new Date(a.donationDate).getTime();
+          const dateB = new Date(b.donationDate).getTime();
+          return dateB - dateA;
+        });
+        
+        setDonations(sortedDonations);
+        setFilteredDonations(sortedDonations);
         
         // Calculate total amount
-        const total = publicDonations.reduce((acc, donation) => {
+        const total = sortedDonations.reduce((acc, donation) => {
           // For simplicity, we're assuming all donations are in the same currency
           // In a real app, you would need to handle currency conversion
           return acc + donation.amount;
@@ -41,29 +60,21 @@ const DonationsPage = () => {
         
         setTotalAmount(total);
       } catch (error) {
-        console.error('Error fetching donations:', error);
+        console.error('Error processing donations:', error);
       } finally {
         setLoading(false);
       }
-    };
-    
-    fetchDonations();
+    }, (error) => {
+      console.error('Realtime donations listener error:', error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
   
-  // Filter donations when search term or category changes
+  // Filter donations when category changes
   useEffect(() => {
     let results = donations;
-    
-    // Apply search filter
-    if (searchTerm) {
-      const lowerCaseQuery = searchTerm.toLowerCase();
-      results = results.filter(donation => 
-        donation.purpose.toLowerCase().includes(lowerCaseQuery) ||
-        donation.donorName.toLowerCase().includes(lowerCaseQuery) ||
-        donation.category.toLowerCase().includes(lowerCaseQuery) ||
-        (donation.description && donation.description.toLowerCase().includes(lowerCaseQuery))
-      );
-    }
     
     // Apply category filter
     if (activeCategory !== 'All Categories') {
@@ -71,7 +82,7 @@ const DonationsPage = () => {
     }
     
     setFilteredDonations(results);
-  }, [searchTerm, activeCategory, donations]);
+  }, [activeCategory, donations]);
   
   // Format currency
   const formatCurrency = (amount: number, currency: string) => {
@@ -99,7 +110,7 @@ const DonationsPage = () => {
           <div className="donations-header">
             <div className="donations-title-section">
               <div className="donations-icon">
-                <DollarSign size={24} />
+                <span className="peso-icon" style={{ fontSize: '24px' }}>₱</span>
               </div>
               <h1>Donations</h1>
             </div>
@@ -118,17 +129,6 @@ const DonationsPage = () => {
           </div>
           
           <div className="donations-controls">
-            <div className="donations-search">
-              <Search size={18} className="search-icon" />
-              <input
-                type="text"
-                placeholder="Search donations..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
-              />
-            </div>
-            
             <div className="donations-filters">
               {DONATION_CATEGORIES.map((category, index) => (
                 <button 
@@ -171,7 +171,9 @@ const DonationsPage = () => {
                       <div className="donation-donor-icon">
                         <Heart size={16} />
                       </div>
-                      <div className="donation-donor-name">{donation.donorName}</div>
+                      <div className="donation-donor-name">
+                        {donation.isAnonymous ? 'Anonymous Donor' : donation.donorName}
+                      </div>
                     </div>
                     
                     <div className="donation-date">
@@ -185,15 +187,13 @@ const DonationsPage = () => {
           ) : (
             <div className="empty-donations">
               <div className="empty-state-icon">
-                <DollarSign size={64} strokeWidth={1} color="#64748b" />
+                <span className="peso-icon" style={{ fontSize: '64px', color: '#64748b', fontWeight: '100' }}>₱</span>
               </div>
               <h3 className="empty-state-title">No donations found</h3>
               <p className="empty-state-message">
-                {searchTerm ? 
-                  "No donations match your search criteria. Try a different search term." : 
-                  activeCategory !== 'All Categories' ? 
-                    `There are no donations in the ${activeCategory} category yet.` : 
-                    "There are no donations yet. Check back later!"
+                {activeCategory !== 'All Categories' ? 
+                  `There are no donations in the ${activeCategory} category yet.` : 
+                  "There are no donations yet. Check back later!"
                 }
               </p>
             </div>

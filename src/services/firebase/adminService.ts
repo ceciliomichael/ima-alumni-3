@@ -128,10 +128,9 @@ export const adminLogin = async (username: string, password: string): Promise<Ad
       return null;
     }
     
-    // Store user in local storage without password
+    // Return user without password (storage is handled in AdminAuthContext)
     const { password: _, ...userWithoutPassword } = adminUser;
     const safeUser = { ...userWithoutPassword, password: '******' } as AdminUser;
-    localStorage.setItem(ADMIN_USER_STORAGE_KEY, JSON.stringify(safeUser));
     
     return safeUser;
   } catch (error) {
@@ -142,12 +141,12 @@ export const adminLogin = async (username: string, password: string): Promise<Ad
 
 // Admin logout
 export const adminLogout = (): void => {
-  localStorage.removeItem(ADMIN_USER_STORAGE_KEY);
+  // Storage cleanup is handled in AdminAuthContext
 };
 
 // Get current admin user
 export const getCurrentAdminUser = (): AdminUser | null => {
-  const adminUser = localStorage.getItem(ADMIN_USER_STORAGE_KEY);
+  const adminUser = sessionStorage.getItem(ADMIN_USER_STORAGE_KEY);
   return adminUser ? JSON.parse(adminUser) : null;
 };
 

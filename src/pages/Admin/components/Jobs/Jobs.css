@@ -1,5 +1,18 @@
 /* Jobs Management Styles */
 
+/* Test job button */
+.admin-test-btn {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+  border: none !important;
+  margin-right: 0.75rem;
+}
+
+.admin-test-btn:hover {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
 .admin-jobs-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));

@@ -4,7 +4,7 @@ import {
   Menu, X, LogOut, Settings, User, 
   LayoutDashboard, Users, Award, Calendar,
   Image, Briefcase, ChevronRight,
-  MessageSquare, DollarSign
+  MessageSquare
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { getUnreadMessagesCount } from '../services/localStorage/contactService';
@@ -131,7 +131,7 @@ const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
             className={`admin-menu-item ${location.pathname.includes('/admin/donations') ? 'active' : ''}`}
             onClick={() => setSidebarOpen(false)}
           >
-            <DollarSign className="admin-menu-icon" />
+            <span className="admin-menu-icon peso-icon">₱</span>
             Donations
           </Link>
           

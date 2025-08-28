@@ -1,6 +1,7 @@
 import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { addAlumni } from './alumniService';
+import { cleanAlumniId } from '../../utils/alumniIdUtils';
 
 // User interface
 export interface User {
@@ -8,6 +9,7 @@ export interface User {
   name: string;
   email: string;
   password: string; // In a real app, this would be hashed
+  alumniId?: string; // Alumni ID for authentication
   batch?: string;
   profileImage?: string;
   coverPhoto?: string;
@@ -35,6 +37,17 @@ export interface User {
 
 const COLLECTION_NAME = 'users';
 const CURRENT_USER_KEY = 'currentUser'; // Still using localStorage for current user session
+
+// Utility function to filter out undefined values from an object
+const filterUndefinedValues = (obj: Record<string, any>): Record<string, any> => {
+  const filtered: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      filtered[key] = value;
+    }
+  }
+  return filtered;
+};
 
 // Get all users
 export const getAllUsers = async (): Promise<User[]> => {
@@ -87,6 +100,39 @@ export const getUserByEmail = async (email: string): Promise<User | null> => {
   } catch (error) {
     console.error('Error getting user by email:', error);
     return null;
+  }
+};
+
+// Get user by Alumni ID
+export const getUserByAlumniId = async (alumniId: string): Promise<User | null> => {
+  try {
+    const cleanId = cleanAlumniId(alumniId);
+    const q = query(collection(db, COLLECTION_NAME), where("alumniId", "==", cleanId));
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+      return null;
+    }
+    
+    const doc = querySnapshot.docs[0];
+    return {
+      id: doc.id,
+      ...doc.data()
+    } as User;
+  } catch (error) {
+    console.error('Error getting user by Alumni ID:', error);
+    return null;
+  }
+};
+
+// Check if Alumni ID exists
+export const checkAlumniIdExists = async (alumniId: string): Promise<boolean> => {
+  try {
+    const user = await getUserByAlumniId(alumniId);
+    return user !== null;
+  } catch (error) {
+    console.error('Error checking Alumni ID existence:', error);
+    return false;
   }
 };
 
@@ -178,27 +224,40 @@ export const updateUser = async (id: string, updatedData: Partial<User>): Promis
     const docSnap = await getDoc(docRef);
     
     if (!docSnap.exists()) {
+      console.error('User document not found:', id);
       return null;
     }
     
     const currentData = docSnap.data() as Omit<User, 'id'>;
     
+    // Filter out undefined values from the update data first
+    const cleanedUpdatedData = filterUndefinedValues(updatedData);
+    console.log('Cleaned update data:', cleanedUpdatedData);
+    
     // Handle special case for socialLinks to prevent partial overwrite
-    if (updatedData.socialLinks && currentData.socialLinks) {
-      updatedData.socialLinks = {
+    if (cleanedUpdatedData.socialLinks && currentData.socialLinks) {
+      cleanedUpdatedData.socialLinks = {
         ...currentData.socialLinks,
-        ...updatedData.socialLinks
+        ...cleanedUpdatedData.socialLinks
       };
     }
     
-    // Create the updated user object ensuring these fields are explicitly set
-    const mergedData = {
-      ...updatedData,
-      profileImage: updatedData.profileImage !== undefined ? updatedData.profileImage : currentData.profileImage,
-      coverPhoto: updatedData.coverPhoto !== undefined ? updatedData.coverPhoto : currentData.coverPhoto
-    };
+    // For profileImage and coverPhoto, only include them if they have values
+    const finalUpdateData: Record<string, any> = { ...cleanedUpdatedData };
     
-    await updateDoc(docRef, mergedData);
+    // Only include profileImage if it's being explicitly updated with a value
+    if (updatedData.profileImage !== undefined) {
+      finalUpdateData.profileImage = updatedData.profileImage;
+    }
+    
+    // Only include coverPhoto if it's being explicitly updated with a value  
+    if (updatedData.coverPhoto !== undefined) {
+      finalUpdateData.coverPhoto = updatedData.coverPhoto;
+    }
+    
+    console.log('Final update data to be sent to Firestore:', finalUpdateData);
+    
+    await updateDoc(docRef, finalUpdateData);
     
     // Get the updated document
     const updatedDocSnap = await getDoc(docRef);
@@ -225,6 +284,9 @@ export const updateUser = async (id: string, updatedData: Partial<User>): Promis
     return updatedUser;
   } catch (error) {
     console.error('Error updating user:', error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+    }
     return null;
   }
 };

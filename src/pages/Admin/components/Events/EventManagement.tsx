@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit, Trash, Calendar, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Plus, Edit, Trash, Calendar, CheckCircle, XCircle, Zap } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   getAllEvents, 
@@ -8,6 +8,7 @@ import {
   approveEvent,
   getUpcomingEvents,
   getPastEvents,
+  addEvent,
   Event
 } from '../../../../services/firebase/eventService';
 import AdminLayout from '../../layout/AdminLayout';
@@ -132,6 +133,69 @@ const EventManagement = () => {
     return eventDate >= new Date();
   };
 
+  // Test event function
+  const handleTestEvent = async () => {
+    try {
+      setLoading(true);
+      
+      // Generate random test data
+      const testTitles = [
+        'Alumni Homecoming 2024', 'Science Fair Exhibition', 'Sports Festival', 
+        'Career Guidance Seminar', 'Alumni Networking Night', 'Graduation Ceremony',
+        'Cultural Show', 'Business Workshop', 'Health and Wellness Fair', 'Art Exhibition'
+      ];
+      const testLocations = [
+        'Main Auditorium', 'School Gymnasium', 'Conference Hall', 
+        'Outdoor Pavilion', 'Library Hall', 'Science Laboratory',
+        'Sports Complex', 'Multi-purpose Room', 'School Courtyard', 'Assembly Hall'
+      ];
+      const testDescriptions = [
+        'Join us for an exciting event celebrating our alumni community.',
+        'An educational event featuring interactive demonstrations and activities.',
+        'Come together for a fun-filled day of sports and activities.',
+        'Professional development session for career advancement.',
+        'Network with fellow alumni and share experiences.',
+        'Celebrating the achievements of our graduating class.',
+        'Showcasing the diverse talents of our school community.',
+        'Learn practical skills for business and entrepreneurship.',
+        'Focus on wellness and healthy living practices.',
+        'Explore creativity through various art forms and exhibitions.'
+      ];
+
+      const randomTitle = testTitles[Math.floor(Math.random() * testTitles.length)];
+      const randomLocation = testLocations[Math.floor(Math.random() * testLocations.length)];
+      const randomDescription = testDescriptions[Math.floor(Math.random() * testDescriptions.length)];
+      
+      // Generate a random future date (1-30 days from now)
+      const randomDays = Math.floor(Math.random() * 30) + 1;
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + randomDays);
+      
+      // Set random time between 9 AM and 6 PM
+      const randomHour = Math.floor(Math.random() * 9) + 9; // 9-17 (9 AM - 5 PM)
+      futureDate.setHours(randomHour, 0, 0, 0);
+
+      const testEvent = {
+        title: randomTitle,
+        description: randomDescription,
+        location: randomLocation,
+        date: futureDate.toISOString(),
+        isApproved: true, // Automatically approve test events
+        createdBy: 'admin-test'
+      };
+
+      await addEvent(testEvent);
+      await loadEventsData();
+      
+      alert(`Test event created successfully!\nTitle: ${testEvent.title}\nDate: ${formatDate(testEvent.date)}\nLocation: ${testEvent.location}`);
+    } catch (error) {
+      console.error('Error adding test event:', error);
+      alert('Failed to add test event. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AdminLayout title="Event Management">
       <div className="admin-toolbar">
@@ -167,6 +231,15 @@ const EventManagement = () => {
             <option value="pending">Pending</option>
           </select>
         </div>
+        
+        <button 
+          className="admin-add-btn admin-test-btn"
+          onClick={handleTestEvent}
+          title="Add a random test event for testing notifications"
+        >
+          <Zap size={20} />
+          Test Event
+        </button>
         
         <button 
           className="admin-add-btn"

@@ -65,7 +65,7 @@
 
 /* Header styles */
 .post-modal-header {
-  padding: 16px 20px;
+  padding: 16px 60px 16px 20px;
   border-bottom: 1px solid var(--gray-200);
   display: flex;
   align-items: center;
@@ -346,6 +346,24 @@
   position: relative;
 }
 
+.post-menu-button {
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.post-menu-button:hover {
+  background-color: var(--gray-100);
+  color: var(--text-primary);
+}
+
 .post-menu {
   position: absolute;
   top: 36px;
@@ -423,6 +441,10 @@
     right: 10px;
   }
   
+  .post-modal-header {
+    padding: 14px 55px 14px 18px;
+  }
+  
   .post-modal-body {
     max-height: 30vh;
   }
@@ -434,7 +456,7 @@
 
 @media (max-width: 480px) {
   .post-modal-header {
-    padding: 12px 16px;
+    padding: 12px 50px 12px 16px;
   }
   
   .post-modal-body {

@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  padding-right: 0.5rem; /* Additional spacing from viewport edge */
 }
 
 .sidebar-card {
@@ -577,5 +578,97 @@
 @keyframes shimmer {
   100% {
     transform: translateX(100%);
+  }
+}
+
+/* Carousel Styles */
+.carousel-container {
+  width: 100%;
+}
+
+.carousel-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.carousel-item {
+  width: 100%;
+  transition: opacity 0.3s ease;
+}
+
+
+
+.carousel-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.carousel-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--gray-300);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.carousel-indicator.active {
+  background-color: var(--primary-color);
+  transform: scale(1.2);
+}
+
+.carousel-indicator:hover {
+  background-color: var(--primary-color);
+  opacity: 0.7;
+}
+
+/* Event Carousel Item */
+.event-carousel-item {
+  min-height: 100px;
+}
+
+.event-carousel-item .sidebar-list-item {
+  margin-bottom: 0;
+}
+
+/* Job Carousel Item Styles */
+.job-carousel-item {
+  min-height: 100px;
+}
+
+.job-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.job-type-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  align-self: flex-start;
+  margin-bottom: 0.25rem;
+}
+
+/* Carousel responsive styles */
+@media (max-width: 480px) {
+  .job-type-badge {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.4rem;
+  }
+
+  .job-carousel-item {
+    min-height: 90px;
   }
 } 

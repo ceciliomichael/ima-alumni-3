@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Calendar, MapPin, Clock, Filter, ChevronDown, Search, Zap } from 'lucide-react';
-// Use the Firestore service
-import { getAllEvents, Event as EventType } from '../../services/firebase/eventService'; 
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db } from '../../firebase/config';
+// Use the Firestore service for Event type
+import { Event as EventType } from '../../services/firebase/eventService'; 
 import ImagePlaceholder from '../../components/ImagePlaceholder';
 import './Events.css';
 
@@ -23,23 +25,37 @@ const EventsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [allApprovedEvents, setAllApprovedEvents] = useState<EventType[]>([]); // Store all *approved* events
 
-  // Fetch and filter events on initial load
+  // Set up real-time listener for approved events
   useEffect(() => {
-    const fetchEvents = async () => {
-      setIsLoading(true);
+    setIsLoading(true);
+    
+    // Set up real-time listener for approved events
+    const eventsRef = collection(db, 'events');
+    const q = query(
+      eventsRef,
+      where('isApproved', '==', true)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       try {
-        const fetchedEvents = await getAllEvents();
-        const approvedEvents = fetchedEvents.filter(event => event.isApproved);
+        const approvedEvents = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as EventType[];
+        
         setAllApprovedEvents(approvedEvents);
       } catch (error) {
-        console.error("Error fetching events:", error);
-        setAllApprovedEvents([]); // Set to empty on error
+        console.error('Error processing events:', error);
+        setAllApprovedEvents([]);
       } finally {
         setIsLoading(false);
       }
-    };
-    
-    fetchEvents();
+    }, (error) => {
+      console.error('Realtime events listener error:', error);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // Filter events based on search term AND active tab

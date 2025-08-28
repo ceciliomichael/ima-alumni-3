@@ -213,45 +213,51 @@ const AboutPage = ({ initialTab = 'history' }: AboutPageProps) => {
               
               {activeTab === 'vision' && (
                 <div className="vision-section">
-                  <h2>Vision & Mission</h2>
+                  <h2>Vision, Mission & Goals</h2>
                   <div className="vision-mission-content">
                     <div className="vision-card">
                       <div className="vm-card-header">
-                        <h3>Our Vision</h3>
+                        <h3>𝙑𝙄𝙎𝙄𝙊𝙉</h3>
                       </div>
                       <div className="vm-card-body">
-                        <p>To be the premier alumni network that fosters lifelong connections, professional growth, and meaningful contributions to our alma mater and society.</p>
-                        <p>We envision a vibrant community of alumni who remain connected to their educational roots while advancing in their respective fields and making positive impacts in their communities.</p>
+                        <p>Immaculate Mary Academy, a Catholic institution, provides quality education and committed to the Renewed Catholic Christian Formation characterized by learning in the light of Christ's Good News and Living Faith for the understanding and commitment of life.</p>
                       </div>
                     </div>
                     
                     <div className="mission-card">
                       <div className="vm-card-header">
-                        <h3>Our Mission</h3>
+                        <h3>𝙈𝙄𝙎𝙎𝙄𝙊𝙉</h3>
                       </div>
                       <div className="vm-card-body">
+                        <p>Through the enlightenment of the Holy Spirit and with the guidance of Immaculate Mary, Immaculate Mary Academy commits to focus Catholic Christian Religious Teachings, uplifts quality life, education, and programs for national development which geared to excellence.</p>
+                      </div>
+                    </div>
+                    
+                    <div className="goals-card">
+                      <div className="vm-card-header">
+                        <h3>𝙂𝙊𝘼𝙇𝙎</h3>
+                      </div>
+                      <div className="vm-card-body">
+                        <p style={{ marginBottom: '1.5rem', fontStyle: 'italic' }}>Guided by this vision, IMA has set down the following goals and objectives:</p>
                         <div className="mission-points">
                           <div className="mission-point">
                             <div className="mission-point-marker">1</div>
                             <div className="mission-point-content">
-                              <h4>Foster Connections</h4>
-                              <p>Create opportunities for meaningful networking and relationship-building among alumni of all generations.</p>
+                              <p>To bring students to an awareness of their responsibilities to the community and help them develop their social virtues and instilling the 21st century learning skills required for effective service to the local community.</p>
                             </div>
                           </div>
                           
                           <div className="mission-point">
                             <div className="mission-point-marker">2</div>
                             <div className="mission-point-content">
-                              <h4>Support Career Development</h4>
-                              <p>Provide resources, mentorship, and professional development opportunities to help alumni thrive in their careers.</p>
+                              <p>To show in the students' daily life a dynamic love of God, a sense of personal worth and respect for others to enable them to relate harmoniously with their family, the school, and the community.</p>
                             </div>
                           </div>
                           
                           <div className="mission-point">
                             <div className="mission-point-marker">3</div>
                             <div className="mission-point-content">
-                              <h4>Give Back</h4>
-                              <p>Facilitate meaningful ways for alumni to contribute to the success of current students and the institution.</p>
+                              <p>To demonstrate academic excellence in studies and exemplify knowledge, skills, and habits by producing integrated and globally competitive graduates.</p>
                             </div>
                           </div>
                         </div>

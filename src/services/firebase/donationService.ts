@@ -60,6 +60,7 @@ export const addDonation = async (donation: Omit<Donation, 'id'>): Promise<strin
     const donationsRef = collection(db, DONATIONS_COLLECTION);
     const newDonation = {
       ...donation,
+      isAnonymous: donation.isAnonymous || false, // Ensure isAnonymous has a default value
       createdAt: serverTimestamp()
     };
     

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { DollarSign, TrendingUp, ArrowRight, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getPublicDonations } from '../../../../services/firebase/donationService';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db } from '../../../../firebase/config';
 import { Donation } from '../../../../types';
 import './DonationProgressCard.css';
 
@@ -14,10 +15,21 @@ const DonationProgressCard = () => {
   const GOAL_AMOUNT = 1000000; // ₱1,000,000
 
   useEffect(() => {
-    const fetchDonations = async () => {
-      setLoading(true);
+    setLoading(true);
+    
+    // Set up real-time listener for public donations (no orderBy to avoid composite index)
+    const donationsRef = collection(db, 'donations');
+    const q = query(
+      donationsRef,
+      where('isPublic', '==', true)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       try {
-        const donations = await getPublicDonations();
+        const donations = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Donation[];
         
         // Calculate total raised (assuming all donations are in PHP)
         const total = donations.reduce((acc, donation) => {
@@ -27,15 +39,18 @@ const DonationProgressCard = () => {
         setTotalRaised(total);
         setDonationCount(donations.length);
       } catch (error) {
-        console.error('Error fetching donations:', error);
+        console.error('Error processing donations:', error);
         setTotalRaised(0);
         setDonationCount(0);
       } finally {
         setLoading(false);
       }
-    };
+    }, (error) => {
+      console.error('Realtime donations listener error:', error);
+      setLoading(false);
+    });
 
-    fetchDonations();
+    return () => unsubscribe();
   }, []);
 
   // Calculate progress percentage

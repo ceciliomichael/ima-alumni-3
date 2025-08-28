@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { DollarSign, Calendar, ChevronLeft } from 'lucide-react';
+import { Calendar, ChevronLeft } from 'lucide-react';
 import { 
   addDonation, 
   updateDonation,
@@ -39,6 +39,7 @@ const DonationForm = () => {
     category: 'General Operations',
     description: '',
     isPublic: true,
+    isAnonymous: false,
     donationDate: new Date().toISOString().split('T')[0]
   });
   
@@ -68,6 +69,7 @@ const DonationForm = () => {
               category: donation.category,
               description: donation.description || '',
               isPublic: donation.isPublic,
+              isAnonymous: donation.isAnonymous || false,
               donationDate: formattedDate
             });
           } else {
@@ -335,6 +337,29 @@ const DonationForm = () => {
             <small className="admin-form-hint">
               When checked, this donation will be visible on the public donations page.
               Private donations are only visible to administrators.
+            </small>
+            
+            <div className="admin-form-checkbox-group">
+              <input
+                type="checkbox"
+                id="isAnonymous"
+                name="isAnonymous"
+                checked={formData.isAnonymous}
+                onChange={(e) => 
+                  setFormData(prev => ({
+                    ...prev,
+                    isAnonymous: e.target.checked
+                  }))
+                }
+                className="admin-form-checkbox"
+              />
+              <label htmlFor="isAnonymous" className="admin-form-checkbox-label">
+                Keep donor information anonymous
+              </label>
+            </div>
+            <small className="admin-form-hint">
+              When checked, the donor's name will be hidden from public view and shown as "Anonymous Donor".
+              Donor information remains visible to administrators for record keeping.
             </small>
           </div>
           

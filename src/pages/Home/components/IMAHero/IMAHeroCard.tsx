@@ -1,4 +1,4 @@
-import { ArrowRight, Heart, Users } from 'lucide-react';
+import { ArrowRight, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import './IMAHeroCard.css';
 
@@ -10,7 +10,7 @@ const IMAHeroCard = () => {
           <div className="ima-logo-section">
             <img src="/images/alumni-conlogo.png" alt="IMA Logo" className="ima-hero-logo" />
             <div className="ima-title-section">
-              <h1 className="ima-title">Immaculate Mary Academy (IMA)</h1>
+              <h1 className="ima-title">Immaculate Mary Academy</h1>
               <p className="ima-subtitle">Alumni Community</p>
             </div>
           </div>
@@ -25,10 +25,6 @@ const IMAHeroCard = () => {
           
           <div className="ima-stats">
             <div className="ima-stat">
-              <Users size={20} />
-              <span>Growing Alumni Network</span>
-            </div>
-            <div className="ima-stat">
               <Heart size={20} />
               <span>United by Values</span>
             </div>
@@ -39,9 +35,7 @@ const IMAHeroCard = () => {
               <span>Learn More About IMA</span>
               <ArrowRight size={16} />
             </Link>
-            <Link to="/events" className="ima-action-btn secondary">
-              <span>Upcoming Events</span>
-            </Link>
+
           </div>
         </div>
       </div>

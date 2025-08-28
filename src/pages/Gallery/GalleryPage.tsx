@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Image, Search, Grid, Bookmark, RefreshCw, Upload, Plus, X, ImagePlus, FileText } from 'lucide-react';
+import { Image, Search, Grid, Bookmark, Upload, Plus, X, ImagePlus, FileText } from 'lucide-react';
 import ImagePlaceholder from '../../components/ImagePlaceholder';
 import GalleryCard from './components/GalleryCard';
-import { getAllGalleryItems, addGalleryItem } from '../../services/firebase/galleryService';
+import AlbumViewerModal from './components/AlbumViewerModal';
+import { getAllGalleryItems, addGalleryItem, getUniqueAlbums } from '../../services/firebase/galleryService';
 import { GalleryPost } from '../../types';
 import { getCurrentUser } from '../../services/firebase/userService';
 import { fileToBase64, resizeImage, validateImageFile } from '../../services/firebase/storageService';
@@ -24,6 +25,11 @@ const GalleryPage = () => {
   });
   const [currentUser, setCurrentUser] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Album viewer modal state
+  const [showAlbumViewer, setShowAlbumViewer] = useState(false);
+  const [selectedAlbumItem, setSelectedAlbumItem] = useState<GalleryPost | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   
   // Albums categories
   const albumCategories = [
@@ -54,7 +60,8 @@ const GalleryPage = () => {
     const fetchGalleryItems = async () => {
       setIsLoading(true);
       try {
-        const items = await getAllGalleryItems();
+        // Use getUniqueAlbums to get albums and single images
+        const items = await getUniqueAlbums();
         // Filter for approved items only
         const approvedItems = items.filter(item => item.isApproved);
         setGalleryImages(approvedItems);
@@ -83,7 +90,8 @@ const GalleryPage = () => {
     // Search term filter
     const matchesSearch = searchTerm === '' || 
       image.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (image.description && image.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      (image.description && image.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (image.albumTitle && image.albumTitle.toLowerCase().includes(searchTerm.toLowerCase()));
     
     // Album filter (using albumCategory)
     let matchesAlbum = false;
@@ -129,19 +137,7 @@ const GalleryPage = () => {
     return colorMap[category] || '#64748b';
   };
   
-  const handleRefreshGallery = async () => {
-    setIsLoading(true);
-    try {
-      const items = await getAllGalleryItems();
-      // Filter for approved items only
-      const approvedItems = items.filter(item => item.isApproved);
-      setGalleryImages(approvedItems);
-    } catch (error) {
-      console.error('Error refreshing gallery items:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
   
   const handleAlbumChange = (album: string) => {
     if (album.toLowerCase() === 'all photos') {
@@ -267,7 +263,8 @@ const GalleryPage = () => {
       
       // Refresh gallery after a short delay
       setTimeout(() => {
-        handleRefreshGallery();
+        // Gallery will be refreshed automatically by the useEffect
+        window.location.reload();
       }, 2000);
     } catch (error) {
       console.error('Error uploading photo:', error);
@@ -284,6 +281,19 @@ const GalleryPage = () => {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl('');
     }
+  };
+
+  // Album viewer handlers
+  const handleImageClick = (galleryItem: GalleryPost, imageIndex: number = 0) => {
+    setSelectedAlbumItem(galleryItem);
+    setSelectedImageIndex(imageIndex);
+    setShowAlbumViewer(true);
+  };
+
+  const closeAlbumViewer = () => {
+    setShowAlbumViewer(false);
+    setSelectedAlbumItem(null);
+    setSelectedImageIndex(0);
   };
 
   return (
@@ -325,10 +335,6 @@ const GalleryPage = () => {
                   <Bookmark size={18} />
                 </button>
               </div>
-              
-              <button className="refresh-button" onClick={handleRefreshGallery} disabled={isLoading}>
-                <RefreshCw size={18} className={isLoading ? 'spinning' : ''} />
-              </button>
             </div>
           </div>
           
@@ -381,7 +387,9 @@ const GalleryPage = () => {
                       date: image.postedDate,
                       album: getDisplayCategoryName(image.albumCategory),
                       likes: (image.likedBy?.length || 0)
-                    }} 
+                    }}
+                    galleryItem={image}
+                    onImageClick={handleImageClick}
                   />
                 </div>
               ))}
@@ -551,6 +559,16 @@ const GalleryPage = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Album Viewer Modal */}
+      {showAlbumViewer && selectedAlbumItem && (
+        <AlbumViewerModal
+          isOpen={showAlbumViewer}
+          onClose={closeAlbumViewer}
+          albumItem={selectedAlbumItem}
+          currentImageIndex={selectedImageIndex}
+        />
       )}
     </div>
   );

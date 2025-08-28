@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import LoginPage from './pages/Auth/LoginPage';
+import LandingPage from './pages/Landing';
 import HomePage from './pages/Home/HomePage';
 import GalleryPage from './pages/Gallery/GalleryPage';
 import EventsPage from './pages/Events/EventsPage';
@@ -11,6 +12,7 @@ import NotificationsPage from './pages/Notifications/NotificationsPage';
 import DonationsPage from './pages/Donations/DonationsPage';
 import Layout from './components/Layout/Layout';
 import { User } from './types';
+import DonationNotificationsContainer from './pages/Home/components/Sidebar/DonationNotificationsContainer';
 
 // Import Firebase services
 import { getCurrentUser as getStoredUser, logoutUser } from './services/firebase/userService';
@@ -146,13 +148,25 @@ function App() {
   return (
     <Router>
       <AdminAuthProvider>
+        {/* Add donation notifications container */}
+        {user && <DonationNotificationsContainer />}
         <Routes>
           {/* --- Authentication Routes --- */}
           <Route path="/login" element={
-            !isLoadingAuth && user ? <Navigate to="/" /> : <LoginPage onLoginSuccess={handleLoginSuccess} />
+            !isLoadingAuth && user ? <Navigate to="/landing" /> : <LoginPage onLoginSuccess={handleLoginSuccess} />
           } />
           {/* Redirect any attempts to access registration back to login */}
           <Route path="/register" element={<Navigate to="/login" replace />} />
+          
+          {/* --- Landing Page --- */}
+          <Route 
+            path="/landing" 
+            element={
+              <ProtectedRoute isAuthenticated={!!user} isLoading={isLoadingAuth}>
+                <LandingPage />
+              </ProtectedRoute>
+            } 
+          />
 
           {/* --- User Protected Routes with Layout --- */}
           <Route 

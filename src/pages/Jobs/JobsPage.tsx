@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, Briefcase, Filter, MapPin, Calendar, Clock, Mail, Link, Plus, Upload, Image } from 'lucide-react';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db } from '../../firebase/config';
 import { fileToBase64, resizeImage, validateImageFile } from '../../services/firebase/storageService';
 import './Jobs.css';
 import { 
-  getAllJobs, 
-  getActiveJobs,
   addJob,
   Job
 } from '../../services/firebase/jobService';
@@ -37,29 +37,39 @@ const JobsPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadJobs();
-  }, []);
-
-  const loadJobs = async () => {
     setLoading(true);
-    try {
-      // Get all jobs
-      const allJobs = await getAllJobs();
-      
-      // Filter for approved jobs only
-      const approvedJobs = allJobs.filter(job => job.isApproved);
-      
-      // Sort by posted date (newest first)
-      approvedJobs.sort((a, b) => new Date(b.postedDate).getTime() - new Date(a.postedDate).getTime());
-      
-      setJobs(approvedJobs);
-    } catch (error) {
-      console.error('Error loading jobs:', error);
-      setJobs([]);
-    } finally {
+    
+    // Set up real-time listener for approved jobs
+    const jobsRef = collection(db, 'jobs');
+    const q = query(
+      jobsRef,
+      where('isApproved', '==', true)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      try {
+        const approvedJobs = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Job[];
+        
+        // Sort by posted date (newest first)
+        approvedJobs.sort((a: Job, b: Job) => new Date(b.postedDate).getTime() - new Date(a.postedDate).getTime());
+        
+        setJobs(approvedJobs);
+      } catch (error) {
+        console.error('Error processing jobs:', error);
+        setJobs([]);
+      } finally {
+        setLoading(false);
+      }
+    }, (error) => {
+      console.error('Realtime jobs listener error:', error);
       setLoading(false);
-    }
-  };
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Format date helper
   const formatDate = (dateStr: string) => {
@@ -215,165 +225,201 @@ const JobsPage = () => {
 
   return (
     <div className="jobs-page">
-      <div className="jobs-header">
-        <h1 className="page-title">Job Opportunities</h1>
-        <button className="create-job-button" onClick={handleCreateJob}>
-          <Plus size={16} />
-          <span>Post a Job</span>
-        </button>
-      </div>
-
-      <div className="jobs-filters">
-        <div className="search-container">
-          <Search size={18} className="search-icon" />
-          <input
-            type="text"
-            placeholder="Search for jobs..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-        </div>
-
-        <div className="filter-tabs">
-          <button 
-            className={`filter-tab ${activeFilter === 'all' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('all')}
-          >
-            All Jobs
-          </button>
-          <button 
-            className={`filter-tab ${activeFilter === 'recent' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('recent')}
-          >
-            Recent
-          </button>
-          <button 
-            className={`filter-tab ${activeFilter === 'fullTime' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('fullTime')}
-          >
-            Full-time
-          </button>
-          <button 
-            className={`filter-tab ${activeFilter === 'partTime' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('partTime')}
-          >
-            Part-time
-          </button>
-          <button 
-            className={`filter-tab ${activeFilter === 'contract' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('contract')}
-          >
-            Contract
-          </button>
-          <button 
-            className={`filter-tab ${activeFilter === 'internship' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('internship')}
-          >
-            Internship
-          </button>
-        </div>
-      </div>
-
-      <div className="jobs-list">
-        {loading ? (
-          <div className="loading-jobs">
-            <div className="loading-spinner"></div>
-            <p>Loading job opportunities...</p>
+      <div className="jobs-layout">
+        <div className="jobs-content">
+          <div className="jobs-header">
+            <div className="jobs-title-section">
+              <div className="jobs-icon">
+                <Briefcase size={24} />
+              </div>
+              <h1>Job Opportunities</h1>
+            </div>
+            <button className="create-job-button" onClick={handleCreateJob}>
+              <Plus size={16} />
+              <span>Post a Job</span>
+            </button>
           </div>
-        ) : filteredJobs.length > 0 ? (
-          filteredJobs.map(job => (
-              <div key={job.id} className="job-card">
-                <div className="job-card-header">
-                  <div className="job-title-area">
-                    <h3 className="job-title">{job.title}</h3>
-                    <div className="job-meta">
-                      <span className="job-type">{getJobTypeLabel(job.jobType)}</span>
-                      {!isJobActive(job) && <span className="job-expired">Expired</span>}
+
+          <div className="jobs-controls">
+            <div className="jobs-search">
+              <Search size={18} className="search-icon" />
+              <input
+                type="text"
+                placeholder="Search for jobs..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+            </div>
+
+            <div className="jobs-tabs">
+              <button 
+                className={`jobs-tab ${activeFilter === 'all' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('all')}
+              >
+                <Briefcase size={16} />
+                All Jobs
+              </button>
+              <button 
+                className={`jobs-tab ${activeFilter === 'recent' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('recent')}
+              >
+                <Clock size={16} />
+                Recent
+              </button>
+              <button 
+                className={`jobs-tab ${activeFilter === 'fullTime' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('fullTime')}
+              >
+                <Calendar size={16} />
+                Full-time
+              </button>
+              <button 
+                className={`jobs-tab ${activeFilter === 'partTime' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('partTime')}
+              >
+                <Clock size={16} />
+                Part-time
+              </button>
+              <button 
+                className={`jobs-tab ${activeFilter === 'contract' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('contract')}
+              >
+                <Briefcase size={16} />
+                Contract
+              </button>
+              <button 
+                className={`jobs-tab ${activeFilter === 'internship' ? 'active' : ''}`}
+                onClick={() => setActiveFilter('internship')}
+              >
+                <Clock size={16} />
+                Internship
+              </button>
+            </div>
+          </div>
+
+          <div className="jobs-section">
+            <h2>
+              {activeFilter === 'recent' ? 'Recent Job Postings' : 
+               activeFilter === 'fullTime' ? 'Full-time Opportunities' : 
+               activeFilter === 'partTime' ? 'Part-time Opportunities' :
+               activeFilter === 'contract' ? 'Contract Opportunities' :
+               activeFilter === 'internship' ? 'Internship Opportunities' :
+               'All Job Opportunities'}
+            </h2>
+
+            {loading ? (
+              <div className="loading-jobs">
+                <div className="jobs-skeleton-grid">
+                  {[1, 2, 3].map((item) => (
+                    <div key={item} className="job-skeleton-item"></div>
+                  ))}
+                </div>
+              </div>
+            ) : filteredJobs.length > 0 ? (
+              <div className="jobs-grid">
+                {filteredJobs.map(job => (
+                  <div key={job.id} className="job-card">
+                    <div className="job-card-header">
+                      <div className="job-title-area">
+                        <h3 className="job-title">{job.title}</h3>
+                        <div className="job-meta">
+                          <span className="job-type">{getJobTypeLabel(job.jobType)}</span>
+                          {!isJobActive(job) && <span className="job-expired">Expired</span>}
+                        </div>
+                      </div>
+                      <div className="job-company-section">
+                        {job.companyLogo && (
+                          <div className="job-company-logo">
+                            <img src={job.companyLogo} alt={`${job.company} logo`} />
+                          </div>
+                        )}
+                        <div className="job-company">{job.company}</div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="job-company-section">
-                    {job.companyLogo && (
-                      <div className="job-company-logo">
-                        <img src={job.companyLogo} alt={`${job.company} logo`} />
+                  
+                    <div className="job-details">
+                      {job.location && (
+                        <div className="job-detail">
+                          <MapPin size={14} />
+                          <span>{job.location}</span>
+                        </div>
+                      )}
+                      {job.salary && (
+                        <div className="job-detail">
+                          <span className="peso-sign">₱</span>
+                          <span>{job.salary}</span>
+                        </div>
+                      )}
+                      {job.deadline && (
+                        <div className="job-detail">
+                          <Calendar size={14} />
+                          <span>Deadline: {formatDate(job.deadline)}</span>
+                        </div>
+                      )}
+                      <div className="job-detail">
+                        <Clock size={14} />
+                        <span>Posted: {formatDate(job.postedDate)}</span>
+                      </div>
+                    </div>
+                    
+                    {job.description && (
+                      <div className="job-description-section">
+                        <p className="job-description">{job.description}</p>
                       </div>
                     )}
-                    <a href="#" className="job-company">{job.company}</a>
+                    
+                    {job.requirements && (
+                      <div className="job-requirements">
+                        <h4>Requirements:</h4>
+                        <p>{job.requirements}</p>
+                      </div>
+                    )}
+                    
+                    <div className="job-apply-info">
+                      <h4>How to Apply:</h4>
+                      {job.applicationType === 'email' && (
+                        <div className="job-application-method">
+                          <Mail size={16} />
+                          <span>Send your resume to: <a href={`mailto:${job.contactEmail}`} className="apply-link">{job.contactEmail}</a></span>
+                        </div>
+                      )}
+                      {job.applicationType === 'website' && (
+                        <div className="job-application-method">
+                          <Link size={16} />
+                          <span>Apply online: <a href={job.applicationUrl} target="_blank" rel="noopener noreferrer" className="apply-link">Application Portal</a></span>
+                        </div>
+                      )}
+                      {job.applicationType === 'inPerson' && (
+                        <div className="job-application-method">
+                          <MapPin size={16} />
+                          <span>Apply in person at the company address</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              
-              <div className="job-details">
-                {job.location && (
-                  <div className="job-detail">
-                    <MapPin size={16} />
-                    <span>{job.location}</span>
-                  </div>
-                )}
-                {job.salary && (
-                  <div className="job-detail">
-                    <span className="peso-sign">₱</span>
-                    <span>{job.salary}</span>
-                  </div>
-                )}
-                {job.deadline && (
-                  <div className="job-detail">
-                    <Calendar size={16} />
-                    <span>Deadline: {formatDate(job.deadline)}</span>
-                  </div>
-                )}
-                <div className="job-detail">
-                  <Clock size={16} />
-                  <span>Posted: {formatDate(job.postedDate)}</span>
-                </div>
+                ))}
               </div>
-              
-              {job.description && (
-                <div className="job-description-section">
-                  <p className="job-description">{job.description}</p>
+            ) : (
+              <div className="empty-jobs">
+                <div className="empty-state-icon">
+                  <Briefcase size={64} strokeWidth={1} color="#64748b" />
                 </div>
-              )}
-              
-              {job.requirements && (
-                <div className="job-requirements">
-                  <h4>Requirements:</h4>
-                  <p>{job.requirements}</p>
-                </div>
-              )}
-              
-              <div className="job-apply-info">
-                <h4>How to Apply:</h4>
-                {job.applicationType === 'email' && (
-                  <div className="job-application-method">
-                    <Mail size={16} />
-                    <span>Send your resume to: <a href={`mailto:${job.contactEmail}`} className="apply-link">{job.contactEmail}</a></span>
-                  </div>
-                )}
-                {job.applicationType === 'website' && (
-                  <div className="job-application-method">
-                    <Link size={16} />
-                    <span>Apply online: <a href={job.applicationUrl} target="_blank" rel="noopener noreferrer" className="apply-link">Application Portal</a></span>
-                  </div>
-                )}
-                {job.applicationType === 'inPerson' && (
-                  <div className="job-application-method">
-                    <MapPin size={16} />
-                    <span>Apply in person at the company address</span>
-                  </div>
-                )}
+                <h3 className="empty-state-title">No jobs found</h3>
+                <p className="empty-state-message">
+                  {searchTerm ? 
+                    "No approved jobs match your search criteria. Try a different search term." : 
+                    activeFilter === 'recent' ? 
+                      "There are no approved recent job postings at this time. Check back later!" :
+                      activeFilter !== 'all' ?
+                      `There are no approved ${activeFilter} opportunities to display.` :
+                      "There are no approved job opportunities posted yet. Check back later for updates."
+                  }
+                </p>
               </div>
-            </div>
-          ))
-        ) : (
-          <div className="empty-jobs">
-            <div className="empty-jobs-icon">
-              <Briefcase size={64} color="#64748b" strokeWidth={1.5} />
-            </div>
-            <h3>No jobs found</h3>
-            <p>
-              There are no job opportunities available right now. Check back later or post a job yourself!
-            </p>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Job Creation Modal */}

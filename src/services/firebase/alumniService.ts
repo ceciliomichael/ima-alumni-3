@@ -2,6 +2,7 @@ import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, 
 import { db } from '../../firebase/config';
 import { AlumniRecord } from '../../types';
 import { approveUser } from './userService';
+import { cleanAlumniId } from '../../utils/alumniIdUtils';
 
 const COLLECTION_NAME = 'alumni_records';
 
@@ -211,5 +212,38 @@ export const getAlumniByUserId = async (userId: string): Promise<AlumniRecord | 
   } catch (error) {
     console.error('Error getting alumni by user ID:', error);
     return null;
+  }
+};
+
+// Get alumni record by Alumni ID
+export const getAlumniByAlumniId = async (alumniId: string): Promise<AlumniRecord | null> => {
+  try {
+    const cleanId = cleanAlumniId(alumniId);
+    const q = query(collection(db, COLLECTION_NAME), where("alumniId", "==", cleanId));
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) {
+      return null;
+    }
+    
+    const doc = querySnapshot.docs[0];
+    return {
+      id: doc.id,
+      ...doc.data()
+    } as AlumniRecord;
+  } catch (error) {
+    console.error('Error getting alumni by Alumni ID:', error);
+    return null;
+  }
+};
+
+// Check if Alumni ID exists in alumni records
+export const checkAlumniIdExistsInRecords = async (alumniId: string): Promise<boolean> => {
+  try {
+    const alumni = await getAlumniByAlumniId(alumniId);
+    return alumni !== null;
+  } catch (error) {
+    console.error('Error checking Alumni ID existence in records:', error);
+    return false;
   }
 };

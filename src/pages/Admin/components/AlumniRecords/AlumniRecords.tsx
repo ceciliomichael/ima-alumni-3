@@ -8,6 +8,7 @@ import {
   initializeAlumniData 
 } from '../../../../services/firebase/alumniService';
 import { AlumniRecord } from '../../../../types';
+import { formatAlumniId } from '../../../../utils/alumniIdUtils';
 import AdminLayout from '../../layout/AdminLayout';
 
 // Confirmation Dialog Component
@@ -253,11 +254,12 @@ const AlumniRecords = () => {
               <thead>
                 <tr>
                   <th>Name</th>
+                  <th>Alumni ID</th>
                   <th>Email</th>
                   <th>Batch</th>
                   <th>Status</th>
-                    <th>Registered</th>
-                    <th>Options</th>
+                  <th>Registered</th>
+                  <th>Options</th>
                 </tr>
               </thead>
               <tbody>
@@ -283,6 +285,11 @@ const AlumniRecords = () => {
                             )}
                           </div>
                         </div>
+                      </td>
+                      <td>
+                        <span className="alumni-id-badge">
+                          {alum.alumniId ? formatAlumniId(alum.alumniId) : 'Not Set'}
+                        </span>
                       </td>
                       <td>{alum.email}</td>
                       <td>

@@ -1,8 +1,9 @@
-import { Heart, Bookmark, Calendar, Loader } from 'lucide-react';
+import { Heart, Bookmark, Calendar, Loader, Images } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
 import { db } from '../../../../firebase/config';
 import { getCurrentUser } from '../../../../services/firebase/userService';
+import { GalleryPost } from '../../../../types';
 import './GalleryCard.css';
 
 interface GalleryImage {
@@ -16,9 +17,11 @@ interface GalleryImage {
 
 interface GalleryCardProps {
   image: GalleryImage;
+  galleryItem?: GalleryPost; // Add the full gallery item for album functionality
+  onImageClick?: (galleryItem: GalleryPost, imageIndex?: number) => void;
 }
 
-const GalleryCard = ({ image }: GalleryCardProps) => {
+const GalleryCard = ({ image, galleryItem, onImageClick }: GalleryCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
@@ -129,14 +132,34 @@ const GalleryCard = ({ image }: GalleryCardProps) => {
     }
   };
 
+  const handleCardClick = () => {
+    if (galleryItem && onImageClick) {
+      onImageClick(galleryItem, 0);
+    }
+  };
+
+  const isAlbum = galleryItem?.isAlbum && galleryItem?.images && galleryItem.images.length > 1;
+  const albumImageCount = galleryItem?.images?.length || 0;
+
   return (
     <div 
       className="gallery-card"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleCardClick}
+      style={{ cursor: onImageClick ? 'pointer' : 'default' }}
     >
       <div className="gallery-card-image">
         <img src={image.url} alt={image.title} />
+        
+        {/* Album indicator */}
+        {isAlbum && (
+          <div className="album-indicator">
+            <Images size={16} />
+            <span>{albumImageCount}</span>
+          </div>
+        )}
+        
         <div className={`image-overlay ${isHovered ? 'visible' : ''}`}>
           <div className="overlay-actions">
             <button 
@@ -167,7 +190,7 @@ const GalleryCard = ({ image }: GalleryCardProps) => {
         </div>
       </div>
       <div className="gallery-card-info">
-        <h3>{image.title}</h3>
+        <h3>{galleryItem?.isAlbum ? (galleryItem.albumTitle || image.title) : image.title}</h3>
         <div className="gallery-card-meta">
           <span className="album-tag">{image.album}</span>
           <span className="date-info">

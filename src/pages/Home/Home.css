@@ -260,6 +260,7 @@
 
 .sidebar-right {
   padding-left: var(--spacing-2);
+  padding-right: var(--spacing-3); /* Add right margin for gap from scrollbar */
   justify-self: start;
   width: 100%;
 }
@@ -371,6 +372,10 @@
     grid-template-columns: 240px minmax(400px, 600px) 240px;
     gap: 1.25rem;
     padding: 0 var(--spacing-3);
+  }
+  
+  .sidebar-right {
+    padding-right: var(--spacing-2); /* Reduce spacing on smaller screens */
   }
   
   .feed-tab {

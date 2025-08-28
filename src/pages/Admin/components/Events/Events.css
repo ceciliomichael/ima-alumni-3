@@ -1,5 +1,18 @@
 /* Events Management Styles */
 
+/* Test event button */
+.admin-test-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  border: none !important;
+  margin-right: 0.75rem;
+}
+
+.admin-test-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
 .admin-toolbar {
   display: flex;
   justify-content: space-between;

@@ -2,6 +2,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  alumniId?: string; // New Alumni ID field for authentication
   batch: string;
   profileImage?: string;
   coverPhoto?: string;
@@ -126,6 +127,7 @@ export interface AlumniRecord {
   id: string;
   name: string;
   email: string;
+  alumniId?: string; // New Alumni ID field for authentication
   batch: string;
   isActive: boolean;
   dateRegistered: string;
@@ -161,7 +163,17 @@ export interface GalleryPost {
   id: string;
   title: string;
   description: string;
-  imageUrl: string;
+  imageUrl: string; // Keep for backward compatibility with single images
+  images?: Array<{
+    id: string;
+    url: string;
+    title: string;
+    order: number;
+  }>; // New field for album support with multiple images
+  albumId?: string; // New field to group images into albums
+  albumTitle?: string; // New field for album title
+  imageOrder?: number; // New field for ordering images within an album
+  isAlbum?: boolean; // New field to distinguish between single images and albums
   albumCategory?: string;
   event?: string;
   postedDate: string;
@@ -182,6 +194,7 @@ export interface Donation {
   category: string;
   description?: string;
   isPublic: boolean;
+  isAnonymous?: boolean; // New field for donor anonymity
   donationDate: string;
   createdAt?: any; // Firestore timestamp
   updatedAt?: any; // Firestore timestamp

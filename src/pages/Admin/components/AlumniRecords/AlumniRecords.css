@@ -1,4 +1,168 @@
 /* Alumni Records styles */
+
+/* Alumni ID input group */
+.alumni-id-input-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.alumni-id-input-group .admin-form-input {
+  flex: 1;
+}
+
+.generate-id-btn {
+  padding: 0.5rem 1rem;
+  background-color: oklch(0.7 0.15 220);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.generate-id-btn:hover:not(:disabled) {
+  background-color: oklch(0.65 0.15 220);
+  transform: translateY(-1px);
+}
+
+.generate-id-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Profile image section styles */
+.profile-image-section {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+}
+
+.profile-avatar-preview {
+  flex-shrink: 0;
+}
+
+.profile-preview-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid oklch(0.9 0.02 220);
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.1);
+}
+
+.profile-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: oklch(0.95 0.02 220);
+  border: 3px solid oklch(0.9 0.02 220);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: oklch(0.6 0.02 220);
+}
+
+.profile-image-actions {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.profile-action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.profile-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  border: none;
+}
+
+.profile-action-btn.upload {
+  background-color: oklch(0.7 0.15 220);
+  color: white;
+}
+
+.profile-action-btn.upload:hover:not(:disabled) {
+  background-color: oklch(0.65 0.15 220);
+  transform: translateY(-1px);
+}
+
+.profile-action-btn.replace {
+  background-color: oklch(0.8 0.02 220);
+  color: oklch(0.4 0.15 220);
+  border: 1px solid oklch(0.7 0.02 220);
+}
+
+.profile-action-btn.replace:hover:not(:disabled) {
+  background-color: oklch(0.75 0.02 220);
+  transform: translateY(-1px);
+}
+
+.profile-action-btn.remove {
+  background-color: oklch(0.95 0.15 0);
+  color: oklch(0.4 0.15 0);
+  border: 1px solid oklch(0.8 0.15 0);
+}
+
+.profile-action-btn.remove:hover:not(:disabled) {
+  background-color: oklch(0.4 0.15 0);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.profile-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.profile-image-hint {
+  color: oklch(0.6 0.02 220);
+  font-size: 0.8rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .profile-image-section {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .profile-image-actions {
+    align-items: center;
+    text-align: center;
+  }
+  
+  .profile-action-buttons {
+    justify-content: center;
+  }
+}
+
+/* Form hint styles */
+.form-hint {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: oklch(0.6 0.02 220);
+  line-height: 1.4;
+}
 .admin-filter-btn {
   display: flex;
   align-items: center;
@@ -88,6 +252,18 @@
   border-radius: var(--radius-full);
   font-size: 0.75rem;
   font-weight: 600;
+}
+
+.alumni-id-badge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  background-color: oklch(0.95 0.02 220);
+  color: oklch(0.4 0.15 220);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
 }
 
 /* Alumni action buttons */

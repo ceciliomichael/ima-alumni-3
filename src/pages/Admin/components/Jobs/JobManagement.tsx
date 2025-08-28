@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   Search, Plus, Edit, Trash, CheckCircle, XCircle,
-  Briefcase, MapPin, Calendar, DollarSign, Mail, Link, Clock
+  Briefcase, MapPin, Calendar, DollarSign, Mail, Link, Clock, Zap
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -10,6 +10,7 @@ import {
   deleteJob, 
   approveJob,
   getJobsByType,
+  addJob,
   Job
 } from '../../../../services/firebase/jobService';
 import AdminLayout from '../../layout/AdminLayout';
@@ -183,6 +184,81 @@ const JobManagement = () => {
     }
   };
 
+  // Test job function
+  const handleTestJob = async () => {
+    try {
+      setLoading(true);
+      
+      // Generate random test data
+      const testTitles = [
+        'Software Engineer', 'Marketing Manager', 'Data Analyst', 
+        'Sales Representative', 'Graphic Designer', 'Project Manager',
+        'Customer Service Specialist', 'Content Writer', 'Business Analyst', 'HR Coordinator'
+      ];
+      const testCompanies = [
+        'TechCorp Inc.', 'Global Solutions Ltd.', 'Innovation Labs', 
+        'Digital Dynamics', 'Future Systems', 'Creative Studio Co.',
+        'Business Partners LLC', 'Smart Solutions Inc.', 'NextGen Corp', 'Premier Services'
+      ];
+      const testLocations = [
+        'Manila, Philippines', 'Quezon City, Philippines', 'Makati, Philippines', 
+        'Cebu City, Philippines', 'Davao City, Philippines', 'Remote',
+        'Taguig, Philippines', 'Pasig, Philippines', 'Iloilo City, Philippines', 'Baguio, Philippines'
+      ];
+      const testDescriptions = [
+        'We are looking for a talented professional to join our dynamic team.',
+        'Exciting opportunity for career growth in a fast-paced environment.',
+        'Join our innovative company and make a real impact in the industry.',
+        'Great benefits and competitive salary package available.',
+        'Work with cutting-edge technology and experienced professionals.',
+        'Opportunity to lead projects and develop your leadership skills.',
+        'Collaborative work environment with flexible schedule options.',
+        'Join a growing company with excellent career advancement opportunities.',
+        'Work on exciting projects with a talented and diverse team.',
+        'Make a difference while building your career with us.'
+      ];
+      const jobTypes: Job['jobType'][] = ['fullTime', 'partTime', 'contract', 'internship'];
+      const salaries = ['₱30,000 - ₱50,000', '₱50,000 - ₱80,000', '₱25,000 - ₱40,000', '₱80,000 - ₱120,000', 'Negotiable'];
+
+      const randomTitle = testTitles[Math.floor(Math.random() * testTitles.length)];
+      const randomCompany = testCompanies[Math.floor(Math.random() * testCompanies.length)];
+      const randomLocation = testLocations[Math.floor(Math.random() * testLocations.length)];
+      const randomDescription = testDescriptions[Math.floor(Math.random() * testDescriptions.length)];
+      const randomJobType = jobTypes[Math.floor(Math.random() * jobTypes.length)];
+      const randomSalary = salaries[Math.floor(Math.random() * salaries.length)];
+      
+      // Generate a random deadline (7-30 days from now)
+      const randomDays = Math.floor(Math.random() * 24) + 7;
+      const deadlineDate = new Date();
+      deadlineDate.setDate(deadlineDate.getDate() + randomDays);
+
+      const testJob = {
+        title: randomTitle,
+        company: randomCompany,
+        location: randomLocation,
+        description: randomDescription,
+        requirements: 'Bachelor\'s degree required. Experience in relevant field preferred. Strong communication skills essential.',
+        contactEmail: `hr@${randomCompany.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`,
+        isApproved: true, // Automatically approve test jobs
+        postedBy: 'admin-test',
+        jobType: randomJobType,
+        salary: randomSalary,
+        deadline: deadlineDate.toISOString(),
+        applicationType: 'email' as Job['applicationType']
+      };
+
+      await addJob(testJob);
+      await loadJobsData();
+      
+      alert(`Test job created successfully!\nTitle: ${testJob.title}\nCompany: ${testJob.company}\nType: ${getJobTypeLabel(testJob.jobType)}\nLocation: ${testJob.location}`);
+    } catch (error) {
+      console.error('Error adding test job:', error);
+      alert('Failed to add test job. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AdminLayout title="Job Management">
       <div className="admin-toolbar">
@@ -230,6 +306,15 @@ const JobManagement = () => {
             <option value="pending">Pending</option>
           </select>
         </div>
+        
+        <button 
+          className="admin-add-btn admin-test-btn"
+          onClick={handleTestJob}
+          title="Add a random test job for testing real-time updates"
+        >
+          <Zap size={20} />
+          Test Job
+        </button>
         
         <button 
           className="admin-add-btn"

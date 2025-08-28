@@ -4,14 +4,14 @@ import {
   Plus, 
   Edit, 
   Trash, 
-  DollarSign, 
   Filter, 
   Eye, 
   EyeOff, 
-  Calendar 
+  Calendar,
+  Zap
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getAllDonations, deleteDonation, toggleDonationVisibility } from '../../../../services/firebase/donationService';
+import { getAllDonations, deleteDonation, toggleDonationVisibility, addDonation } from '../../../../services/firebase/donationService';
 import { Donation } from '../../../../types';
 import AdminLayout from '../../layout/AdminLayout';
 import './Donations.css';
@@ -33,6 +33,7 @@ const DonationsManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
   const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'public' | 'private'>('all');
+  const [anonymityFilter, setAnonymityFilter] = useState<'all' | 'anonymous' | 'named'>('all');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -71,6 +72,14 @@ const DonationsManagement = () => {
         );
       }
       
+      // Apply anonymity filter
+      if (anonymityFilter !== 'all') {
+        const isAnonymous = anonymityFilter === 'anonymous';
+        allDonations = allDonations.filter(donation => 
+          (donation.isAnonymous || false) === isAnonymous
+        );
+      }
+      
       setDonations(allDonations);
     } catch (error) {
       console.error('Error loading donations data:', error);
@@ -85,7 +94,7 @@ const DonationsManagement = () => {
     if (!loading) {
       loadDonationsData();
     }
-  }, [categoryFilter, visibilityFilter]);
+  }, [categoryFilter, visibilityFilter, anonymityFilter]);
 
   // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -182,6 +191,58 @@ const DonationsManagement = () => {
     navigate(`/admin/donations/edit/${id}`);
   };
 
+  // Test donation function
+  const handleTestDonation = async () => {
+    try {
+      setLoading(true);
+      
+      // Generate random test data
+      const testDonors = [
+        'John Doe', 'Maria Santos', 'Pedro Reyes', 'Ana Cruz', 'Carlos Garcia',
+        'Lisa Wang', 'Miguel Torres', 'Sarah Johnson', 'David Lee', 'Grace Kim'
+      ];
+      const testAmounts = [1000, 2500, 5000, 7500, 10000, 15000, 20000, 25000, 50000];
+      const testPurposes = [
+        'Computer Lab Equipment', 'Scholarship Fund', 'Library Books', 
+        'Building Renovation', 'Alumni Homecoming', 'Sports Equipment',
+        'Science Laboratory', 'Student Activities', 'Faculty Development'
+      ];
+      const testCategories = [
+        'Equipment Fund', 'Scholarship Fund', 'Library Fund', 
+        'Building Fund', 'Special Projects', 'General Operations'
+      ];
+
+      const randomDonor = testDonors[Math.floor(Math.random() * testDonors.length)];
+      const randomAmount = testAmounts[Math.floor(Math.random() * testAmounts.length)];
+      const randomPurpose = testPurposes[Math.floor(Math.random() * testPurposes.length)];
+      const randomCategory = testCategories[Math.floor(Math.random() * testCategories.length)];
+      const isAnonymous = Math.random() < 0.3; // 30% chance of being anonymous
+
+      const testDonation = {
+        donorName: isAnonymous ? 'Anonymous Donor' : randomDonor,
+        donorEmail: isAnonymous ? undefined : `${randomDonor.toLowerCase().replace(' ', '.')}@example.com`,
+        amount: randomAmount,
+        currency: 'PHP',
+        purpose: randomPurpose,
+        category: randomCategory,
+        description: `Test donation for ${randomPurpose.toLowerCase()}. This is a simulated donation for testing purposes.`,
+        isPublic: true,
+        isAnonymous: isAnonymous,
+        donationDate: new Date().toISOString()
+      };
+
+      await addDonation(testDonation);
+      await loadDonationsData();
+      
+      alert(`Test donation added successfully!\nDonor: ${testDonation.donorName}\nAmount: ₱${testDonation.amount.toLocaleString()}\nPurpose: ${testDonation.purpose}`);
+    } catch (error) {
+      console.error('Error adding test donation:', error);
+      alert('Failed to add test donation. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AdminLayout title="Donations Management">
       <div className="admin-toolbar">
@@ -226,7 +287,31 @@ const DonationsManagement = () => {
               <option value="private">Private Only</option>
             </select>
           </div>
+          
+          {/* Anonymity filter */}
+          <div className="admin-filter-group">
+            <EyeOff size={14} className="admin-filter-icon" />
+            <select 
+              className="admin-filter-select"
+              value={anonymityFilter}
+              onChange={(e) => setAnonymityFilter(e.target.value as 'all' | 'anonymous' | 'named')}
+              aria-label="Filter by anonymity"
+            >
+              <option value="all">All Donors</option>
+              <option value="anonymous">Anonymous Only</option>
+              <option value="named">Named Only</option>
+            </select>
+          </div>
         </div>
+        
+        <button 
+          className="admin-add-btn admin-test-btn"
+          onClick={handleTestDonation}
+          title="Add a random test donation for testing notifications"
+        >
+          <Zap size={20} />
+          Test Donate
+        </button>
         
         <button 
           className="admin-add-btn"
@@ -272,6 +357,9 @@ const DonationsManagement = () => {
                     
                     <div className="admin-donation-donor">
                       <strong>Donor:</strong> {donation.donorName}
+                      {donation.isAnonymous && (
+                        <span className="admin-anonymous-badge">Anonymous</span>
+                      )}
                     </div>
                     
                     {donation.description && (
@@ -314,7 +402,7 @@ const DonationsManagement = () => {
               ))
             ) : (
               <div className="admin-empty-state">
-                <DollarSign size={48} />
+                <span className="peso-icon" style={{ fontSize: '48px', color: '#64748b' }}>₱</span>
                 <h3>No donations found</h3>
                 <p>There are no donations matching your current filters.</p>
                 <button 

@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { User } from '../../types';
-import { Home, Users, Image, Calendar, Info, Bell, LogOut, Menu, X, User as UserIcon, Briefcase, DollarSign } from 'lucide-react';
+import { Home, Users, Image, Calendar, Info, Bell, LogOut, Menu, X, User as UserIcon, Briefcase } from 'lucide-react';
 import { useState } from 'react';
 import UserSearch from '../UserSearch/UserSearch';
 import ImagePlaceholder from '../ImagePlaceholder/ImagePlaceholder';
@@ -39,7 +39,9 @@ const Layout = ({ children, isAuthenticated, user, onLogout }: LayoutProps) => {
       <header className="header">
         <div className="container header-container">
           <div className="logo-container">
-            <Link to="/" className="logo">Immaculate Mary Academy (IMA) Alumni</Link>
+            <Link to="/" className="logo">
+              <img src="/images/alumni-conlogo.png" alt="Immaculate Mary Academy (IMA) Alumni" className="logo-image" />
+            </Link>
           </div>
 
           <button className="mobile-menu-button" onClick={toggleMobileMenu}>
@@ -90,7 +92,7 @@ const Layout = ({ children, isAuthenticated, user, onLogout }: LayoutProps) => {
                   className={`nav-link ${location.pathname.includes('/donations') ? 'active' : ''}`} 
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <DollarSign size={18} /> Donations
+                  <span className="peso-icon">₱</span> Donations
                 </Link>
               </li>
               <li className="nav-item">

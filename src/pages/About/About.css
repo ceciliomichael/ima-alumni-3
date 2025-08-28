@@ -266,7 +266,7 @@
   font-size: 0.9375rem;
 }
 
-/* Vision & Mission Section Styles */
+/* Vision & Mission Section Styles - Enhanced Aesthetics */
 .vision-section {
   width: 100%;
 }
@@ -274,73 +274,129 @@
 .vision-mission-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.75rem;
+  gap: 2rem;
+  margin-bottom: 0;
 }
 
-.vision-card, .mission-card {
+.vision-card, .mission-card, .goals-card {
   background-color: var(--background-card);
-  border-radius: var(--radius-lg);
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 16px oklch(0 0 0 / 0.1);
   height: 100%;
   display: flex;
   flex-direction: column;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.vision-card:hover, .mission-card:hover, .goals-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px oklch(0 0 0 / 0.15);
+  border-color: oklch(0.7 0.15 250 / 0.2);
+}
+
+.goals-card {
+  grid-column: span 2;
+  margin-top: 2rem;
 }
 
 .vm-card-header {
-  background-image: var(--gradient-primary);
-  padding: 1.25rem;
+  background: linear-gradient(135deg, 
+    oklch(0.65 0.2 250) 0%, 
+    oklch(0.55 0.25 280) 50%, 
+    oklch(0.6 0.2 320) 100%);
+  padding: 2rem;
   color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.vm-card-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, oklch(1 0 0 / 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(30%, -30%);
 }
 
 .vm-card-header h3 {
   margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 4px oklch(0 0 0 / 0.2);
+  position: relative;
+  z-index: 2;
 }
 
 .vm-card-body {
-  padding: 1.5rem;
+  padding: 2rem;
   flex-grow: 1;
 }
 
 .vm-card-body p {
   margin: 0 0 1rem 0;
   color: var(--text-secondary);
-  line-height: 1.6;
-  font-size: 0.9375rem;
+  line-height: 1.7;
+  font-size: 1rem;
+  font-weight: 400;
 }
 
 .vm-card-body p:last-child {
   margin-bottom: 0;
 }
 
+/* Enhanced Goals Section */
+.goals-card .vm-card-header {
+  background: linear-gradient(135deg, 
+    oklch(0.6 0.2 200) 0%, 
+    oklch(0.55 0.25 230) 50%, 
+    oklch(0.65 0.2 260) 100%);
+}
+
 .mission-points {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .mission-point {
   display: flex;
-  gap: 1rem;
+  gap: 1.25rem;
+  align-items: flex-start;
 }
 
 .mission-point-marker {
-  width: 2rem;
-  height: 2rem;
-  background-color: var(--primary-color);
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(135deg, 
+    oklch(0.65 0.2 250) 0%, 
+    oklch(0.6 0.25 280) 100%);
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1rem;
   flex-shrink: 0;
+  box-shadow: 0 4px 12px oklch(0.65 0.2 250 / 0.3);
+  transition: all 0.3s ease;
+}
+
+.mission-point:hover .mission-point-marker {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px oklch(0.65 0.2 250 / 0.4);
 }
 
 .mission-point-content {
   flex-grow: 1;
+  padding-top: 0.25rem;
 }
 
 .mission-point-content h4 {
@@ -353,8 +409,9 @@
 .mission-point-content p {
   margin: 0;
   color: var(--text-secondary);
-  line-height: 1.6;
-  font-size: 0.9375rem;
+  line-height: 1.7;
+  font-size: 0.95rem;
+  font-weight: 400;
 }
 
 /* Organization Chart Styles */
@@ -626,6 +683,11 @@
     gap: 1.5rem;
   }
   
+  .goals-card {
+    grid-column: span 1;
+    margin-top: 1.5rem;
+  }
+  
   .exec-level {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -656,6 +718,24 @@
     grid-template-columns: 1fr;
     gap: 1rem;
   }
+  
+  .vm-card-header {
+    padding: 1.5rem;
+  }
+  
+  .vm-card-body {
+    padding: 1.5rem;
+  }
+  
+  .mission-point {
+    gap: 1rem;
+  }
+  
+  .mission-point-marker {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.9rem;
+  }
 }
 
 @media (max-width: 576px) {
@@ -670,6 +750,14 @@
   
   .timeline-marker {
     left: -1.5rem;
+  }
+  
+  .vm-card-header h3 {
+    font-size: 1.25rem;
+  }
+  
+  .vm-card-body p {
+    font-size: 0.9375rem;
   }
 }
 

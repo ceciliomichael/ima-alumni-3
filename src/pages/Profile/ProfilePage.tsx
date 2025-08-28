@@ -45,6 +45,7 @@ const ProfilePage = ({
   const [following, setFollowing] = useState<User[]>([]);
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Load the profile data based on the userId param or the current user
   useEffect(() => {
@@ -122,8 +123,8 @@ const ProfilePage = ({
   }, [profileUser]);
 
   const handleSaveProfile = async (formData: ProfileFormData) => {
-    // Save user data to Firestore
-    if (profileUser) {
+    if (profileUser && !isSaving) {
+      setIsSaving(true);
       try {
         const updatedUser = await updateUser(profileUser.id, {
           name: formData.name,
@@ -135,14 +136,12 @@ const ProfilePage = ({
           job: formData.job,
           company: formData.company, 
           location: formData.location,
-          socialLinks: {
-            linkedin: formData.linkedin,
-            twitter: formData.twitter,
-            website: formData.website
-          }
+          showOfficerInfo: formData.showOfficerInfo
         });
 
         if (updatedUser) {
+          console.log('Profile updated successfully');
+          
           // Trigger localStorage event to update user data across tabs
           window.dispatchEvent(new Event('storage'));
           
@@ -157,12 +156,21 @@ const ProfilePage = ({
               key: 'currentUser'
             }));
           }
+          
+          // Navigate back to profile page after successful save
+          setIsEditing(false);
+          navigate('/profile');
+        } else {
+          console.error('Failed to update profile: updateUser returned null');
+          alert('Failed to save profile. Please try again.');
         }
       } catch (error) {
         console.error('Error updating profile:', error);
+        alert(`Failed to save profile: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
+      } finally {
+        setIsSaving(false);
       }
     }
-    setIsEditing(false);
   };
   
   // Handle direct image change from profile header
@@ -311,7 +319,8 @@ const ProfilePage = ({
         <ProfileForm 
           user={profileUser} 
           onSave={handleSaveProfile} 
-          onCancel={() => setIsEditing(false)} 
+          onCancel={() => setIsEditing(false)}
+          isLoading={isSaving}
         />
       ) : (
         <>
@@ -334,6 +343,7 @@ const ProfilePage = ({
             <div className="profile-sidebar">
               <ProfileAbout 
                 bio={profileUser.bio || ''}
+                email={profileUser.email || ''}
                 job={profileUser.job || ''}
                 company={profileUser.company || ''}
                 location={profileUser.location || ''}
