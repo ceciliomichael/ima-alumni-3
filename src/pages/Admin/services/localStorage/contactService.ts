@@ -10,7 +10,6 @@ export interface ContactMessage {
   subject: string;
   message: string;
   createdAt: string;
-  isRead: boolean;
 }
 
 // Get all contact messages
@@ -20,38 +19,19 @@ export const getAllContactMessages = (): ContactMessage[] => {
 };
 
 // Add a new contact message
-export const addContactMessage = (message: Omit<ContactMessage, 'id' | 'createdAt' | 'isRead'>): ContactMessage => {
+export const addContactMessage = (message: Omit<ContactMessage, 'id' | 'createdAt'>): ContactMessage => {
   const messages = getAllContactMessages();
   
   const newMessage: ContactMessage = {
     ...message,
     id: uuidv4(),
-    createdAt: new Date().toISOString(),
-    isRead: false
+    createdAt: new Date().toISOString()
   };
   
   messages.push(newMessage);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
   
   return newMessage;
-};
-
-// Mark a message as read
-export const markMessageAsRead = (messageId: string): ContactMessage | null => {
-  const messages = getAllContactMessages();
-  const index = messages.findIndex(message => message.id === messageId);
-  
-  if (index === -1) return null;
-  
-  const updatedMessage = {
-    ...messages[index],
-    isRead: true
-  };
-  
-  messages[index] = updatedMessage;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-  
-  return updatedMessage;
 };
 
 // Delete a message
@@ -65,12 +45,6 @@ export const deleteContactMessage = (messageId: string): boolean => {
   
   localStorage.setItem(STORAGE_KEY, JSON.stringify(filteredMessages));
   return true; // Message was deleted
-};
-
-// Get unread messages count
-export const getUnreadMessagesCount = (): number => {
-  const messages = getAllContactMessages();
-  return messages.filter(message => !message.isRead).length;
 };
 
 // Initialize with empty array if no data exists

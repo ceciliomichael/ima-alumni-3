@@ -31,11 +31,34 @@
 .batch-badge {
   display: inline-block;
   padding: 0.35rem 0.75rem;
-  background-color: var(--accent-2-light);
-  color: var(--accent-2);
+  background-color: oklch(0.65 0.15 220);
+  color: white;
   border-radius: var(--radius-full);
   font-size: 0.75rem;
   font-weight: 600;
+}
+
+.general-badge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  background-color: oklch(0.45 0.1 280);
+  color: white;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.batch-info {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.section-description {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
 }
 
 .text-muted {
@@ -301,6 +324,12 @@
 }
 
 .form-hint {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  margin-top: 0.375rem;
+}
+
+.admin-form-hint {
   color: var(--text-muted);
   font-size: 0.8125rem;
   margin-top: 0.375rem;

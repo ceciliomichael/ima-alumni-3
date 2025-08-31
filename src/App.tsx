@@ -30,7 +30,7 @@ import { initializeAdminUser as initializeAdmin } from './services/firebase/admi
 import AdminLoginPage from './pages/Admin/AdminLoginPage';
 import Dashboard from './pages/Admin/components/Dashboard/Dashboard';
 import { AdminAuthProvider, useAdminAuth } from './pages/Admin/context/AdminAuthContext';
-import { AlumniRecords, AlumniListByBatch, AlumniForm, AlumniView } from './pages/Admin/components/AlumniRecords';
+import { AlumniRecords, AlumniListByBatch, AlumniForm, AlumniView, CSVImport } from './pages/Admin/components/AlumniRecords';
 import { AlumniOfficers, OfficerForm } from './pages/Admin/components/AlumniOfficers';
 import { EventManagement, EventForm } from './pages/Admin/components/Events';
 import { GalleryManagement, GalleryForm } from './pages/Admin/components/Gallery';
@@ -38,6 +38,8 @@ import { DonationsManagement, DonationForm } from './pages/Admin/components/Dona
 import JobManagement from './pages/Admin/components/Jobs/JobManagement';
 import JobForm from './pages/Admin/components/Jobs/JobForm';
 import ContactMessages from './pages/Admin/components/ContactMessages/ContactMessages';
+import AboutUsManagement from './pages/Admin/components/AboutUs/AboutUsManagement';
+import { Settings } from './pages/Admin/components/Settings';
 import { initializeContactMessages } from './services/firebase/contactService';
 
 // Helper component for admin protected routes
@@ -301,6 +303,9 @@ function App() {
           <Route path="/admin/alumni-records/view/:id" element={
             <ProtectedAdminRoute><AlumniView /></ProtectedAdminRoute>
           } />
+          <Route path="/admin/alumni-records/csv-import" element={
+            <ProtectedAdminRoute><CSVImport /></ProtectedAdminRoute>
+          } />
           <Route path="/admin/alumni-officers" element={
             <ProtectedAdminRoute><AlumniOfficers /></ProtectedAdminRoute>
           } />
@@ -340,6 +345,9 @@ function App() {
           <Route path="/admin/messages" element={
             <ProtectedAdminRoute><ContactMessages /></ProtectedAdminRoute>
           } />
+          <Route path="/admin/about-us" element={
+            <ProtectedAdminRoute><AboutUsManagement /></ProtectedAdminRoute>
+          } />
           <Route path="/admin/donations" element={
             <ProtectedAdminRoute><DonationsManagement /></ProtectedAdminRoute>
           } />
@@ -348,6 +356,9 @@ function App() {
           } />
           <Route path="/admin/donations/edit/:id" element={
             <ProtectedAdminRoute><DonationForm /></ProtectedAdminRoute>
+          } />
+          <Route path="/admin/settings" element={
+            <ProtectedAdminRoute><Settings /></ProtectedAdminRoute>
           } />
 
           {/* --- Catch-all Route --- */}

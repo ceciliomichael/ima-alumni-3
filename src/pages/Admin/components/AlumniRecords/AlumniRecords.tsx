@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit, Eye, Filter, Check, User, X, AlertTriangle } from 'lucide-react';
+import { Search, Plus, Edit, Eye, Filter, Check, User, X, AlertTriangle, Upload } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   getAllAlumni, 
@@ -228,13 +228,23 @@ const AlumniRecords = () => {
             </div>
           </div>
           
-          <button 
-            className="add-alumni-button"
-            onClick={() => navigate('/admin/alumni-records/add')}
-          >
-            <Plus size={18} />
-            <span>Add Alumni</span>
-          </button>
+          <div className="alumni-actions-group">
+            <button 
+              className="csv-import-button"
+              onClick={() => navigate('/admin/alumni-records/csv-import')}
+            >
+              <Upload size={18} />
+              <span>Import CSV</span>
+            </button>
+            
+            <button 
+              className="add-alumni-button"
+              onClick={() => navigate('/admin/alumni-records/add')}
+            >
+              <Plus size={18} />
+              <span>Add Alumni</span>
+            </button>
+          </div>
         </div>
         
         <div className="admin-card">

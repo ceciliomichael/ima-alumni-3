@@ -4,13 +4,11 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { 
   addOfficer, 
   getOfficerById, 
-  updateOfficer,
-  initializeOfficerData
-} from '../../services/localStorage/officerService';
+  updateOfficer
+} from '../../../../services/firebase';
 import { 
-  getAllAlumni, 
-  initializeAlumniData 
-} from '../../services/localStorage/alumniService';
+  getAllAlumni 
+} from '../../../../services/firebase';
 import { OfficerPosition, AlumniRecord } from '../../../../types';
 import AdminLayout from '../../layout/AdminLayout';
 import './AlumniOfficers.css';
@@ -33,6 +31,8 @@ const OfficerForm = () => {
   const isEditing = !!id;
   
   const [allAlumni, setAllAlumni] = useState<AlumniRecord[]>([]);
+  const [loadingAlumni, setLoadingAlumni] = useState(true);
+  const [loadingOfficer, setLoadingOfficer] = useState(false);
   const [formData, setFormData] = useState<Omit<OfficerPosition, 'id'>>({
     title: '',
     alumniId: '',
@@ -45,36 +45,46 @@ const OfficerForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   useEffect(() => {
-    // Initialize sample data if empty
-    initializeOfficerData();
-    initializeAlumniData();
-    
-    // Load all alumni for the dropdown
-    const alumni = getAllAlumni();
-    setAllAlumni(alumni);
-    
-    // If editing, fetch officer data
-    if (isEditing && id) {
-      const officerData = getOfficerById(id);
-      
-      if (officerData) {
-        // Format dates for form inputs
-        const formattedData = {
-          ...officerData,
-          startDate: new Date(officerData.startDate).toISOString().split('T')[0],
-          endDate: officerData.endDate 
-            ? new Date(officerData.endDate).toISOString().split('T')[0] 
-            : ''
-        };
+    const loadData = async () => {
+      try {
+        // Load all alumni for the dropdown
+        setLoadingAlumni(true);
+        const alumni = await getAllAlumni();
+        setAllAlumni(alumni);
         
-        // Remove id as we don't need it in the form
-        const { id: _, ...dataWithoutId } = formattedData;
-        setFormData(dataWithoutId);
-      } else {
-        // Handle case where officer record doesn't exist
-        navigate('/admin/alumni-officers');
+        // If editing, fetch officer data
+        if (isEditing && id) {
+          setLoadingOfficer(true);
+          const officerData = await getOfficerById(id);
+          
+          if (officerData) {
+            // Format dates for form inputs
+            const formattedData = {
+              ...officerData,
+              startDate: new Date(officerData.startDate).toISOString().split('T')[0],
+              endDate: officerData.endDate 
+                ? new Date(officerData.endDate).toISOString().split('T')[0] 
+                : ''
+            };
+            
+            // Remove id as we don't need it in the form
+            const { id: _, ...dataWithoutId } = formattedData;
+            setFormData(dataWithoutId);
+          } else {
+            // Handle case where officer record doesn't exist
+            navigate('/admin/alumni-officers');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+        setAllAlumni([]);
+      } finally {
+        setLoadingAlumni(false);
+        setLoadingOfficer(false);
       }
-    }
+    };
+    
+    loadData();
   }, [id, isEditing, navigate]);
   
   const handleChange = (
@@ -131,7 +141,7 @@ const OfficerForm = () => {
     return Object.keys(newErrors).length === 0;
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) {
@@ -151,19 +161,21 @@ const OfficerForm = () => {
       };
       
       if (isEditing && id) {
-        updateOfficer(id, formattedData);
+        await updateOfficer(id, formattedData);
       } else {
-        addOfficer(formattedData);
+        await addOfficer(formattedData);
       }
       
       navigate('/admin/alumni-officers');
     } catch (error) {
       console.error('Error saving officer position:', error);
+      alert('An error occurred while saving the officer position. Please try again.');
       setIsSubmitting(false);
     }
   };
   
   const isBatchPosition = formData.title === 'Batch President';
+  const isLoading = loadingAlumni || loadingOfficer;
   
   return (
     <AdminLayout title={isEditing ? 'Edit Officer Position' : 'Add Officer Position'}>
@@ -184,117 +196,127 @@ const OfficerForm = () => {
           </h2>
         </div>
         
-        <form className="admin-form" onSubmit={handleSubmit}>
-          <div className="admin-form-section">
-            <h3 className="admin-form-section-title">Position Information</h3>
-            
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label htmlFor="title" className="admin-form-label">Position Title *</label>
-                <select
-                  id="title"
-                  name="title"
-                  className={`admin-form-input ${errors.title ? 'admin-input-error' : ''}`}
-                  value={formData.title}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Position</option>
-                  {OFFICER_POSITIONS.map(position => (
-                    <option key={position} value={position}>{position}</option>
-                  ))}
-                </select>
-                {errors.title && <div className="admin-form-error">{errors.title}</div>}
-              </div>
-            </div>
-            
-            {isBatchPosition && (
+        {isLoading ? (
+          <div className="loading-state">Loading...</div>
+        ) : (
+          <form className="admin-form" onSubmit={handleSubmit}>
+            <div className="admin-form-section">
+              <h3 className="admin-form-section-title">Position Information</h3>
+              
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="batchYear" className="admin-form-label">Batch Year *</label>
-                  <input
-                    type="text"
-                    id="batchYear"
-                    name="batchYear"
-                    className={`admin-form-input ${errors.batchYear ? 'admin-input-error' : ''}`}
-                    value={formData.batchYear || ''}
+                  <label htmlFor="title" className="admin-form-label">Position Title *</label>
+                  <select
+                    id="title"
+                    name="title"
+                    className={`admin-form-input ${errors.title ? 'admin-input-error' : ''}`}
+                    value={formData.title}
                     onChange={handleChange}
-                    placeholder="Enter batch year (e.g., 2020)"
-                  />
-                  {errors.batchYear && <div className="admin-form-error">{errors.batchYear}</div>}
+                  >
+                    <option value="">Select Position</option>
+                    {OFFICER_POSITIONS.map(position => (
+                      <option key={position} value={position}>{position}</option>
+                    ))}
+                  </select>
+                  {errors.title && <div className="admin-form-error">{errors.title}</div>}
                 </div>
               </div>
-            )}
-            
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label htmlFor="alumniId" className="admin-form-label">Assigned Alumni *</label>
-                <select
-                  id="alumniId"
-                  name="alumniId"
-                  className={`admin-form-input ${errors.alumniId ? 'admin-input-error' : ''}`}
-                  value={formData.alumniId}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Alumni</option>
-                  {allAlumni.map(alumni => (
-                    <option key={alumni.id} value={alumni.id}>
-                      {alumni.name} (Batch {alumni.batch})
+              
+              {isBatchPosition && (
+                <div className="admin-form-row">
+                  <div className="admin-form-group">
+                    <label htmlFor="batchYear" className="admin-form-label">Batch Year *</label>
+                    <input
+                      type="text"
+                      id="batchYear"
+                      name="batchYear"
+                      className={`admin-form-input ${errors.batchYear ? 'admin-input-error' : ''}`}
+                      value={formData.batchYear || ''}
+                      onChange={handleChange}
+                      placeholder="Enter batch year (e.g., 2020)"
+                    />
+                    {errors.batchYear && <div className="admin-form-error">{errors.batchYear}</div>}
+                  </div>
+                </div>
+              )}
+              
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label htmlFor="alumniId" className="admin-form-label">Assigned Alumni *</label>
+                  <select
+                    id="alumniId"
+                    name="alumniId"
+                    className={`admin-form-input ${errors.alumniId ? 'admin-input-error' : ''}`}
+                    value={formData.alumniId}
+                    onChange={handleChange}
+                    disabled={loadingAlumni}
+                  >
+                    <option value="">
+                      {loadingAlumni ? 'Loading alumni...' : 'Select Alumni'}
                     </option>
-                  ))}
-                </select>
-                {errors.alumniId && <div className="admin-form-error">{errors.alumniId}</div>}
-              </div>
-            </div>
-            
-            <div className="admin-form-row admin-form-row-2">
-              <div className="admin-form-group">
-                <label htmlFor="startDate" className="admin-form-label">Start Date *</label>
-                <input
-                  type="date"
-                  id="startDate"
-                  name="startDate"
-                  className={`admin-form-input ${errors.startDate ? 'admin-input-error' : ''}`}
-                  value={formData.startDate}
-                  onChange={handleChange}
-                />
-                {errors.startDate && <div className="admin-form-error">{errors.startDate}</div>}
+                    {!loadingAlumni && allAlumni.map(alumni => (
+                      <option key={alumni.id} value={alumni.id}>
+                        {alumni.name} (Batch {alumni.batch})
+                      </option>
+                    ))}
+                  </select>
+                  {errors.alumniId && <div className="admin-form-error">{errors.alumniId}</div>}
+                  {!loadingAlumni && allAlumni.length === 0 && (
+                    <div className="admin-form-hint">No alumni records found. Please add alumni records first.</div>
+                  )}
+                </div>
               </div>
               
-              <div className="admin-form-group">
-                <label htmlFor="endDate" className="admin-form-label">End Date</label>
-                <input
-                  type="date"
-                  id="endDate"
-                  name="endDate"
-                  className="admin-form-input"
-                  value={formData.endDate || ''}
-                  onChange={handleChange}
-                />
-                <div className="admin-form-hint">Leave blank if no end date.</div>
+              <div className="admin-form-row admin-form-row-2">
+                <div className="admin-form-group">
+                  <label htmlFor="startDate" className="admin-form-label">Start Date *</label>
+                  <input
+                    type="date"
+                    id="startDate"
+                    name="startDate"
+                    className={`admin-form-input ${errors.startDate ? 'admin-input-error' : ''}`}
+                    value={formData.startDate}
+                    onChange={handleChange}
+                  />
+                  {errors.startDate && <div className="admin-form-error">{errors.startDate}</div>}
+                </div>
+                
+                <div className="admin-form-group">
+                  <label htmlFor="endDate" className="admin-form-label">End Date</label>
+                  <input
+                    type="date"
+                    id="endDate"
+                    name="endDate"
+                    className="admin-form-input"
+                    value={formData.endDate || ''}
+                    onChange={handleChange}
+                  />
+                  <div className="admin-form-hint">Leave blank if no end date.</div>
+                </div>
               </div>
             </div>
-          </div>
-          
-          <div className="admin-form-actions">
-            <button
-              type="button"
-              className="admin-btn-secondary"
-              onClick={() => navigate('/admin/alumni-officers')}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </button>
             
-            <button
-              type="submit"
-              className="admin-btn-primary"
-              disabled={isSubmitting}
-            >
-              <Save size={20} />
-              {isSubmitting ? 'Saving...' : 'Save Position'}
-            </button>
-          </div>
-        </form>
+            <div className="admin-form-actions">
+              <button
+                type="button"
+                className="admin-btn-secondary"
+                onClick={() => navigate('/admin/alumni-officers')}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </button>
+              
+              <button
+                type="submit"
+                className="admin-btn-primary"
+                disabled={isSubmitting || loadingAlumni}
+              >
+                <Save size={20} />
+                {isSubmitting ? 'Saving...' : 'Save Position'}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </AdminLayout>
   );

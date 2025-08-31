@@ -21,8 +21,27 @@
   padding: 1.5rem;
   display: flex;
   align-items: center;
+  justify-content: center;
   border-bottom: 1px solid var(--border-light);
   height: 72px;
+}
+
+.admin-logo-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.admin-logo-link:hover {
+  transform: scale(1.05);
+}
+
+.admin-logo-image {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
 }
 
 .admin-logo-text {

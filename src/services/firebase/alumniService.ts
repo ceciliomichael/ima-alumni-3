@@ -247,3 +247,108 @@ export const checkAlumniIdExistsInRecords = async (alumniId: string): Promise<bo
     return false;
   }
 };
+
+// CSV Batch Import Function
+export const importAlumniFromCSV = async (csvText: string, batchYear: string): Promise<{
+  success: boolean;
+  imported: number;
+  skipped: number;
+  errors: string[];
+}> => {
+  try {
+    const lines = csvText.split('\n').filter(line => line.trim());
+    const imported: AlumniRecord[] = [];
+    const errors: string[] = [];
+    let skipped = 0;
+
+    // Skip header line (index 0)
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      try {
+        // Parse CSV line - format: Male Name,Alumni ID,Female Name,Alumni ID
+        const parts = line.split(',');
+        
+        if (parts.length >= 6) {
+          // Process male alumni (first 3 columns)
+          const maleName = parts[0]?.trim();
+          const maleAlumniId = parts[2]?.trim();
+          
+          // Process female alumni (last 3 columns)
+          const femaleName = parts[3]?.trim();
+          const femaleAlumniId = parts[5]?.trim();
+          
+          // Add male alumni if data exists
+          if (maleName && maleAlumniId && maleName !== 'Male') {
+            const cleanId = cleanAlumniId(maleAlumniId);
+            
+            // Check if alumni ID already exists
+            const exists = await checkAlumniIdExistsInRecords(cleanId);
+            if (!exists) {
+              const alumniRecord: Omit<AlumniRecord, 'id'> = {
+                name: maleName,
+                email: `${maleName.toLowerCase().replace(/\s+/g, '.')}@example.com`, // Placeholder email
+                alumniId: cleanId,
+                batch: batchYear,
+                isActive: true,
+                profileImage: '',
+                position: '',
+                dateRegistered: new Date().toISOString()
+              };
+              
+              await addAlumni(alumniRecord);
+              imported.push(alumniRecord as AlumniRecord);
+            } else {
+              skipped++;
+              errors.push(`Skipped ${maleName} - Alumni ID ${maleAlumniId} already exists`);
+            }
+          }
+          
+          // Add female alumni if data exists
+          if (femaleName && femaleAlumniId && femaleName !== 'Female') {
+            const cleanId = cleanAlumniId(femaleAlumniId);
+            
+            // Check if alumni ID already exists
+            const exists = await checkAlumniIdExistsInRecords(cleanId);
+            if (!exists) {
+              const alumniRecord: Omit<AlumniRecord, 'id'> = {
+                name: femaleName,
+                email: `${femaleName.toLowerCase().replace(/\s+/g, '.')}@example.com`, // Placeholder email
+                alumniId: cleanId,
+                batch: batchYear,
+                isActive: true,
+                profileImage: '',
+                position: '',
+                dateRegistered: new Date().toISOString()
+              };
+              
+              await addAlumni(alumniRecord);
+              imported.push(alumniRecord as AlumniRecord);
+            } else {
+              skipped++;
+              errors.push(`Skipped ${femaleName} - Alumni ID ${femaleAlumniId} already exists`);
+            }
+          }
+        }
+      } catch (error) {
+        errors.push(`Error processing line ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
+
+    return {
+      success: true,
+      imported: imported.length,
+      skipped,
+      errors
+    };
+  } catch (error) {
+    console.error('Error importing CSV:', error);
+    return {
+      success: false,
+      imported: 0,
+      skipped: 0,
+      errors: [error instanceof Error ? error.message : 'Unknown error occurred']
+    };
+  }
+};

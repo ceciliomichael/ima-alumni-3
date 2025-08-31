@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Trash2, Mail, Eye, Check, Search, MessageSquare, RefreshCw, ArrowDown, ArrowUp } from 'lucide-react';
 import { 
   getAllContactMessages, 
-  markMessageAsRead, 
   deleteContactMessage, 
   ContactMessage 
 } from '../../services/localStorage/contactService';
@@ -16,7 +15,6 @@ const ContactMessages = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'desc' | 'asc'>('desc');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'read' | 'unread'>('all');
 
   // Load messages on mount or when search/filters change
   useEffect(() => {
@@ -28,7 +26,7 @@ const ContactMessages = () => {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [sortDirection, filterStatus, searchTerm]);
+  }, [sortDirection, searchTerm]);
 
   // Handler for storage changes
   const handleStorageChange = () => {
@@ -40,16 +38,8 @@ const ContactMessages = () => {
     setLoading(true);
     const allMessages = getAllContactMessages();
     
-    // Apply read/unread filter
-    let filteredMessages = allMessages;
-    if (filterStatus === 'read') {
-      filteredMessages = allMessages.filter(message => message.isRead);
-    } else if (filterStatus === 'unread') {
-      filteredMessages = allMessages.filter(message => !message.isRead);
-    }
-    
     // Sort by date
-    const sortedMessages = filteredMessages.sort((a, b) => {
+    const sortedMessages = allMessages.sort((a, b) => {
       const dateA = new Date(a.createdAt).getTime();
       const dateB = new Date(b.createdAt).getTime();
       return sortDirection === 'desc' ? dateB - dateA : dateA - dateB;
@@ -71,12 +61,6 @@ const ContactMessages = () => {
   // View a message
   const handleViewMessage = (message: ContactMessage) => {
     setSelectedMessage(message);
-    
-    // Mark as read if it isn't already
-    if (!message.isRead) {
-      markMessageAsRead(message.id);
-      loadMessages(); // Refresh the list
-    }
   };
 
   // Delete a message
@@ -112,11 +96,6 @@ const ContactMessages = () => {
     });
   };
 
-  // Get unread count
-  const getUnreadCount = () => {
-    return messages.filter(message => !message.isRead).length;
-  };
-
   // Toggle sort direction
   const toggleSortDirection = () => {
     setSortDirection(prev => prev === 'desc' ? 'asc' : 'desc');
@@ -131,9 +110,6 @@ const ContactMessages = () => {
               <MessageSquare size={20} />
             </div>
             <h2>Contact Messages</h2>
-            {getUnreadCount() > 0 && (
-              <span className="unread-badge">{getUnreadCount()} unread</span>
-            )}
           </div>
           
           <div className="contact-messages-actions">
@@ -157,18 +133,6 @@ const ContactMessages = () => {
           </div>
           
           <div className="contact-filters">
-            <div className="filter-group">
-              <select 
-                className="filter-select"
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as 'all' | 'read' | 'unread')}
-              >
-                <option value="all">All Messages</option>
-                <option value="unread">Unread Only</option>
-                <option value="read">Read Only</option>
-              </select>
-            </div>
-            
             <button 
               className="sort-btn" 
               onClick={toggleSortDirection}
@@ -193,7 +157,7 @@ const ContactMessages = () => {
                 <h3>No messages found</h3>
                 <p>
                   {searchTerm 
-                    ? "Try adjusting your search term or filter settings" 
+                    ? "Try adjusting your search term" 
                     : "When visitors send messages through the contact form, they will appear here."}
                 </p>
               </div>
@@ -202,12 +166,9 @@ const ContactMessages = () => {
                 {messages.map((message) => (
                   <div 
                     key={message.id} 
-                    className={`message-item ${message.isRead ? 'read' : 'unread'} ${selectedMessage?.id === message.id ? 'selected' : ''}`}
+                    className={`message-item ${selectedMessage?.id === message.id ? 'selected' : ''}`}
                     onClick={() => handleViewMessage(message)}
                   >
-                    <div className="message-status">
-                      {!message.isRead && <div className="unread-indicator"></div>}
-                    </div>
                     <div className="message-info">
                       <div className="message-sender">{message.name}</div>
                       <div className="message-subject">{message.subject}</div>
