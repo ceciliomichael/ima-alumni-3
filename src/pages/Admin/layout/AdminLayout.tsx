@@ -4,7 +4,7 @@ import {
   Menu, X, LogOut, Settings,
   LayoutDashboard, Users, Award, Calendar,
   Image, Briefcase, ChevronRight,
-  MessageSquare, Info
+  Info
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import './AdminLayout.css';
@@ -117,14 +117,7 @@ const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
             Donations
           </Link>
           
-          <Link 
-            to="/admin/messages" 
-            className={`admin-menu-item ${location.pathname.includes('/admin/messages') ? 'active' : ''}`}
-            onClick={() => setSidebarOpen(false)}
-          >
-            <MessageSquare className="admin-menu-icon" />
-            Contact Messages
-          </Link>
+
           
           <Link 
             to="/admin/about-us" 

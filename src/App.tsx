@@ -37,14 +37,21 @@ import { GalleryManagement, GalleryForm } from './pages/Admin/components/Gallery
 import { DonationsManagement, DonationForm } from './pages/Admin/components/Donations';
 import JobManagement from './pages/Admin/components/Jobs/JobManagement';
 import JobForm from './pages/Admin/components/Jobs/JobForm';
-import ContactMessages from './pages/Admin/components/ContactMessages/ContactMessages';
+
 import AboutUsManagement from './pages/Admin/components/AboutUs/AboutUsManagement';
 import { Settings } from './pages/Admin/components/Settings';
-import { initializeContactMessages } from './services/firebase/contactService';
+
 
 // Helper component for admin protected routes
 const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAdminAuthenticated } = useAdminAuth();
+  const { isAdminAuthenticated, isLoading } = useAdminAuth();
+  
+  if (isLoading) {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <div>Loading admin authentication...</div>
+    </div>;
+  }
+  
   return isAdminAuthenticated ? <>{children}</> : <Navigate to="/admin/login" />;
 };
 
@@ -128,7 +135,7 @@ function App() {
         await initializeJobData();
         await initializeDonationData();
         await initializePostData();
-        await initializeContactMessages();
+
         await initializeAdmin();
         console.log('Firebase services initialized successfully');
       } catch (error) {
@@ -342,9 +349,7 @@ function App() {
           <Route path="/admin/jobs/edit/:id" element={
             <ProtectedAdminRoute><JobForm /></ProtectedAdminRoute>
           } />
-          <Route path="/admin/messages" element={
-            <ProtectedAdminRoute><ContactMessages /></ProtectedAdminRoute>
-          } />
+
           <Route path="/admin/about-us" element={
             <ProtectedAdminRoute><AboutUsManagement /></ProtectedAdminRoute>
           } />

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LogIn, Mail, Lock, ShieldAlert } from 'lucide-react';
 import { useAdminAuth } from './context/AdminAuthContext';
@@ -14,7 +14,29 @@ const AdminLoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginError, setLoginError] = useState('');
   const navigate = useNavigate();
-  const { adminLogin } = useAdminAuth();
+  const { adminLogin, isAdminAuthenticated, isLoading } = useAdminAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!isLoading && isAdminAuthenticated) {
+      navigate('/admin');
+    }
+  }, [isAdminAuthenticated, isLoading, navigate]);
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="auth-container single-column">
+        <div className="auth-wrapper single-column">
+          <div className="auth-card single-column">
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+              <div>Checking admin authentication...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;

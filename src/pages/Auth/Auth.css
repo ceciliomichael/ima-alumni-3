@@ -109,7 +109,7 @@
   max-width: 100%;
   margin-top: 1rem;
   margin-bottom: 1.5rem;
-  padding: 2rem 4rem 2.5rem;
+  padding: 1.5rem 4rem 2rem;
 }
 
 .auth-logo {
@@ -137,7 +137,7 @@
 }
 
 .auth-header {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   text-align: left;
 }
 
@@ -178,22 +178,22 @@
 }
 
 .form-group {
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.25rem;
 }
 
 .form-label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.375rem;
   font-weight: 600;
   color: oklch(0.25 0.05 240);
-  font-size: 1.25rem;
+  font-size: 1.125rem;
 }
 
 .form-control {
   width: 100%;
-  padding: 1.125rem 1.5rem;
-  font-size: 1.25rem;
-  line-height: 1.5;
+  padding: 0.875rem 1.25rem;
+  font-size: 1.125rem;
+  line-height: 1.4;
   color: oklch(0.2 0.05 240);
   background-color: oklch(1 0 0);
   background-clip: padding-box;
@@ -224,7 +224,7 @@
 }
 
 .input-group .form-control {
-  padding-left: 3rem;
+  padding-left: 2.75rem;
 }
 
 .form-control.error {
@@ -242,6 +242,157 @@
   color: oklch(0.5 0.05 240);
   font-size: 1.125rem;
   line-height: 1.4;
+}
+
+/* Form Options Section */
+.form-options {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Custom Checkbox Design */
+.checkbox-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  font-size: 1rem;
+  font-weight: 500;
+  color: oklch(0.3 0.05 240);
+  transition: all 0.2s ease;
+}
+
+.checkbox-group:hover {
+  color: oklch(0.2 0.05 240);
+}
+
+/* Hide the default checkbox */
+.checkbox-group input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Custom checkbox container */
+.checkbox-group label {
+  position: relative;
+  padding-left: 1.75rem;
+  cursor: pointer;
+  line-height: 1.2;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: inherit;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+/* Custom checkbox box */
+.checkbox-group label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.125rem;
+  height: 1.125rem;
+  background: oklch(1 0 0);
+  border: 2px solid oklch(0.85 0.02 240);
+  border-radius: 4px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px oklch(0 0 0 / 0.05);
+  flex-shrink: 0;
+}
+
+/* Custom checkbox checkmark */
+.checkbox-group label::after {
+  content: '';
+  position: absolute;
+  left: 0.4375rem;
+  top: 0.125rem;
+  transform: scale(0) rotate(45deg);
+  width: 0.3125rem;
+  height: 0.625rem;
+  border: solid oklch(1 0 0);
+  border-width: 0 2px 2px 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+}
+
+/* Checkbox hover state */
+.checkbox-group:hover label::before {
+  border-color: oklch(0.55 0.2 240);
+  box-shadow: 0 4px 8px oklch(0.55 0.2 240 / 0.1);
+  transform: translateY(-50%) scale(1.05);
+}
+
+/* Checkbox focus state (when tabbed to) */
+.checkbox-group input[type="checkbox"]:focus + label::before {
+  border-color: oklch(0.55 0.2 240);
+  box-shadow: 0 0 0 3px oklch(0.55 0.2 240 / 0.15);
+  outline: none;
+}
+
+/* Checkbox checked state */
+.checkbox-group input[type="checkbox"]:checked + label::before {
+  background: linear-gradient(135deg, oklch(0.55 0.2 240) 0%, oklch(0.5 0.22 260) 100%);
+  border-color: oklch(0.55 0.2 240);
+  box-shadow: 0 4px 12px oklch(0.55 0.2 240 / 0.25);
+  transform: translateY(-50%) scale(1);
+}
+
+/* Checkbox checkmark when checked */
+.checkbox-group input[type="checkbox"]:checked + label::after {
+  opacity: 1;
+  transform: scale(1) rotate(45deg);
+}
+
+/* Checkbox active/pressed state */
+.checkbox-group:active label::before {
+  transform: translateY(-50%) scale(0.95);
+}
+
+/* Checkbox disabled state */
+.checkbox-group input[type="checkbox"]:disabled + label {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.checkbox-group input[type="checkbox"]:disabled + label::before {
+  background: oklch(0.95 0.01 240);
+  border-color: oklch(0.9 0.02 240);
+  cursor: not-allowed;
+}
+
+/* Enhanced focus ring for accessibility */
+.checkbox-group input[type="checkbox"]:focus-visible + label::before {
+  outline: 2px solid oklch(0.55 0.2 240);
+  outline-offset: 2px;
+}
+
+/* Animation for smooth transitions */
+@keyframes checkboxPulse {
+  0% {
+    box-shadow: 0 4px 12px oklch(0.55 0.2 240 / 0.25);
+  }
+  50% {
+    box-shadow: 0 4px 16px oklch(0.55 0.2 240 / 0.4);
+  }
+  100% {
+    box-shadow: 0 4px 12px oklch(0.55 0.2 240 / 0.25);
+  }
+}
+
+.checkbox-group input[type="checkbox"]:checked + label::before {
+  animation: checkboxPulse 0.3s ease-out;
 }
 
 /* Login and Register buttons */
@@ -284,10 +435,10 @@
 .login-btn,
 .register-btn {
   width: 100%;
-  margin-top: 2rem;
-  padding: 1.25rem;
+  margin-top: 1.5rem;
+  padding: 1rem;
   font-weight: 600;
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   transition: all 0.2s ease;
 }
 

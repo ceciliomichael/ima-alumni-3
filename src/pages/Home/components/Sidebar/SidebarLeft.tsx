@@ -53,17 +53,7 @@ const SidebarLeft = ({ user }: SidebarLeftProps) => {
         </Link>
       </div>
 
-      <div className="sidebar-card">
-        <h3 className="sidebar-title">Menu</h3>
-        <ul className="sidebar-menu">
-          <li className={`sidebar-menu-item ${isActive('/') ? 'active' : ''}`}>
-            <Link to="/" className="sidebar-menu-link">
-              <User size={20} />
-              <span>My Feed</span>
-            </Link>
-          </li>
-        </ul>
-      </div>
+
 
       <div className="sidebar-card">
         <h3 className="sidebar-title">About</h3>

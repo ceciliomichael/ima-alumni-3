@@ -8,9 +8,9 @@ export default defineConfig({
     open: true,
     host: true,
     strictPort: false,
-    allowedHosts: ['devtest2.echosphere.dpdns.org'],
+    allowedHosts: ['test.echosphere.dpdns.org'],
     cors: {
-      origin: ['https://devtest2.echosphere.dpdns.org/'],
+      origin: ['https://test.echosphere.dpdns.org/'],
       credentials: true
     }
   },

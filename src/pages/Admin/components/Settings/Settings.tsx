@@ -13,7 +13,7 @@ import { getAllGalleryItems, deleteGalleryItem } from '../../../../services/fire
 import { getAllAlumni, deleteAlumni } from '../../../../services/firebase/alumniService';
 import { getAllOfficers as getAllFirebaseOfficers, deleteOfficer } from '../../../../services/firebase/officerService';
 import { getAllDonations, deleteDonation } from '../../../../services/firebase/donationService';
-import { getAllContactMessages as getAllFirebaseMessages, deleteContactMessage } from '../../../../services/firebase/contactService';
+
 import './Settings.css';
 
 const Settings = () => {
@@ -82,12 +82,7 @@ const Settings = () => {
         await deleteDonation(donation.id);
       }
       
-      // Delete all contact messages
-      const messages = await getAllFirebaseMessages();
-      console.log(`Deleting ${messages.length} contact messages...`);
-      for (const message of messages) {
-        await deleteContactMessage(message.id);
-      }
+
       
       // Clear localStorage data (keep admin session)
       const keysToKeep = ['admin_user'];
@@ -132,7 +127,7 @@ const Settings = () => {
                 </div>
                 <div className="settings-clear-data-text">
                   <h3>Clear All Data</h3>
-                  <p>This action will permanently delete ALL data from Firebase including posts, users, events, jobs, gallery items, alumni records, officers, donations, and contact messages. Only admin accounts will be preserved.</p>
+                  <p>This action will permanently delete ALL data from Firebase including posts, users, events, jobs, gallery items, alumni records, officers, and donations. Only admin accounts will be preserved.</p>
                   <div className="settings-clear-data-warning">
                     <strong>Warning:</strong> This action cannot be undone and may take several minutes to complete.
                   </div>
@@ -181,7 +176,7 @@ const Settings = () => {
       <ConfirmDialog 
         isOpen={showClearDataDialog}
         title="Clear All Data"
-        message="Are you absolutely sure you want to delete ALL data from Firebase? This action cannot be undone and will permanently remove all posts, users, events, jobs, gallery items, alumni records, officers, donations, contact messages, and other content from the database. Only admin accounts will be preserved. This process may take several minutes to complete."
+        message="Are you absolutely sure you want to delete ALL data from Firebase? This action cannot be undone and will permanently remove all posts, users, events, jobs, gallery items, alumni records, officers, donations, and other content from the database. Only admin accounts will be preserved. This process may take several minutes to complete."
         confirmText="Yes, Clear All Data"
         cancelText="Cancel"
         onConfirm={handleClearAllData}
