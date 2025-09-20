@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Save, Briefcase, Building, MapPin, 
   DollarSign, Mail, Calendar, Link, FileText, CheckCircle, Clock,
-  Upload, Plus, Image
+  Plus, Image
 } from 'lucide-react';
 import { 
   addJob, 
@@ -11,7 +11,7 @@ import {
   updateJob,
   Job
 } from '../../../../services/firebase/jobService';
-import { fileToBase64, resizeImage, validateImageFile } from '../../../../services/firebase/storageService';
+import { resizeImage, validateImageFile } from '../../../../services/firebase/storageService';
 import AdminLayout from '../../layout/AdminLayout';
 import './Jobs.css';
 import './JobForm.css';

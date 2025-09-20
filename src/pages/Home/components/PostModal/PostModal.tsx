@@ -371,15 +371,15 @@ const PostModal: React.FC<PostModalProps> = ({
               <div className="post-modal-images">
                 <div className="post-modal-image-container">
                   <img 
-                    src={currentPost.images[currentImageIndex]} 
+                    src={currentPost.images?.[currentImageIndex] || ''} 
                     alt={`${currentPost.userName}'s post image`} 
                     className="post-modal-image"
                   />
                 </div>
                 
-                {currentPost.images.length > 1 && (
+                {(currentPost.images?.length || 0) > 1 && (
                   <div className="post-modal-thumbnails">
-                    {currentPost.images.map((image, index) => (
+                    {currentPost.images?.map((image, index) => (
                       <div
                         key={index}
                         className={`post-modal-thumbnail ${index === currentImageIndex ? 'active' : ''}`}

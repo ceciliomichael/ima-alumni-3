@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Filter, Calendar, Heart } from 'lucide-react';
+import { Calendar, Heart } from 'lucide-react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { Donation } from '../../types';

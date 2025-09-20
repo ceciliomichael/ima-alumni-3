@@ -1,28 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import { addAlumni } from './alumniService';
+import { User as UserType } from '../../../../types';
 
-// User interface
-export interface User {
-  id: string;
-  name: string;
-  email: string;
+// Use the main User type from types/index.ts
+export interface User extends UserType {
   password: string; // In a real app, this would be hashed
-  batch?: string;
-  profileImage?: string;
-  coverPhoto?: string;
-  bio?: string;
-  job?: string;
-  company?: string;
-  location?: string;
-  socialLinks?: {
-    linkedin?: string;
-    twitter?: string;
-    website?: string;
-  };
   createdAt: string;
   isActive: boolean;
-  following?: string[];
-  followers?: string[];
 }
 
 const USER_STORAGE_KEY = 'users';
@@ -74,6 +58,7 @@ export const registerUser = (userData: Omit<User, 'id' | 'createdAt' | 'isActive
     batch: userData.batch || 'Unknown',
     isActive: false,
     profileImage: userData.profileImage,
+    dateRegistered: new Date().toISOString(),
     userId: newUser.id // Link to user ID
   });
   
@@ -193,7 +178,7 @@ export const searchUsers = (query: string) => {
   return users.filter(user => 
     user.name.toLowerCase().includes(lowercaseQuery) || 
     user.email.toLowerCase().includes(lowercaseQuery) ||
-    user.batch.toLowerCase().includes(lowercaseQuery)
+    (user.batch && user.batch.toLowerCase().includes(lowercaseQuery))
   ).slice(0, 10); // Limit to 10 results
 };
 
@@ -309,7 +294,7 @@ export const getFollowing = (userId: string): User[] => {
   }
   
   const users = getAllUsers();
-  return users.filter(u => user.following.includes(u.id));
+  return users.filter(u => user.following!.includes(u.id));
 };
 
 // Get followers of a specified user
@@ -321,5 +306,5 @@ export const getFollowers = (userId: string): User[] => {
   }
   
   const users = getAllUsers();
-  return users.filter(u => user.followers.includes(u.id));
+  return users.filter(u => user.followers!.includes(u.id));
 }; 

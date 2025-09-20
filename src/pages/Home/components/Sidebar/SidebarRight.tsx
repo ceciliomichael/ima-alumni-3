@@ -3,7 +3,6 @@ import { Calendar, Briefcase, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../../firebase/config';
-import ImagePlaceholder from '../../../../components/ImagePlaceholder/ImagePlaceholder';
 import DonationProgressCard from './DonationProgressCard';
 import './Sidebar.css';
 

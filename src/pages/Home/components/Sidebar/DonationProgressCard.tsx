@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { DollarSign, TrendingUp, ArrowRight, Heart } from 'lucide-react';
+import { ArrowRight, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../../firebase/config';

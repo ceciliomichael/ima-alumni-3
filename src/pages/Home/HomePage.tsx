@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Post, Comment, Reply } from '../../types';
+import { User, Post } from '../../types';
 import PostForm from './components/PostForm/PostForm';
 import PostList from './components/PostList/PostList';
 import SidebarLeft from './components/Sidebar/SidebarLeft';

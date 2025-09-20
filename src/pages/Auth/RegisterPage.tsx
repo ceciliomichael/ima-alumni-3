@@ -1,5 +1,5 @@
-import { useState, ChangeEvent, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, ChangeEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { UserPlus, Mail, Lock, User, GraduationCap, Camera, Image } from 'lucide-react';
 import { registerUser } from '../../services/firebase/userService';
 import './Auth.css';
@@ -18,7 +18,6 @@ const RegisterPage = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
-  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

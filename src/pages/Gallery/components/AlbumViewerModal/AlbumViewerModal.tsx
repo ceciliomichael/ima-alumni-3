@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, Heart, Bookmark, Calendar, User, Download, Share2 } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Heart, Bookmark, Calendar, User, Share2 } from 'lucide-react';
 import { GalleryPost } from '../../../../types';
 import { getAlbumImages } from '../../../../services/firebase/galleryService';
 import './AlbumViewerModal.css';

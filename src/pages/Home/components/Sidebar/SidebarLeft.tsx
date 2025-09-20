@@ -1,4 +1,4 @@
-import { User, UserCircle, Users, BookOpen, Building, Settings } from 'lucide-react';
+import { UserCircle, Users, BookOpen, Building, Settings } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { User as UserType } from '../../../../types';
 import ImagePlaceholder from '../../../../components/ImagePlaceholder/ImagePlaceholder';

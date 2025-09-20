@@ -1,9 +1,9 @@
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Menu, X, LogOut, Settings,
   LayoutDashboard, Users, Award, Calendar,
-  Image, Briefcase, ChevronRight,
+  Image, Briefcase,
   Info
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';

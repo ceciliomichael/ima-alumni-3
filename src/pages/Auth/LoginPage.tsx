@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, CreditCard, GraduationCap } from 'lucide-react';
+import { LogIn, CreditCard } from 'lucide-react';
 import { loginByAlumniId, AlumniIdLoginResult, validateAlumniIdInput } from '../../services/auth/alumniIdLoginService';
 import { User as ServiceUser } from '../../services/firebase/userService';
 import { formatAlumniId } from '../../utils/alumniIdUtils';

@@ -1,5 +1,5 @@
 import { Post, Comment, Reply, User } from '../../../../types';
-import { ThumbsUp, MessageCircle, MoreHorizontal, Heart, Send, CornerDownRight, Trash2 } from 'lucide-react';
+import { MessageCircle, MoreHorizontal, Heart, Send, CornerDownRight, Trash2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ImagePlaceholder from '../../../../components/ImagePlaceholder/ImagePlaceholder';
@@ -33,7 +33,6 @@ const PostList = ({
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
   const [replyingToComment, setReplyingToComment] = useState<string | null>(null);
-  const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
   
   // State for modals and menus
   const [selectedPostForModal, setSelectedPostForModal] = useState<Post | null>(null);
@@ -136,7 +135,6 @@ const PostList = ({
 
   const handleLike = (postId: string) => {
     if (!userId) return;
-    setLikedPosts(prev => ({ ...prev, [postId]: !prev[postId] }));
     onLikePost(postId);
   };
 

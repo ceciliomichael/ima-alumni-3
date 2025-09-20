@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Calendar, Image, MapPin, CheckCircle, Clock, Upload, Plus } from 'lucide-react';
-import { fileToBase64, resizeImage, validateImageFile } from '../../../../services/firebase/storageService';
+import { resizeImage, validateImageFile } from '../../../../services/firebase/storageService';
 import { 
   addEvent, 
   getEventById, 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Edit, Eye, Filter, Check, User, X, AlertTriangle, Upload } from 'lucide-react';
+import { Search, Plus, Filter, Check, User, X, AlertTriangle, Upload } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   getAllAlumni, 

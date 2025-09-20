@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
-  Info, FileText, Building, Mail, Plus, Edit, Trash2, Save, X, 
-  MapPin, Phone, Users, Target, Eye, History, Upload, Image
+  Info, Building, Mail, Plus, Edit, Trash2, Save, X, 
+  MapPin, Phone, Target, History, Upload, Image
 } from 'lucide-react';
 import AdminLayout from '../../layout/AdminLayout';
 import ConfirmDialog from '../../../../components/ConfirmDialog';

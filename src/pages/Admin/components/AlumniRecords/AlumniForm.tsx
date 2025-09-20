@@ -32,7 +32,6 @@ const AlumniForm = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   
   useEffect(() => {
@@ -115,7 +114,6 @@ const AlumniForm = () => {
       const result = await processImageFile(file, true);
       
       if (result.success && result.base64) {
-        setSelectedImageFile(file);
         setImagePreview(result.base64);
         setFormData(prev => ({
           ...prev,
@@ -145,7 +143,6 @@ const AlumniForm = () => {
   };
 
   const handleRemoveImage = () => {
-    setSelectedImageFile(null);
     setImagePreview('');
     setFormData(prev => ({
       ...prev,

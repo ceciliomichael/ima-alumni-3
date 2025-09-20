@@ -3,7 +3,6 @@ import { Search, Plus, Edit, Trash, Image, CheckCircle, XCircle, Filter, Calenda
 import { useNavigate } from 'react-router-dom';
 import { 
   getAllGalleryItems, 
-  searchGalleryItems, 
   deleteGalleryItem, 
   approveGalleryItem
 } from '../../../../services/firebase/galleryService';

@@ -6,7 +6,6 @@ import {
   searchOfficers, 
   deleteOfficer
 } from '../../../../services/firebase';
-import { getAlumniById } from '../../../../services/firebase';
 import { OfficerPosition, AlumniRecord } from '../../../../types';
 import AdminLayout from '../../layout/AdminLayout';
 import './AlumniOfficers.css';

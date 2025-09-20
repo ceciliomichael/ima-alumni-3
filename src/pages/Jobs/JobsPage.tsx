@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, Briefcase, Filter, MapPin, Calendar, Clock, Mail, Link, Plus, Upload, Image } from 'lucide-react';
+import { Search, Briefcase, MapPin, Calendar, Clock, Mail, Link, Plus, Upload } from 'lucide-react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { fileToBase64, resizeImage, validateImageFile } from '../../services/firebase/storageService';
+import { resizeImage, validateImageFile } from '../../services/firebase/storageService';
 import './Jobs.css';
 import { 
   addJob,

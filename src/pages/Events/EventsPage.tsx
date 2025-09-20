@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, MapPin, Clock, Filter, ChevronDown, Search, Zap } from 'lucide-react';
+import { Calendar, MapPin, Clock, Search, Zap } from 'lucide-react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 // Use the Firestore service for Event type

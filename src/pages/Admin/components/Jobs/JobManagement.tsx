@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   Search, Plus, Edit, Trash, CheckCircle, XCircle,
-  Briefcase, MapPin, Calendar, DollarSign, Mail, Link, Clock, Zap
+  Briefcase, MapPin, Calendar, DollarSign, Mail, Clock, Zap
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Calendar, Briefcase, AtSign, Check, Trash2, Filter } from 'lucide-react';
+import { Bell, Calendar, Briefcase, AtSign, Check, Trash2 } from 'lucide-react';
 import './Notifications.css';
 
 interface Notification {

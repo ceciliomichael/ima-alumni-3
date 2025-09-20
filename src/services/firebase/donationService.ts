@@ -8,7 +8,6 @@ import {
   query, 
   where,
   orderBy,
-  Timestamp,
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../../firebase/config';
@@ -115,7 +114,7 @@ export const toggleDonationVisibility = async (id: string, isPublic: boolean): P
 export const initializeDonationData = async (): Promise<void> => {
   try {
     const donationsRef = collection(db, DONATIONS_COLLECTION);
-    const snapshot = await getDocs(donationsRef);
+    await getDocs(donationsRef);
     
     // If no donations exist, initialize with some sample donations
     // if (snapshot.empty) {

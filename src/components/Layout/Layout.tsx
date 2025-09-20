@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { User } from '../../types';
-import { Home, Users, Image, Calendar, Info, Bell, LogOut, Menu, X, User as UserIcon, Briefcase } from 'lucide-react';
+import { Home, Image, Calendar, Info, Bell, LogOut, Menu, X, User as UserIcon, Briefcase } from 'lucide-react';
 import { useState } from 'react';
 import UserSearch from '../UserSearch/UserSearch';
 import ImagePlaceholder from '../ImagePlaceholder/ImagePlaceholder';
@@ -20,14 +20,6 @@ const Layout = ({ children, isAuthenticated, user, onLogout }: LayoutProps) => {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  // Get first letter of user's name for avatar placeholder
-  const getInitial = () => {
-    if (user && user.name) {
-      return user.name.charAt(0).toUpperCase();
-    }
-    return 'A';
   };
 
   if (!isAuthenticated) {

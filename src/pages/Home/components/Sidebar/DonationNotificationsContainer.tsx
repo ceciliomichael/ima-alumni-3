@@ -11,7 +11,7 @@ interface DonationNotificationData {
   amount: number;
   currency: string;
   isAnonymous?: boolean;
-  timestamp?: number;
+  timestamp: number;
 }
 
 const DonationNotificationsContainer = () => {

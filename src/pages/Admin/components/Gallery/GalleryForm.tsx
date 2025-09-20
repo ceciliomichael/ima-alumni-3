@@ -9,7 +9,7 @@ import {
 } from '../../../../services/firebase/galleryService';
 import { GalleryPost } from '../../../../types';
 import { getAllEvents, Event } from '../../../../services/firebase/eventService';
-import { fileToBase64, resizeImage, validateImageFile } from '../../../../services/firebase/storageService';
+import { resizeImage, validateImageFile } from '../../../../services/firebase/storageService';
 import AdminLayout from '../../layout/AdminLayout';
 import './Gallery.css';
 import './GalleryForm.css';

@@ -1,4 +1,4 @@
-import { Briefcase, Building, MapPin, Link, Github, Linkedin, Twitter, Mail } from 'lucide-react';
+import { Briefcase, MapPin, Link, Linkedin, Twitter, Mail } from 'lucide-react';
 import './styles.css';
 
 interface SocialLinks {

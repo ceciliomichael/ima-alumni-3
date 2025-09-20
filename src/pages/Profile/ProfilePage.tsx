@@ -39,8 +39,6 @@ const ProfilePage = ({
   const [isEditing, setIsEditing] = useState(initialEditMode);
   const [isLoading, setIsLoading] = useState(true);
   const [isFollowingUser, setIsFollowingUser] = useState(false);
-  const [followersCount, setFollowersCount] = useState(0);
-  const [followingCount, setFollowingCount] = useState(0);
   const [followers, setFollowers] = useState<User[]>([]);
   const [following, setFollowing] = useState<User[]>([]);
   const [showFollowersModal, setShowFollowersModal] = useState(false);
@@ -85,8 +83,6 @@ const ProfilePage = ({
           
           setFollowers(followersList as unknown as User[]);
           setFollowing(followingList as unknown as User[]);
-          setFollowersCount(followersList.length);
-          setFollowingCount(followingList.length);
         }
       } catch (error) {
         console.error('Error loading user profile:', error);
@@ -190,42 +186,6 @@ const ProfilePage = ({
     }
   };
   
-  // Handle follow action
-  const handleFollow = async () => {
-    if (!currentUser || !profileUser) return;
-    
-    try {
-      const success = await followUser(currentUser.id, profileUser.id);
-      if (success) {
-        setIsFollowingUser(true);
-        // Refresh followers list
-        const updatedFollowers = await getFollowers(profileUser.id);
-        setFollowers(updatedFollowers as unknown as User[]);
-        setFollowersCount(updatedFollowers.length);
-      }
-    } catch (error) {
-      console.error('Error following user:', error);
-    }
-  };
-  
-  // Handle unfollow action
-  const handleUnfollow = async () => {
-    if (!currentUser || !profileUser) return;
-    
-    try {
-      const success = await unfollowUser(currentUser.id, profileUser.id);
-      if (success) {
-        setIsFollowingUser(false);
-        // Refresh followers list
-        const updatedFollowers = await getFollowers(profileUser.id);
-        setFollowers(updatedFollowers as unknown as User[]);
-        setFollowersCount(updatedFollowers.length);
-      }
-    } catch (error) {
-      console.error('Error unfollowing user:', error);
-    }
-  };
-  
   // Handle user follow actions from the modals
   const handleFollowUser = async (targetUserId: string) => {
     if (!currentUser) return;
@@ -237,7 +197,6 @@ const ProfilePage = ({
         if (profileUser.id === currentUser.id) {
           const updatedFollowing = await getFollowing(currentUser.id);
           setFollowing(updatedFollowing as unknown as User[]);
-          setFollowingCount(updatedFollowing.length);
         }
       }
     } catch (error) {
@@ -256,7 +215,6 @@ const ProfilePage = ({
         if (profileUser.id === currentUser.id) {
           const updatedFollowing = await getFollowing(currentUser.id);
           setFollowing(updatedFollowing as unknown as User[]);
-          setFollowingCount(updatedFollowing.length);
         }
       }
     } catch (error) {
@@ -269,16 +227,6 @@ const ProfilePage = ({
     setShowFollowersModal(false);
     setShowFollowingModal(false);
     navigate(`/profile/${userId}`);
-  };
-  
-  // Open followers modal
-  const openFollowersModal = () => {
-    setShowFollowersModal(true);
-  };
-  
-  // Open following modal
-  const openFollowingModal = () => {
-    setShowFollowingModal(true);
   };
 
   if (isLoading) {
@@ -311,8 +259,7 @@ const ProfilePage = ({
   const canEdit = !isViewingOtherUser && currentUser?.id === profileUser.id;
   
   // Get list of current user's following for the modal
-  const currentUserFollowing = currentUser?.following || [];
-
+  
   return (
     <div className="profile-container">
       {isEditing ? (
@@ -326,17 +273,11 @@ const ProfilePage = ({
         <>
           <ProfileHeader 
             user={profileUser}
-            followersCount={followersCount}
-            followingCount={followingCount}
-            onFollowersClick={openFollowersModal}
-            onFollowingClick={openFollowingModal}
-            showEditButton={canEdit}
             onEditClick={() => setIsEditing(true)}
+            showEditButton={canEdit}
             onImageChange={handleImageChange}
-            isFollowing={isFollowingUser}
-            onFollowClick={handleFollow}
-            onUnfollowClick={handleUnfollow}
             currentUserId={currentUser?.id}
+            isFollowing={isFollowingUser}
           />
           
           <div className="profile-body">

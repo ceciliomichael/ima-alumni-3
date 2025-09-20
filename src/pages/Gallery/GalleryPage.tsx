@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { Image, Search, Grid, Bookmark, Upload, Plus, X, ImagePlus, FileText } from 'lucide-react';
-import ImagePlaceholder from '../../components/ImagePlaceholder';
+import { Image, Search, Grid, Bookmark, Upload, X, FileText } from 'lucide-react';
 import GalleryCard from './components/GalleryCard';
 import AlbumViewerModal from './components/AlbumViewerModal';
-import { getAllGalleryItems, addGalleryItem, getUniqueAlbums } from '../../services/firebase/galleryService';
+import { addGalleryItem, getUniqueAlbums } from '../../services/firebase/galleryService';
 import { GalleryPost } from '../../types';
 import { getCurrentUser } from '../../services/firebase/userService';
-import { fileToBase64, resizeImage, validateImageFile } from '../../services/firebase/storageService';
+import { resizeImage, validateImageFile } from '../../services/firebase/storageService';
 import './Gallery.css';
 
 const GalleryPage = () => {
@@ -107,9 +106,9 @@ const GalleryPage = () => {
     let matchesBookmarked = true;
     if (viewMode === 'masonry' && currentUser) {
       // Check if the image is bookmarked by the current user
-      const isBookmarked = image.bookmarkedBy && 
+      const isBookmarked: boolean = image.bookmarkedBy && 
                           Array.isArray(image.bookmarkedBy) && 
-                          image.bookmarkedBy.includes(currentUser.id);
+                          image.bookmarkedBy.includes(currentUser.id) || false;
       matchesBookmarked = isBookmarked;
     }
     
@@ -124,20 +123,8 @@ const GalleryPage = () => {
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   };
-
-  // Generate placeholder colors by album category
-  const getColorByCategory = (category: string) => {
-    const colorMap: Record<string, string> = {
-      'Homecoming': '#4f46e5',
-      'Batch Reunions': '#ec4899',
-      'Career Events': '#8b5cf6',
-      'Awards': '#f59e0b',
-      'Community Service': '#14b8a6',
-    };
-    return colorMap[category] || '#64748b';
-  };
   
-
+  
   
   const handleAlbumChange = (album: string) => {
     if (album.toLowerCase() === 'all photos') {

@@ -1,5 +1,5 @@
-import { getUserByAlumniId, setCurrentUser, getUserById, approveUser, createUser, checkAlumniIdExists } from '../firebase/userService';
-import { getAlumniByAlumniId, updateAlumni, checkAlumniIdExistsInRecords } from '../firebase/alumniService';
+import { getUserByAlumniId, setCurrentUser, getUserById, approveUser, createUser } from '../firebase/userService';
+import { getAlumniByAlumniId, updateAlumni } from '../firebase/alumniService';
 import { User } from '../firebase/userService';
 import { validateAndFormatAlumniId, cleanAlumniId } from '../../utils/alumniIdUtils';
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, Mail, Lock, ShieldAlert } from 'lucide-react';
+import { Mail, Lock, ShieldAlert } from 'lucide-react';
 import { useAdminAuth } from './context/AdminAuthContext';
 import '../Auth/Auth.css';
 
