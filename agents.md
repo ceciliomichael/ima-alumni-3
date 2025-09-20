@@ -6,7 +6,6 @@
 
 <workflow_steps>
 • Always start with analyzing and restating the user's query or task to remain in scope.
-• Use the mcp_taskmaster_load_memory to load the memory if it exists.
 • Use the mcp_filesys_check_structure to see the project structure. Note: What is shown is what exists. Do not make up any files or directories.
 • Use the mcp_filesys_batch_read to read applicable files in batch reading mode for efficiency.
 • With all the information gathered, generate a clear and concise plan of action to execute the user's task.
@@ -60,26 +59,6 @@ Always maintain clean file organization and avoid creating spaghetti code.
 </quality_assurance>
 
 <after_development>
-
-<save_memory description="This is the most crucial part that the agent must follow and it is to save the memory of the task that the agent has done">
-MANDATORY: After completing ANY development task, code implementation, file creation, modification, or technical work regardless of size or complexity, you MUST use save_memory to store a very brief, very concise but detailed summary of what was accomplished. 
-
-This applies to ALL development activities of any scale including but not limited to:
-• Creating components, implementing features, fixing bugs
-• Refactoring code, adding functionality, modifying existing code
-• Creating new files, updating configurations
-• Making small edits, minor adjustments, tiny fixes
-• Major implementations, complete feature builds
-• Any other code-related changes whether they are very small single-line modifications or very large comprehensive implementations
-
-The scale or complexity does not matter - ALWAYS save memory for development work. 
-
-DO NOT save memory ONLY for non-development tasks such as:
-• Answering questions without implementation
-• Providing explanations without code changes
-• Committing code to version control
-• Other administrative tasks that don't involve actual development work
-</save_memory>
 
 </cursor_rules>
 
