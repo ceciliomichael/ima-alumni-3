@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Mail, Calendar, Briefcase, School } from 'lucide-react';
+import { ArrowLeft, Mail, Calendar, Briefcase, School, Key, AlertCircle, CheckCircle } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getAlumniById } from '../../../../services/firebase/alumniService';
 import { AlumniRecord } from '../../../../types';
+import { adminResetPassword } from '../../../../services/auth/passwordService';
+import { getUserByAlumniId } from '../../../../services/firebase/userService';
 import AdminLayout from '../../layout/AdminLayout';
 
 const AlumniView = () => {
   const { id } = useParams<{ id: string }>();
   const [alumni, setAlumni] = useState<AlumniRecord | null>(null);
   const [loading, setLoading] = useState(true);
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const [resetMessage, setResetMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,6 +32,59 @@ const AlumniView = () => {
     
     fetchAlumni();
   }, [id]);
+
+  const handleResetPassword = async () => {
+    if (!alumni || !alumni.alumniId) {
+      setResetMessage({ type: 'error', text: 'Cannot reset password: Alumni ID not found' });
+      return;
+    }
+
+    // Confirm action
+    const confirmed = window.confirm(
+      `Are you sure you want to reset the password for ${alumni.name}?\n\nThe new password will be: ${alumni.name.split(' ').pop()?.toLowerCase()}${alumni.batch.match(/\d{4}/)?.[0] || ''}`
+    );
+
+    if (!confirmed) return;
+
+    setResettingPassword(true);
+    setResetMessage(null);
+
+    try {
+      // Find user by alumni ID
+      const user = await getUserByAlumniId(alumni.alumniId);
+      
+      if (!user) {
+        setResetMessage({ 
+          type: 'error', 
+          text: 'User account not found. The alumni may not have registered yet.' 
+        });
+        return;
+      }
+
+      // Reset password
+      const result = await adminResetPassword(user.id);
+
+      if (result.success && result.newPassword) {
+        setResetMessage({
+          type: 'success',
+          text: `Password reset successfully! New password: ${result.newPassword}`
+        });
+      } else {
+        setResetMessage({
+          type: 'error',
+          text: result.error || 'Failed to reset password'
+        });
+      }
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      setResetMessage({
+        type: 'error',
+        text: 'An error occurred while resetting password'
+      });
+    } finally {
+      setResettingPassword(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -132,6 +189,10 @@ const AlumniView = () => {
                 <div className="detail-value">{alumni.email}</div>
               </div>
               <div className="detail-item">
+                <div className="detail-label">Alumni ID (LRN)</div>
+                <div className="detail-value">{alumni.alumniId || 'Not assigned'}</div>
+              </div>
+              <div className="detail-item">
                 <div className="detail-label">Batch Year</div>
                 <div className="detail-value">{alumni.batch}</div>
               </div>
@@ -153,6 +214,35 @@ const AlumniView = () => {
               </div>
             </div>
           </div>
+
+          {/* Password Reset Section */}
+          {alumni.isActive && alumni.alumniId && (
+            <div className="alumni-details-section">
+              <h2 className="section-title">Account Management</h2>
+              
+              {resetMessage && (
+                <div className={`alert ${resetMessage.type === 'success' ? 'alert-success' : 'alert-error'}`} style={{ marginBottom: '1.5rem' }}>
+                  {resetMessage.type === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
+                  <span>{resetMessage.text}</span>
+                </div>
+              )}
+              
+              <div className="account-actions">
+                <button
+                  className="btn btn-secondary"
+                  onClick={handleResetPassword}
+                  disabled={resettingPassword}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                >
+                  <Key size={18} />
+                  <span>{resettingPassword ? 'Resetting Password...' : 'Reset Password to Default'}</span>
+                </button>
+                <p className="help-text" style={{ marginTop: '0.75rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                  This will reset the user's password to the default format: <strong>{alumni.name.split(' ').pop()?.toLowerCase()}{alumni.batch.match(/\d{4}/)?.[0] || ''}</strong>
+                </p>
+              </div>
+            </div>
+          )}
           
           {!alumni.isActive && (
             <div className="alumni-actions">

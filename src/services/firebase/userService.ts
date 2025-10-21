@@ -323,12 +323,14 @@ export const createUser = async (payload: {
   profileImage?: string;
   coverPhoto?: string;
   isActive?: boolean;
+  password?: string;
+  alumniId?: string;
 }): Promise<User | null> => {
   try {
     const baseUser: any = {
       name: payload.name,
       email: (payload.email || `noreply+${Date.now()}@ima.local`).toLowerCase(),
-      password: '',
+      password: payload.password || '',
       bio: '',
       job: '',
       company: '',
@@ -343,6 +345,7 @@ export const createUser = async (payload: {
     if (payload.batch !== undefined) baseUser.batch = payload.batch;
     if (payload.profileImage !== undefined) baseUser.profileImage = payload.profileImage;
     if (payload.coverPhoto !== undefined) baseUser.coverPhoto = payload.coverPhoto;
+    if (payload.alumniId !== undefined) baseUser.alumniId = payload.alumniId;
 
     const docRef = await addDoc(collection(db, COLLECTION_NAME), baseUser);
     

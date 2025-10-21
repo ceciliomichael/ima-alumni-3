@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, CreditCard } from 'lucide-react';
-import { loginByAlumniId, AlumniIdLoginResult, validateAlumniIdInput } from '../../services/auth/alumniIdLoginService';
+import { LogIn, CreditCard, Lock, Eye, EyeOff } from 'lucide-react';
+import { loginByAlumniIdAndPassword, AlumniIdLoginResult, validateAlumniIdInput } from '../../services/auth/alumniIdLoginService';
 import { User as ServiceUser } from '../../services/firebase/userService';
 import { formatAlumniId } from '../../utils/alumniIdUtils';
 import './Auth.css';
@@ -12,10 +12,12 @@ interface LoginPageProps {
 
 const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   const [formData, setFormData] = useState({
-    alumniId: ''
+    alumniId: '',
+    password: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,6 +56,10 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
     if (!validation.isValid) {
       newErrors.alumniId = validation.error || 'Please enter a valid Alumni ID';
     }
+
+    if (!formData.password.trim()) {
+      newErrors.password = 'Password is required';
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -69,7 +75,7 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
     setIsSubmitting(true);
     
     try {
-      const result: AlumniIdLoginResult = await loginByAlumniId(formData.alumniId);
+      const result: AlumniIdLoginResult = await loginByAlumniIdAndPassword(formData.alumniId, formData.password);
       
       if (result.success && result.user) {
         // Successful login
@@ -78,13 +84,13 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
       } else {
         // Failed login
         setErrors({
-          alumniId: result.error || 'Login failed. Please try again.'
+          general: result.error || 'Login failed. Please try again.'
         });
       }
     } catch (error) {
       console.error('Error logging in:', error);
       setErrors({
-        alumniId: 'An error occurred during login. Please try again.'
+        general: 'An error occurred during login. Please try again.'
       });
     } finally {
       setIsSubmitting(false);
@@ -109,8 +115,10 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
             </div>
             
             <form className="auth-form" onSubmit={handleSubmit}>
+              {errors.general && <div className="form-error" style={{ marginBottom: '1rem', textAlign: 'center' }}>{errors.general}</div>}
+              
               <div className="form-group">
-                <label htmlFor="alumniId" className="form-label">Alumni ID</label>
+                <label htmlFor="alumniId" className="form-label">LRN (Learner's Reference Number)</label>
                 <div className="input-group">
                   <div className="input-icon">
                     <CreditCard size={18} />
@@ -123,14 +131,55 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                     placeholder="1234 5678 9012"
                     value={formData.alumniId}
                     onChange={handleChange}
-                    autoComplete="off"
+                    autoComplete="username"
                     maxLength={14}
                   />
                 </div>
                 {errors.alumniId && <div className="form-error">{errors.alumniId}</div>}
                 <div className="form-hint">
-                  Enter your 12-digit Alumni ID provided by the administrator
+                  Enter your 12-digit LRN provided by the administrator
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="password" className="form-label">Password</label>
+                <div className="input-group">
+                  <div className="input-icon">
+                    <Lock size={18} />
+                  </div>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="password"
+                    name="password"
+                    className={`form-control ${errors.password ? 'error' : ''}`}
+                    placeholder="Enter your password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    autoComplete="current-password"
+                    style={{ paddingRight: '3rem' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="password-toggle"
+                    style={{
+                      position: 'absolute',
+                      right: '0.75rem',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '0.25rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      color: 'var(--text-muted)'
+                    }}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {errors.password && <div className="form-error">{errors.password}</div>}
               </div>
               
               <button 

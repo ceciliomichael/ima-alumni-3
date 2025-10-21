@@ -9,14 +9,17 @@
 }
 
 :root {
-  /* Modern color palette */
-  --primary-color: #31c1fd;
-  --primary-dark: #1b9cd8;
-  --primary-light: #7dd3fd;
-  --primary-rgb: 49, 193, 253; /* RGB values for primary color */
-  --secondary-color: #fe6a20;
-  --secondary-dark: #e55100;
-  --secondary-light: #ff9e80;
+  /* Brand color palette - IMA Alumni */
+  /* Primary: Blue from logo */
+  --primary-color: #1e3a8a; /* Deep blue - brand primary */
+  --primary-dark: #1e40af; /* Darker blue */
+  --primary-light: #3b82f6; /* Lighter blue */
+  --primary-rgb: 30, 58, 138; /* RGB values for primary color */
+  
+  /* Secondary: Yellow from logo - for CTAs */
+  --secondary-color: #fbbf24; /* Warm yellow - CTA color */
+  --secondary-dark: #f59e0b; /* Darker yellow/amber */
+  --secondary-light: #fcd34d; /* Lighter yellow */
   
   /* Accents */
   --accent-1: #ec4899;
@@ -151,23 +154,25 @@ button {
 }
 
 .btn-primary {
-  background-color: var(--primary-color);
-  color: white;
+  background-color: var(--secondary-color); /* Yellow for primary CTAs */
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-dark);
+  background-color: var(--secondary-dark);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
+  color: var(--text-primary);
 }
 
 .btn-secondary {
-  background-color: var(--secondary-color);
+  background-color: var(--primary-color); /* Blue for secondary buttons */
   color: white;
 }
 
 .btn-secondary:hover {
-  background-color: var(--secondary-dark);
+  background-color: var(--primary-dark);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }

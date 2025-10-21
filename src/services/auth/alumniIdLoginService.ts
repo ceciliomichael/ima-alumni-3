@@ -2,6 +2,7 @@ import { getUserByAlumniId, setCurrentUser, getUserById, approveUser, createUser
 import { getAlumniByAlumniId, updateAlumni } from '../firebase/alumniService';
 import { User } from '../firebase/userService';
 import { validateAndFormatAlumniId, cleanAlumniId } from '../../utils/alumniIdUtils';
+import { generateInitialPassword } from '../../utils/passwordUtils';
 
 export interface AlumniIdLoginResult {
   success: boolean;
@@ -41,13 +42,16 @@ const ensureUserFromAlumniRecord = async (alumniRecord: any): Promise<User | nul
       // Linked userId not found, fall through to create a new one
     }
 
-    // Create a minimal active user using alumni data
+    // Create a minimal active user using alumni data with default password
+    const defaultPassword = generateInitialPassword(alumniRecord.name, alumniRecord.batch);
     const created = await createUser({
       name: alumniRecord.name,
       email: alumniRecord.email,
       batch: alumniRecord.batch,
       profileImage: alumniRecord.profileImage,
-      isActive: true
+      isActive: true,
+      password: defaultPassword,
+      alumniId: alumniRecord.alumniId
     });
 
     if (created) {
@@ -64,7 +68,97 @@ const ensureUserFromAlumniRecord = async (alumniRecord: any): Promise<User | nul
 };
 
 /**
- * Handle Alumni ID-based login
+ * Handle Alumni ID-based login with password
+ */
+export const loginByAlumniIdAndPassword = async (alumniId: string, password: string): Promise<AlumniIdLoginResult> => {
+  try {
+    if (!alumniId.trim()) {
+      return {
+        success: false,
+        error: 'Please enter your LRN'
+      };
+    }
+
+    if (!password.trim()) {
+      return {
+        success: false,
+        error: 'Please enter your password'
+      };
+    }
+
+    // Validate Alumni ID format
+    const validation = validateAndFormatAlumniId(alumniId);
+    if (!validation.isValid) {
+      return {
+        success: false,
+        error: validation.error || 'Invalid LRN format'
+      };
+    }
+
+    const cleanId = cleanAlumniId(alumniId);
+
+    // 1) Try direct user match first
+    const user = await findActiveUserByAlumniId(cleanId);
+    
+    if (user) {
+      // Verify password
+      if (user.password !== password) {
+        return {
+          success: false,
+          error: 'Invalid LRN or password'
+        };
+      }
+      setCurrentUser(user);
+      return { success: true, user };
+    }
+
+    // 2) Check if Alumni ID exists in alumni records
+    const alumniRecord = await getAlumniByAlumniId(cleanId);
+    
+    if (!alumniRecord) {
+      return {
+        success: false,
+        error: 'Invalid LRN or password'
+      };
+    }
+
+    if (!alumniRecord.isActive) {
+      return {
+        success: false,
+        error: 'Your account is not active. Please contact the administrator for assistance.'
+      };
+    }
+
+    // 3) Alumni record exists but no user - auto-provision with default password
+    const ensuredUser = await ensureUserFromAlumniRecord(alumniRecord);
+    
+    if (ensuredUser && ensuredUser.isActive) {
+      // Verify password
+      if (ensuredUser.password !== password) {
+        return {
+          success: false,
+          error: 'Invalid LRN or password'
+        };
+      }
+      setCurrentUser(ensuredUser);
+      return { success: true, user: ensuredUser };
+    }
+
+    return {
+      success: false,
+      error: 'Unable to access your account. Please contact the administrator for assistance.'
+    };
+  } catch (error) {
+    console.error('Error during Alumni ID login:', error);
+    return {
+      success: false,
+      error: 'An error occurred during login. Please try again.'
+    };
+  }
+};
+
+/**
+ * Handle Alumni ID-based login (legacy - for backward compatibility)
  */
 export const loginByAlumniId = async (alumniId: string): Promise<AlumniIdLoginResult> => {
   try {

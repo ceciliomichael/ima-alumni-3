@@ -6,6 +6,7 @@ import ProfileAbout from './components/ProfileAbout';
 import ProfileActivity from './components/ProfileActivity';
 import ProfileForm from './components/ProfileForm';
 import ProfilePosts from './components/ProfilePosts';
+import PasswordChange from './components/PasswordChange';
 import FollowersModal from './components/FollowersModal/FollowersModal';
 import { ProfileFormData } from './components/ProfileForm';
 import { 
@@ -44,6 +45,7 @@ const ProfilePage = ({
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [editTab, setEditTab] = useState<'profile' | 'password'>('profile');
 
   // Load the profile data based on the userId param or the current user
   useEffect(() => {
@@ -263,17 +265,50 @@ const ProfilePage = ({
   return (
     <div className="profile-container">
       {isEditing ? (
-        <ProfileForm 
-          user={profileUser} 
-          onSave={handleSaveProfile} 
-          onCancel={() => setIsEditing(false)}
-          isLoading={isSaving}
-        />
+        <div className="profile-edit-container">
+          <div className="profile-edit-tabs">
+            <button 
+              className={`profile-tab ${editTab === 'profile' ? 'active' : ''}`}
+              onClick={() => setEditTab('profile')}
+            >
+              Edit Profile
+            </button>
+            <button 
+              className={`profile-tab ${editTab === 'password' ? 'active' : ''}`}
+              onClick={() => setEditTab('password')}
+            >
+              Change Password
+            </button>
+          </div>
+          
+          <div className="profile-edit-content">
+            {editTab === 'profile' ? (
+              <ProfileForm 
+                user={profileUser} 
+                onSave={handleSaveProfile} 
+                onCancel={() => setIsEditing(false)}
+                isLoading={isSaving}
+              />
+            ) : (
+              <PasswordChange 
+                userId={profileUser.id}
+                onSuccess={() => {
+                  alert('Password changed successfully!');
+                  setIsEditing(false);
+                }}
+                onCancel={() => setIsEditing(false)}
+              />
+            )}
+          </div>
+        </div>
       ) : (
         <>
           <ProfileHeader 
             user={profileUser}
-            onEditClick={() => setIsEditing(true)}
+            onEditClick={() => {
+              setEditTab('profile');
+              setIsEditing(true);
+            }}
             showEditButton={canEdit}
             onImageChange={handleImageChange}
             currentUserId={currentUser?.id}

@@ -7,11 +7,11 @@
   position: relative;
   background: linear-gradient(
     135deg,
-    oklch(0.95 0.03 85) 0%,
-    oklch(0.92 0.05 75) 25%,
-    oklch(0.90 0.07 65) 50%,
-    oklch(0.88 0.08 55) 75%,
-    oklch(0.85 0.10 45) 100%
+    #1e3a8a 0%,
+    #1e40af 25%,
+    #2563eb 50%,
+    #3b82f6 75%,
+    #60a5fa 100%
   );
   overflow: hidden;
   padding: 0;
@@ -218,11 +218,11 @@
 .proceed-btn {
   background: linear-gradient(
     135deg,
-    oklch(0.65 0.25 240) 0%,
-    oklch(0.55 0.3 250) 50%,
-    oklch(0.45 0.35 260) 100%
+    #fbbf24 0%,
+    #f59e0b 50%,
+    #d97706 100%
   );
-  color: oklch(0.98 0.02 60);
+  color: #1e293b;
   border: none;
   padding: clamp(1.1rem, 2.2vw, 1.35rem) clamp(2.25rem, 4.5vw, 3.25rem);
   border-radius: 50px;
@@ -234,9 +234,9 @@
   gap: clamp(0.55rem, 1.1vw, 0.85rem);
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   box-shadow: 
-    0 8px 25px oklch(0.5 0.3 50 / 0.3),
-    0 3px 12px oklch(0.4 0.2 45 / 0.2),
-    inset 0 1px 0 oklch(1 0 0 / 0.2);
+    0 8px 25px rgba(251, 191, 36, 0.4),
+    0 3px 12px rgba(245, 158, 11, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
   text-transform: uppercase;
   letter-spacing: clamp(1px, 0.2vw, 1.5px);
   position: relative;
@@ -266,14 +266,14 @@
 .proceed-btn:hover {
   transform: translateY(-3px) scale(1.02);
   box-shadow: 
-    0 12px 35px oklch(0.5 0.3 50 / 0.4),
-    0 6px 20px oklch(0.4 0.2 45 / 0.3),
-    inset 0 1px 0 oklch(1 0 0 / 0.3);
+    0 12px 35px rgba(251, 191, 36, 0.5),
+    0 6px 20px rgba(245, 158, 11, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
   background: linear-gradient(
     135deg,
-    oklch(0.7 0.27 240) 0%,
-    oklch(0.6 0.32 250) 50%,
-    oklch(0.5 0.37 260) 100%
+    #fcd34d 0%,
+    #fbbf24 50%,
+    #f59e0b 100%
   );
 }
 
