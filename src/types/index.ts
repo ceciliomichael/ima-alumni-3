@@ -204,6 +204,17 @@ export interface Donation {
   isPublic: boolean;
   isAnonymous?: boolean; // New field for donor anonymity
   donationDate: string;
+  archiveMonth?: number; // Month for archiving (1-12)
+  archiveYear?: number; // Year for archiving
   createdAt?: any; // Firestore timestamp
   updatedAt?: any; // Firestore timestamp
+}
+
+export interface DonationReport {
+  totalAmount: number;
+  count: number;
+  avgAmount: number;
+  byCategory: Record<string, { amount: number; count: number }>;
+  byMonth: Record<string, { amount: number; count: number }>;
+  donations: Donation[];
 } 

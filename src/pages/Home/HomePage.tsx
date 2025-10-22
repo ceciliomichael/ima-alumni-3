@@ -8,7 +8,6 @@ import IMAHeroCard from './components/IMAHero/IMAHeroCard';
 import { MessageSquare, RefreshCw, Zap } from 'lucide-react';
 import './Home.css';
 import { 
-  getAllPosts,
   getApprovedPosts,
   likePost, 
   addComment, 

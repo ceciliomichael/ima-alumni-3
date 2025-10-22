@@ -1,6 +1,8 @@
 import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { Post, Comment, Reply, CommentReaction } from '../../types';
+import type { Post, Comment, Reply, CommentReaction } from '../../types';
+
+export type { Post, Comment, Reply, CommentReaction };
 
 const COLLECTION_NAME = 'posts';
 

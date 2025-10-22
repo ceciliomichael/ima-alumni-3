@@ -292,14 +292,17 @@ const DonationReports = () => {
                 <h2 className="section-title">Breakdown by Category</h2>
                 <div className="breakdown-grid">
                   {Object.entries(report.byCategory)
-                    .sort((a, b) => b[1].amount - a[1].amount)
-                    .map(([cat, data]) => (
-                      <div key={cat} className="breakdown-item">
-                        <div className="breakdown-category">{cat}</div>
-                        <div className="breakdown-amount">{formatCurrency(data.amount)}</div>
-                        <div className="breakdown-count">{data.count} donation{data.count !== 1 ? 's' : ''}</div>
-                      </div>
-                    ))}
+                    .sort((a, b) => (b[1] as { amount: number; count: number }).amount - (a[1] as { amount: number; count: number }).amount)
+                    .map(([cat, data]) => {
+                      const breakdown = data as { amount: number; count: number };
+                      return (
+                        <div key={cat} className="breakdown-item">
+                          <div className="breakdown-category">{cat}</div>
+                          <div className="breakdown-amount">{formatCurrency(breakdown.amount)}</div>
+                          <div className="breakdown-count">{breakdown.count} donation{breakdown.count !== 1 ? 's' : ''}</div>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             )}
@@ -311,16 +314,19 @@ const DonationReports = () => {
                 <div className="breakdown-grid">
                   {Object.entries(report.byMonth)
                     .sort((a, b) => a[0].localeCompare(b[0]))
-                    .map(([month, data]) => (
-                      <div key={month} className="breakdown-item">
-                        <div className="breakdown-category">
-                          <Calendar size={14} style={{ display: 'inline', marginRight: '6px' }} />
-                          {formatMonthYear(month)}
+                    .map(([month, data]) => {
+                      const breakdown = data as { amount: number; count: number };
+                      return (
+                        <div key={month} className="breakdown-item">
+                          <div className="breakdown-category">
+                            <Calendar size={14} style={{ display: 'inline', marginRight: '6px' }} />
+                            {formatMonthYear(month)}
+                          </div>
+                          <div className="breakdown-amount">{formatCurrency(breakdown.amount)}</div>
+                          <div className="breakdown-count">{breakdown.count} donation{breakdown.count !== 1 ? 's' : ''}</div>
                         </div>
-                        <div className="breakdown-amount">{formatCurrency(data.amount)}</div>
-                        <div className="breakdown-count">{data.count} donation{data.count !== 1 ? 's' : ''}</div>
-                      </div>
-                    ))}
+                      );
+                    })}
                 </div>
               </div>
             )}
@@ -341,7 +347,7 @@ const DonationReports = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {report.donations.map(donation => (
+                      {report.donations.map((donation: any) => (
                         <tr key={donation.id}>
                           <td className="date-cell">{formatDate(donation.donationDate)}</td>
                           <td>

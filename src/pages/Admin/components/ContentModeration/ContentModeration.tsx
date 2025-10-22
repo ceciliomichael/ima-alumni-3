@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
 import { 
   MessageSquare, Calendar, Briefcase, CheckCircle, XCircle, 
-  Search, Filter, AlertCircle, Clock, Eye, Trash
+  Search, Filter, AlertCircle, Clock, Trash
 } from 'lucide-react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import AdminLayout from '../../layout/AdminLayout';
 import { 
   getAllPosts, 
-  getPendingPosts, 
   moderatePost,
   deletePost,
-  Post 
+  type Post 
 } from '../../../../services/firebase/postService';
 import { 
   getAllEvents, 
@@ -193,18 +192,19 @@ const ContentModeration = () => {
     });
   };
 
-  const getPendingCount = (type: ContentTab) => {
-    switch (type) {
-      case 'posts':
-        return posts.filter(p => !p.isApproved).length;
-      case 'events':
-        return events.filter(e => !e.isApproved).length;
-      case 'jobs':
-        return jobs.filter(j => !j.isApproved).length;
-      default:
-        return 0;
-    }
-  };
+  // Helper function is currently not used but kept for future features
+  // const getPendingCount = (type: ContentTab) => {
+  //   switch (type) {
+  //     case 'posts':
+  //       return posts.filter(p => !p.isApproved).length;
+  //     case 'events':
+  //       return events.filter(e => !e.isApproved).length;
+  //     case 'jobs':
+  //       return jobs.filter(j => !j.isApproved).length;
+  //     default:
+  //       return 0;
+  //   }
+  // };
 
   const renderPostCard = (post: Post) => (
     <div key={post.id} className="moderation-card">
@@ -237,7 +237,7 @@ const ContentModeration = () => {
         <p>{post.content}</p>
         {post.images && post.images.length > 0 && (
           <div className="moderation-images">
-            {post.images.slice(0, 3).map((img, idx) => (
+            {post.images.slice(0, 3).map((img: string, idx: number) => (
               <img key={idx} src={img} alt="" />
             ))}
             {post.images.length > 3 && (
@@ -561,4 +561,5 @@ const ContentModeration = () => {
 };
 
 export default ContentModeration;
+
 

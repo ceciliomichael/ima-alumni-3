@@ -236,7 +236,7 @@ export const migrateExistingDonations = async (): Promise<void> => {
 
     for (const donation of donationsToUpdate) {
       const archiveMetadata = extractArchiveMetadata(donation.donationDate);
-      await updateDonation(donation.id, archiveMetadata);
+      await updateDonation(donation.id, archiveMetadata as Partial<Donation>);
     }
 
     console.log('Migration completed successfully');

@@ -71,21 +71,27 @@ export const exportReportSummaryToCSV = (report: DonationReport, filename: strin
     [''],
     ['Category Breakdown', ''],
     ['Category', 'Amount', 'Count'],
-    ...Object.entries(report.byCategory).map(([category, data]) => [
-      category,
-      data.amount.toFixed(2),
-      data.count.toString()
-    ]),
+    ...Object.entries(report.byCategory).map(([category, data]) => {
+      const breakdown = data as { amount: number; count: number };
+      return [
+        category,
+        breakdown.amount.toFixed(2),
+        breakdown.count.toString()
+      ];
+    }),
     [''],
     ['Monthly Breakdown', ''],
     ['Month', 'Amount', 'Count'],
     ...Object.entries(report.byMonth)
       .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([month, data]) => [
-        month,
-        data.amount.toFixed(2),
-        data.count.toString()
-      ])
+      .map(([month, data]) => {
+        const breakdown = data as { amount: number; count: number };
+        return [
+          month,
+          breakdown.amount.toFixed(2),
+          breakdown.count.toString()
+        ];
+      })
   ];
 
   const csvContent = summaryRows
@@ -221,14 +227,17 @@ export const exportReportToPDF = (report: DonationReport): void => {
         </thead>
         <tbody>
           ${Object.entries(report.byCategory)
-            .sort((a, b) => b[1].amount - a[1].amount)
-            .map(([category, data]) => `
+            .sort((a, b) => (b[1] as { amount: number; count: number }).amount - (a[1] as { amount: number; count: number }).amount)
+            .map(([category, data]) => {
+              const breakdown = data as { amount: number; count: number };
+              return `
               <tr>
                 <td>${category}</td>
-                <td class="amount">₱${data.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td style="text-align: center;">${data.count}</td>
+                <td class="amount">₱${breakdown.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td style="text-align: center;">${breakdown.count}</td>
               </tr>
-            `).join('')}
+            `;
+            }).join('')}
         </tbody>
       </table>
 
@@ -244,13 +253,16 @@ export const exportReportToPDF = (report: DonationReport): void => {
         <tbody>
           ${Object.entries(report.byMonth)
             .sort((a, b) => a[0].localeCompare(b[0]))
-            .map(([month, data]) => `
+            .map(([month, data]) => {
+              const breakdown = data as { amount: number; count: number };
+              return `
               <tr>
                 <td>${month}</td>
-                <td class="amount">₱${data.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td style="text-align: center;">${data.count}</td>
+                <td class="amount">₱${breakdown.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td style="text-align: center;">${breakdown.count}</td>
               </tr>
-            `).join('')}
+            `;
+            }).join('')}
         </tbody>
       </table>
 
@@ -266,7 +278,7 @@ export const exportReportToPDF = (report: DonationReport): void => {
           </tr>
         </thead>
         <tbody>
-          ${report.donations.map(donation => `
+          ${report.donations.map((donation: any) => `
             <tr>
               <td>${new Date(donation.donationDate).toLocaleDateString()}</td>
               <td>${donation.donorName}${donation.isAnonymous ? ' (Anonymous)' : ''}</td>
