@@ -1,0 +1,349 @@
+.guest-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background);
+}
+
+.guest-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
+  z-index: 1000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.guest-header-placeholder {
+  height: 80px;
+}
+
+.guest-header-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 80px;
+  gap: 1.5rem;
+}
+
+.guest-logo-container {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.guest-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.guest-logo:hover {
+  transform: scale(1.02);
+}
+
+.guest-logo-image {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Navigation menu - centered between logo and login button */
+.guest-nav-menu {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  margin: 0 1rem;
+}
+
+.guest-nav-list {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 0.25rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.25rem;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.guest-nav-item {
+  position: relative;
+}
+
+.guest-nav-link {
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  padding: 0.625rem 1rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.guest-nav-link:hover {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.guest-nav-link.active {
+  color: var(--text-primary);
+  background-color: var(--secondary-color);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+}
+
+.guest-nav-link svg {
+  margin-right: 0.5rem;
+  transition: all 0.2s ease;
+  width: 16px;
+  height: 16px;
+  stroke-width: 2px;
+}
+
+.guest-nav-link:hover svg,
+.guest-nav-link.active svg {
+  color: currentColor;
+}
+
+/* Peso icon styling to match other navbar icons */
+.guest-nav-link .peso-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 0.5rem;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.guest-header-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.guest-login-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background-color: var(--secondary-color);
+  color: var(--text-primary);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+}
+
+.guest-login-btn:hover {
+  background-color: #f59e0b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(251, 191, 36, 0.4);
+}
+
+/* Mobile menu button */
+.guest-mobile-menu-button {
+  display: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.625rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.guest-mobile-menu-button:hover {
+  background-color: var(--secondary-color);
+  color: var(--text-primary);
+  border-color: var(--secondary-color);
+  transform: translateY(-1px);
+}
+
+.guest-main {
+  flex: 1;
+  width: 100%;
+  margin-top: var(--spacing-6);
+}
+
+.guest-footer {
+  background-color: var(--background-card);
+  padding: var(--spacing-6) 0;
+  margin-top: var(--spacing-8);
+  border-top: 1px solid var(--gray-200);
+}
+
+.guest-footer-content {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  text-align: center;
+}
+
+.guest-footer-content p {
+  margin: 0.25rem 0;
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+
+.guest-footer-tagline {
+  color: var(--primary-color);
+  font-weight: 600;
+  font-style: italic;
+}
+
+/* Responsive styles */
+@media (max-width: 1200px) {
+  .guest-logo-image {
+    height: 45px;
+  }
+  
+  .guest-nav-link {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+  
+  .guest-nav-link svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 992px) {
+  .guest-header-container {
+    padding: 0.75rem 1rem;
+    min-height: 70px;
+  }
+  
+  .guest-header-placeholder {
+    height: 70px;
+  }
+  
+  .guest-mobile-menu-button {
+    display: flex;
+    order: 2;
+  }
+  
+  .guest-logo-container {
+    order: 1;
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .guest-logo-image {
+    height: 40px;
+  }
+  
+  .guest-header-right {
+    order: 3;
+  }
+  
+  .guest-nav-menu {
+    position: fixed;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 70px);
+    background-color: white;
+    display: none;
+    flex-direction: column;
+    padding: 1.5rem;
+    z-index: 999;
+    border-top: 1px solid var(--gray-200);
+    overflow-y: auto;
+    justify-content: flex-start;
+  }
+  
+  .guest-mobile-menu-open {
+    display: flex;
+  }
+  
+  .guest-nav-list {
+    flex-direction: column;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    gap: 0.5rem;
+  }
+  
+  .guest-nav-item {
+    width: 100%;
+  }
+  
+  .guest-nav-link {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--gray-200);
+    background-color: var(--gray-50);
+  }
+  
+  .guest-nav-link.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+  }
+}
+
+@media (max-width: 768px) {
+  .guest-header-container {
+    gap: 0.75rem;
+  }
+  
+  .guest-logo-image {
+    height: 36px;
+  }
+  
+  .guest-login-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+  }
+  
+  .guest-footer-content {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .guest-header-container {
+    padding: 0.5rem 1rem;
+  }
+  
+  .guest-logo-image {
+    height: 32px;
+  }
+  
+  .guest-login-btn span {
+    display: none;
+  }
+  
+  .guest-login-btn {
+    padding: 0.625rem;
+    min-width: auto;
+  }
+}
+

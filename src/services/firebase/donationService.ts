@@ -11,7 +11,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { Donation } from '../../types';
+import { Donation, DonationReport } from '../../types';
 
 const DONATIONS_COLLECTION = 'donations';
 
@@ -53,12 +53,24 @@ export const getPublicDonations = async (): Promise<Donation[]> => {
   }
 };
 
+// Helper function to extract archive metadata from date
+const extractArchiveMetadata = (dateString: string) => {
+  const date = new Date(dateString);
+  return {
+    archiveMonth: date.getMonth() + 1, // 1-12
+    archiveYear: date.getFullYear()
+  };
+};
+
 // Add new donation
 export const addDonation = async (donation: Omit<Donation, 'id'>): Promise<string> => {
   try {
     const donationsRef = collection(db, DONATIONS_COLLECTION);
+    const archiveMetadata = extractArchiveMetadata(donation.donationDate);
+    
     const newDonation = {
       ...donation,
+      ...archiveMetadata,
       isAnonymous: donation.isAnonymous || false, // Ensure isAnonymous has a default value
       createdAt: serverTimestamp()
     };
@@ -75,10 +87,18 @@ export const addDonation = async (donation: Omit<Donation, 'id'>): Promise<strin
 export const updateDonation = async (id: string, donation: Partial<Donation>): Promise<void> => {
   try {
     const donationRef = doc(db, DONATIONS_COLLECTION, id);
-    await updateDoc(donationRef, {
+    const updateData: any = {
       ...donation,
       updatedAt: serverTimestamp()
-    });
+    };
+    
+    // Update archive metadata if donation date is changed
+    if (donation.donationDate) {
+      const archiveMetadata = extractArchiveMetadata(donation.donationDate);
+      Object.assign(updateData, archiveMetadata);
+    }
+    
+    await updateDoc(donationRef, updateData);
   } catch (error) {
     console.error('Error updating donation:', error);
     throw error;
@@ -106,6 +126,122 @@ export const toggleDonationVisibility = async (id: string, isPublic: boolean): P
     });
   } catch (error) {
     console.error('Error updating donation visibility:', error);
+    throw error;
+  }
+};
+
+// Get donations by month and year
+export const getDonationsByPeriod = async (
+  month?: number,
+  year?: number
+): Promise<Donation[]> => {
+  try {
+    const donationsRef = collection(db, DONATIONS_COLLECTION);
+    let q = query(donationsRef, orderBy('donationDate', 'desc'));
+
+    if (year !== undefined) {
+      q = query(donationsRef, where('archiveYear', '==', year), orderBy('donationDate', 'desc'));
+      
+      if (month !== undefined) {
+        q = query(
+          donationsRef,
+          where('archiveYear', '==', year),
+          where('archiveMonth', '==', month),
+          orderBy('donationDate', 'desc')
+        );
+      }
+    }
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as Donation[];
+  } catch (error) {
+    console.error('Error getting donations by period:', error);
+    throw error;
+  }
+};
+
+// Generate donation report
+export const generateDonationReport = async (
+  startDate?: string,
+  endDate?: string,
+  category?: string
+): Promise<DonationReport> => {
+  try {
+    let donations = await getAllDonations();
+
+    // Apply filters
+    if (startDate) {
+      donations = donations.filter(d => new Date(d.donationDate) >= new Date(startDate));
+    }
+    if (endDate) {
+      donations = donations.filter(d => new Date(d.donationDate) <= new Date(endDate));
+    }
+    if (category && category !== 'All Categories') {
+      donations = donations.filter(d => d.category === category);
+    }
+
+    // Calculate aggregates
+    const totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
+    const count = donations.length;
+    const avgAmount = count > 0 ? totalAmount / count : 0;
+
+    // Group by category
+    const byCategory: Record<string, { amount: number; count: number }> = {};
+    donations.forEach(d => {
+      if (!byCategory[d.category]) {
+        byCategory[d.category] = { amount: 0, count: 0 };
+      }
+      byCategory[d.category].amount += d.amount;
+      byCategory[d.category].count += 1;
+    });
+
+    // Group by month
+    const byMonth: Record<string, { amount: number; count: number }> = {};
+    donations.forEach(d => {
+      const date = new Date(d.donationDate);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      if (!byMonth[monthKey]) {
+        byMonth[monthKey] = { amount: 0, count: 0 };
+      }
+      byMonth[monthKey].amount += d.amount;
+      byMonth[monthKey].count += 1;
+    });
+
+    return {
+      totalAmount,
+      count,
+      avgAmount,
+      byCategory,
+      byMonth,
+      donations
+    };
+  } catch (error) {
+    console.error('Error generating donation report:', error);
+    throw error;
+  }
+};
+
+// Migrate existing donations to add archive metadata
+export const migrateExistingDonations = async (): Promise<void> => {
+  try {
+    const donations = await getAllDonations();
+    const donationsToUpdate = donations.filter(
+      d => d.archiveMonth === undefined || d.archiveYear === undefined
+    );
+
+    console.log(`Migrating ${donationsToUpdate.length} donations...`);
+
+    for (const donation of donationsToUpdate) {
+      const archiveMetadata = extractArchiveMetadata(donation.donationDate);
+      await updateDonation(donation.id, archiveMetadata);
+    }
+
+    console.log('Migration completed successfully');
+  } catch (error) {
+    console.error('Error migrating donations:', error);
     throw error;
   }
 };

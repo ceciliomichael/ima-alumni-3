@@ -9,6 +9,10 @@
   justify-content: center;
 }
 
+.donations-page.donations-public {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
 .donations-page::before {
   content: "";
   position: absolute;
@@ -45,6 +49,13 @@
   padding: 1rem 1.25rem;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
+}
+
+.donations-subtitle {
+  color: #64748b;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
 }
 
 .donations-title-section {
@@ -383,5 +394,101 @@
   .donation-filter {
     padding: 0.4375rem 0.875rem;
     font-size: 0.8125rem;
+  }
+}
+
+/* Public Donation View Styles */
+.donations-stats-public {
+  margin: 2rem 0;
+}
+
+.donations-stat-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 2.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  max-width: 700px;
+  margin: 0 auto;
+  border: 2px solid #e2e8f0;
+}
+
+.stat-icon {
+  background: linear-gradient(135deg, var(--primary-blue, #1e40af), var(--primary-blue-dark, #1e3a8a));
+  color: white;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-loading {
+  color: #94a3b8;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.public-notice {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-top: 2rem;
+  border-left: 4px solid var(--primary-blue, #1e40af);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.public-notice p {
+  margin: 0 0 1rem 0;
+  color: #334155;
+  line-height: 1.6;
+}
+
+.public-notice p:last-child {
+  margin-bottom: 0;
+}
+
+.login-prompt {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  font-weight: 500;
+}
+
+.login-prompt a {
+  color: var(--primary-blue, #1e40af);
+  text-decoration: none;
+  font-weight: 600;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.login-prompt a:hover {
+  border-bottom-color: var(--accent-yellow, #fbbf24);
+}
+
+@media (max-width: 768px) {
+  .donations-stat-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem 1.5rem;
+  }
+  
+  .stat-icon {
+    width: 64px;
+    height: 64px;
+  }
+
+  .public-notice {
+    padding: 1.5rem;
   }
 } 

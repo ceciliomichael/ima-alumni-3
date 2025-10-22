@@ -1,5 +1,7 @@
 import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../firebase/config';
+import { sendBulkEventNotifications, getEventUrl } from '../email/emailService';
+import { getAllUsers } from './userService';
 
 // Define the Event interface
 export interface Event {
@@ -59,10 +61,20 @@ export const addEvent = async (event: Omit<Event, 'id' | 'createdAt'>): Promise<
     
     const docRef = await addDoc(collection(db, COLLECTION_NAME), newEvent);
     
-    return {
+    const createdEvent = {
       id: docRef.id,
       ...newEvent
     };
+    
+    // If event is created as approved, send notification emails
+    if (createdEvent.isApproved) {
+      // Fire and forget - don't wait for email sending
+      sendEventNotifications(createdEvent).catch((error) => {
+        console.error('Failed to send event notifications:', error);
+      });
+    }
+    
+    return createdEvent;
   } catch (error) {
     console.error('Error adding event:', error);
     throw error;
@@ -160,7 +172,87 @@ export const getPastEvents = async (): Promise<Event[]> => {
 
 // Approve or reject an event
 export const approveEvent = async (id: string, approve: boolean): Promise<Event | null> => {
-  return updateEvent(id, { isApproved: approve });
+  // Get current event state before updating
+  const currentEvent = await getEventById(id);
+  const wasApproved = currentEvent?.isApproved || false;
+  
+  const updatedEvent = await updateEvent(id, { isApproved: approve });
+  
+  // Only send notification emails if event is being approved for the FIRST time
+  // (transitioning from unapproved to approved)
+  if (approve && updatedEvent && !wasApproved) {
+    // Fire and forget - don't wait for email sending
+    sendEventNotifications(updatedEvent).catch((error) => {
+      console.error('Failed to send event notifications:', error);
+    });
+  }
+  
+  return updatedEvent;
+};
+
+/**
+ * Send event notification emails to all active users
+ * @param event - The event to notify users about
+ */
+export const sendEventNotifications = async (event: Event): Promise<void> => {
+  try {
+    // Get all active users
+    const allUsers = await getAllUsers();
+    const activeUsers = allUsers.filter(
+      (user) => user.isActive && user.email && !user.email.includes('noreply')
+    );
+
+    if (activeUsers.length === 0) {
+      console.log('No active users with valid emails to notify');
+      return;
+    }
+
+    // Format event date and time
+    const eventDate = new Date(event.date);
+    const formattedDate = eventDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+    const formattedTime = eventDate.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+
+    // Prepare recipients
+    const recipients = activeUsers.map((user) => ({
+      email: user.email,
+      name: user.name,
+    }));
+
+    // Send bulk notifications
+    console.log(`Sending event notifications to ${recipients.length} users...`);
+    const results = await sendBulkEventNotifications(recipients, {
+      event_title: event.title,
+      event_date: formattedDate,
+      event_time: formattedTime,
+      event_location: event.location,
+      event_description: event.description,
+      event_url: getEventUrl(event.id),
+    });
+
+    // Log results
+    const successCount = results.filter((r) => r.success).length;
+    const failureCount = results.filter((r) => !r.success).length;
+    console.log(
+      `Event notifications sent: ${successCount} successful, ${failureCount} failed`
+    );
+
+    if (failureCount > 0) {
+      const failedEmails = results.filter((r) => !r.success).map((r) => r.email);
+      console.warn('Failed to send to:', failedEmails);
+    }
+  } catch (error) {
+    console.error('Error sending event notifications:', error);
+    throw error;
+  }
 };
 
 // Get events statistics

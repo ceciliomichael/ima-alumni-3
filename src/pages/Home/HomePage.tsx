@@ -8,7 +8,8 @@ import IMAHeroCard from './components/IMAHero/IMAHeroCard';
 import { MessageSquare, RefreshCw, Zap } from 'lucide-react';
 import './Home.css';
 import { 
-  getAllPosts, 
+  getAllPosts,
+  getApprovedPosts,
   likePost, 
   addComment, 
   initializePostData,
@@ -71,7 +72,8 @@ const HomePage = ({ user }: HomePageProps) => {
     setIsLoading(true);
     
     try {
-      const allPosts = await getAllPosts();
+      // Only show approved posts for regular users
+      const allPosts = await getApprovedPosts();
       // Sort by most recent
       const sortedPosts = [...allPosts].sort((a, b) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -86,7 +88,13 @@ const HomePage = ({ user }: HomePageProps) => {
   };
 
   const handleCreatePost = (newPost: Post) => {
-    setPosts((prevPosts) => [newPost, ...prevPosts]);
+    // Don't add unapproved posts to the feed immediately
+    // They will appear after admin approval
+    if (newPost.isApproved) {
+      setPosts((prevPosts) => [newPost, ...prevPosts]);
+    }
+    // Show a message to the user that their post is pending approval
+    alert('Your post has been submitted and is pending approval by administrators.');
   };
 
   const handleLikePost = async (postId: string) => {

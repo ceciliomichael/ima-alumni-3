@@ -996,6 +996,7 @@
 
 .admin-form-icon {
   color: var(--text-muted);
+  margin-right: 0.5rem;
 }
 
 .admin-form-input, 

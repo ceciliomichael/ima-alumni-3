@@ -8,3 +8,5 @@ export * from './officerService';
 export * from './postService';
 export * from './userService';
 export * from './adminService';
+export * from './landingService';
+export * from './aboutService';

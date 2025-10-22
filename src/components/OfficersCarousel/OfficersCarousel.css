@@ -1,0 +1,377 @@
+.officers-carousel-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 3rem auto;
+  padding: 0 2rem;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+.officers-carousel-title {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--primary-blue, #1e40af);
+  margin-bottom: 2.5rem;
+  letter-spacing: -0.02em;
+}
+
+.officers-carousel-loading {
+  text-align: center;
+  padding: 3rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e2e8f0;
+  border-top-color: var(--primary-blue, #1e40af);
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.officers-carousel {
+  position: relative;
+  height: 500px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+  border-radius: 1.5rem;
+  background: #f8fafc;
+}
+
+.carousel-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.carousel-slide {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  opacity: 0;
+  transform: translateX(100%) scale(0.95);
+  pointer-events: none;
+}
+
+.carousel-slide.active {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  z-index: 2;
+  pointer-events: auto;
+}
+
+.carousel-slide.prev {
+  opacity: 0;
+  transform: translateX(-100%) scale(0.95);
+  z-index: 1;
+}
+
+.carousel-slide.next {
+  opacity: 0;
+  transform: translateX(100%) scale(0.95);
+  z-index: 1;
+}
+
+.carousel-slide.hidden {
+  opacity: 0;
+  transform: translateX(100%) scale(0.9);
+  z-index: 0;
+}
+
+.officer-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  background: white;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.officer-image-wrapper {
+  flex: 0 0 45%;
+  position: relative;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.officer-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.officer-image-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--primary-blue, #1e40af);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8rem;
+  font-weight: 800;
+}
+
+.officer-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem 4rem;
+  background: white;
+  position: relative;
+}
+
+.officer-info::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: var(--accent-yellow, #fbbf24);
+}
+
+.officer-name {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 1rem 0;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.officer-position {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--primary-blue, #1e40af);
+  margin: 0 0 1rem 0;
+  line-height: 1.3;
+}
+
+.officer-batch {
+  font-size: 1.25rem;
+  color: #64748b;
+  font-weight: 500;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.carousel-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  color: var(--primary-blue, #1e40af);
+  width: 56px;
+  height: 56px;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  outline: none;
+}
+
+.carousel-nav-btn:hover {
+  background: var(--primary-blue, #1e40af);
+  color: white;
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 8px 24px rgba(30, 64, 175, 0.3);
+}
+
+.carousel-nav-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.carousel-nav-prev {
+  left: -28px;
+}
+
+.carousel-nav-next {
+  right: -28px;
+}
+
+.carousel-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  padding: 0 2rem;
+}
+
+.carousel-indicator {
+  height: 4px;
+  background: #cbd5e1;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  border-radius: 2px;
+  flex: 1;
+  max-width: 80px;
+  outline: none;
+}
+
+.carousel-indicator:hover {
+  background: #94a3b8;
+}
+
+.carousel-indicator.active {
+  background: var(--primary-blue, #1e40af);
+  box-shadow: 0 0 8px rgba(30, 64, 175, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .officers-carousel-container {
+    max-width: 900px;
+  }
+
+  .officer-name {
+    font-size: 2.5rem;
+  }
+
+  .officer-position {
+    font-size: 1.5rem;
+  }
+
+  .officer-info {
+    padding: 2.5rem 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .officers-carousel-container {
+    padding: 0 1rem;
+    margin: 2rem auto;
+  }
+
+  .officers-carousel-title {
+    font-size: 2rem;
+  }
+
+  .officers-carousel {
+    height: 600px;
+    border-radius: 1rem;
+  }
+
+  .officer-card {
+    flex-direction: column;
+  }
+
+  .officer-image-wrapper {
+    flex: 0 0 300px;
+    width: 100%;
+  }
+
+  .officer-info {
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .officer-info::before {
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: auto;
+    width: 100%;
+    height: 6px;
+  }
+
+  .officer-name {
+    font-size: 2rem;
+  }
+
+  .officer-position {
+    font-size: 1.25rem;
+  }
+
+  .officer-batch {
+    font-size: 1rem;
+  }
+
+  .carousel-nav-btn {
+    width: 48px;
+    height: 48px;
+  }
+
+  .carousel-nav-prev {
+    left: 0.5rem;
+  }
+
+  .carousel-nav-next {
+    right: 0.5rem;
+  }
+
+  .carousel-indicators {
+    margin-top: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .officers-carousel-title {
+    font-size: 1.75rem;
+  }
+
+  .officers-carousel {
+    height: 550px;
+  }
+
+  .officer-image-wrapper {
+    flex: 0 0 250px;
+  }
+
+  .officer-info {
+    padding: 1.5rem;
+  }
+
+  .officer-image-placeholder {
+    font-size: 6rem;
+  }
+
+  .officer-name {
+    font-size: 1.75rem;
+  }
+
+  .officer-position {
+    font-size: 1.125rem;
+  }
+
+  .officer-batch {
+    font-size: 0.875rem;
+  }
+
+  .carousel-nav-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .carousel-indicators {
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .carousel-indicator {
+    max-width: 60px;
+  }
+}
+

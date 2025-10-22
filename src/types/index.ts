@@ -47,6 +47,11 @@ export interface Post {
   createdAt: string;
   likedBy: string[];
   comments: Comment[];
+  isApproved: boolean;
+  moderationStatus?: 'pending' | 'approved' | 'rejected';
+  rejectionReason?: string;
+  moderatedBy?: string;
+  moderatedAt?: string;
 }
 
 export interface Comment {
@@ -59,6 +64,9 @@ export interface Comment {
   createdAt: string;
   replies: Reply[];
   reactions: CommentReaction[];
+  isApproved?: boolean;
+  moderationStatus?: 'pending' | 'approved' | 'rejected';
+  rejectionReason?: string;
 }
 
 export interface Reply {

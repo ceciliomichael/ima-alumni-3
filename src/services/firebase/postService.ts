@@ -30,6 +30,40 @@ export const getAllPosts = async (): Promise<Post[]> => {
   }
 };
 
+// Get all approved posts (for regular users)
+export const getApprovedPosts = async (): Promise<Post[]> => {
+  try {
+    const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
+    const allPosts = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as Post));
+    
+    // Filter only approved posts
+    return allPosts.filter(post => post.isApproved === true);
+  } catch (error) {
+    console.error('Error getting approved posts:', error);
+    return [];
+  }
+};
+
+// Get pending posts (for admin moderation)
+export const getPendingPosts = async (): Promise<Post[]> => {
+  try {
+    const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
+    const allPosts = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as Post));
+    
+    // Filter only pending posts
+    return allPosts.filter(post => post.isApproved === false || post.moderationStatus === 'pending');
+  } catch (error) {
+    console.error('Error getting pending posts:', error);
+    return [];
+  }
+};
+
 // Add a new post
 export const addPost = async (post: Omit<Post, 'id' | 'createdAt' | 'likedBy' | 'comments'>): Promise<Post> => {
   try {
@@ -38,7 +72,9 @@ export const addPost = async (post: Omit<Post, 'id' | 'createdAt' | 'likedBy' | 
       ...sanitized,
       createdAt: new Date().toISOString(),
       likedBy: [],
-      comments: []
+      comments: [],
+      isApproved: false, // Posts require approval by default
+      moderationStatus: 'pending' as const
     } as any;
     
     const docRef = await addDoc(collection(db, COLLECTION_NAME), newPost);
@@ -302,6 +338,65 @@ export const getPostById = async (postId: string): Promise<Post | null> => {
     return null;
   } catch (error) {
     console.error('Error getting post by ID:', error);
+    return null;
+  }
+};
+
+// Approve or reject a post
+export const moderatePost = async (
+  postId: string, 
+  approve: boolean, 
+  moderatorName: string,
+  rejectionReason?: string
+): Promise<Post | null> => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, postId);
+    const updateData: any = {
+      isApproved: approve,
+      moderationStatus: approve ? 'approved' : 'rejected',
+      moderatedBy: moderatorName,
+      moderatedAt: new Date().toISOString()
+    };
+    
+    if (!approve && rejectionReason) {
+      updateData.rejectionReason = rejectionReason;
+    }
+    
+    await updateDoc(docRef, updateData);
+    
+    // Get the updated document
+    const updatedDoc = await getDoc(docRef);
+    if (updatedDoc.exists()) {
+      return {
+        id: updatedDoc.id,
+        ...updatedDoc.data()
+      } as Post;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error moderating post:', error);
+    return null;
+  }
+};
+
+// Update post
+export const updatePost = async (postId: string, updatedData: Partial<Post>): Promise<Post | null> => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, postId);
+    const sanitized = removeUndefinedFields(updatedData as any);
+    await updateDoc(docRef, sanitized);
+    
+    // Get the updated document
+    const updatedDoc = await getDoc(docRef);
+    if (updatedDoc.exists()) {
+      return {
+        id: updatedDoc.id,
+        ...updatedDoc.data()
+      } as Post;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error updating post:', error);
     return null;
   }
 };

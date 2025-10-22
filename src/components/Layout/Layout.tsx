@@ -89,7 +89,7 @@ const Layout = ({ children, isAuthenticated, user, onLogout }: LayoutProps) => {
               </li>
               <li className="nav-item">
                 <Link 
-                  to="/about" 
+                  to="/about-us" 
                   className={`nav-link ${location.pathname.includes('/about') ? 'active' : ''}`} 
                   onClick={() => setIsMobileMenuOpen(false)}
                 >

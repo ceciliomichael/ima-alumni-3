@@ -6,11 +6,13 @@ import HomePage from './pages/Home/HomePage';
 import GalleryPage from './pages/Gallery/GalleryPage';
 import EventsPage from './pages/Events/EventsPage';
 import AboutPage from './pages/About/AboutPage';
+import PublicAboutPage from './pages/About/PublicAboutPage';
 import ProfilePage from './pages/Profile/ProfilePage';
 import JobsPage from './pages/Jobs/JobsPage';
 import NotificationsPage from './pages/Notifications/NotificationsPage';
 import DonationsPage from './pages/Donations/DonationsPage';
 import Layout from './components/Layout/Layout';
+import GuestLayout from './components/Layout/GuestLayout';
 import { User } from './types';
 import DonationNotificationsContainer from './pages/Home/components/Sidebar/DonationNotificationsContainer';
 
@@ -25,6 +27,7 @@ import { initializeJobData } from './services/firebase/jobService';
 import { initializeDonationData } from './services/firebase/donationService';
 import { initializePostData } from './services/firebase/postService';
 import { initializeAdminUser as initializeAdmin } from './services/firebase/adminService';
+import { initializeLandingConfig } from './services/firebase/landingService';
 
 // Admin imports
 import AdminLoginPage from './pages/Admin/AdminLoginPage';
@@ -35,10 +38,13 @@ import { AlumniOfficers, OfficerForm } from './pages/Admin/components/AlumniOffi
 import { EventManagement, EventForm } from './pages/Admin/components/Events';
 import { GalleryManagement, GalleryForm } from './pages/Admin/components/Gallery';
 import { DonationsManagement, DonationForm } from './pages/Admin/components/Donations';
+import DonationReports from './pages/Admin/components/DonationReports';
 import JobManagement from './pages/Admin/components/Jobs/JobManagement';
 import JobForm from './pages/Admin/components/Jobs/JobForm';
 
 import AboutUsManagement from './pages/Admin/components/AboutUs/AboutUsManagement';
+import LandingPageSettings from './pages/Admin/components/LandingPageSettings';
+import ContentModeration from './pages/Admin/components/ContentModeration';
 import { Settings } from './pages/Admin/components/Settings';
 
 
@@ -135,6 +141,7 @@ function App() {
         await initializeJobData();
         await initializeDonationData();
         await initializePostData();
+        await initializeLandingConfig();
 
         await initializeAdmin();
         console.log('Firebase services initialized successfully');
@@ -160,14 +167,56 @@ function App() {
         {/* Add donation notifications container */}
         {user && <DonationNotificationsContainer />}
         <Routes>
+          {/* --- Public Routes (No Authentication Required) --- */}
+          <Route 
+            path="/" 
+            element={
+              user ? <Navigate to="/home" /> : (
+                <GuestLayout>
+                  <LandingPage />
+                </GuestLayout>
+              )
+            } 
+          />
+          
+          <Route 
+            path="/about" 
+            element={
+              user ? (
+                <Layout isAuthenticated={!!user} user={user} onLogout={handleLogout}>
+                  <AboutPage />
+                </Layout>
+              ) : (
+                <GuestLayout>
+                  <PublicAboutPage />
+                </GuestLayout>
+              )
+            } 
+          />
+          
+          <Route 
+            path="/donations" 
+            element={
+              user ? (
+                <Layout isAuthenticated={!!user} user={user} onLogout={handleLogout}>
+                  <DonationsPage user={user} />
+                </Layout>
+              ) : (
+                <GuestLayout>
+                  <DonationsPage />
+                </GuestLayout>
+              )
+            } 
+          />
+
           {/* --- Authentication Routes --- */}
           <Route path="/login" element={
-            !isLoadingAuth && user ? <Navigate to="/landing" /> : <LoginPage onLoginSuccess={handleLoginSuccess} />
+            !isLoadingAuth && user ? <Navigate to="/home" /> : <LoginPage onLoginSuccess={handleLoginSuccess} />
           } />
           {/* Redirect any attempts to access registration back to login */}
           <Route path="/register" element={<Navigate to="/login" replace />} />
           
-          {/* --- Landing Page --- */}
+          {/* --- Authenticated Landing Page (after login) --- */}
           <Route 
             path="/landing" 
             element={
@@ -179,7 +228,7 @@ function App() {
 
           {/* --- User Protected Routes with Layout --- */}
           <Route 
-            path="/"
+            path="/home"
             element={
               <ProtectedRoute isAuthenticated={!!user} isLoading={isLoadingAuth}>
                 <Layout isAuthenticated={!!user} user={user} onLogout={handleLogout}>
@@ -219,7 +268,7 @@ function App() {
             }
           />
           <Route 
-            path="/about"
+            path="/about-us"
             element={
               <ProtectedRoute isAuthenticated={!!user} isLoading={isLoadingAuth}>
                 <Layout isAuthenticated={!!user} user={user} onLogout={handleLogout}>
@@ -230,7 +279,7 @@ function App() {
           />
           {/* Route for specific About tabs if needed - AboutPage needs to handle :tab param */}
           <Route 
-            path="/about/:tab"
+            path="/about-us/:tab"
             element={
               <ProtectedRoute isAuthenticated={!!user} isLoading={isLoadingAuth}>
                 <Layout isAuthenticated={!!user} user={user} onLogout={handleLogout}>
@@ -275,16 +324,6 @@ function App() {
               <ProtectedRoute isAuthenticated={!!user} isLoading={isLoadingAuth}>
                 <Layout isAuthenticated={!!user} user={user} onLogout={handleLogout}>
                   <NotificationsPage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route 
-            path="/donations"
-            element={
-              <ProtectedRoute isAuthenticated={!!user} isLoading={isLoadingAuth}>
-                <Layout isAuthenticated={!!user} user={user} onLogout={handleLogout}>
-                  <DonationsPage />
                 </Layout>
               </ProtectedRoute>
             }
@@ -353,6 +392,9 @@ function App() {
           <Route path="/admin/about-us" element={
             <ProtectedAdminRoute><AboutUsManagement /></ProtectedAdminRoute>
           } />
+          <Route path="/admin/landing-settings" element={
+            <ProtectedAdminRoute><LandingPageSettings /></ProtectedAdminRoute>
+          } />
           <Route path="/admin/donations" element={
             <ProtectedAdminRoute><DonationsManagement /></ProtectedAdminRoute>
           } />
@@ -362,15 +404,21 @@ function App() {
           <Route path="/admin/donations/edit/:id" element={
             <ProtectedAdminRoute><DonationForm /></ProtectedAdminRoute>
           } />
+          <Route path="/admin/donation-reports" element={
+            <ProtectedAdminRoute><DonationReports /></ProtectedAdminRoute>
+          } />
+          <Route path="/admin/content-moderation" element={
+            <ProtectedAdminRoute><ContentModeration /></ProtectedAdminRoute>
+          } />
           <Route path="/admin/settings" element={
             <ProtectedAdminRoute><Settings /></ProtectedAdminRoute>
           } />
 
           {/* --- Catch-all Route --- */}
-          {/* If authenticated and route not found, redirect to home. Otherwise, redirect to login */}
+          {/* If authenticated and route not found, redirect to home. Otherwise, redirect to public landing */}
           <Route path="*" element={
             isLoadingAuth ? <div>Loading...</div> : 
-            user ? <Navigate to="/" /> : <Navigate to="/login" />
+            user ? <Navigate to="/home" /> : <Navigate to="/" />
           } />
 
         </Routes>

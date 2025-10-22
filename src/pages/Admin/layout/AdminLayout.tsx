@@ -4,7 +4,7 @@ import {
   Menu, X, LogOut, Settings,
   LayoutDashboard, Users, Award, Calendar,
   Image, Briefcase,
-  Info
+  Info, Monitor, FileText, Shield
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import './AdminLayout.css';
@@ -110,14 +110,21 @@ const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
           
           <Link 
             to="/admin/donations" 
-            className={`admin-menu-item ${location.pathname.includes('/admin/donations') ? 'active' : ''}`}
+            className={`admin-menu-item ${location.pathname === '/admin/donations' || location.pathname.includes('/admin/donations/') ? 'active' : ''}`}
             onClick={() => setSidebarOpen(false)}
           >
             <span className="admin-menu-icon peso-icon">₱</span>
             Donations
           </Link>
           
-
+          <Link 
+            to="/admin/donation-reports" 
+            className={`admin-menu-item ${location.pathname.includes('/admin/donation-reports') ? 'active' : ''}`}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <FileText className="admin-menu-icon" />
+            Donation Reports
+          </Link>
           
           <Link 
             to="/admin/about-us" 
@@ -126,6 +133,25 @@ const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
           >
             <Info className="admin-menu-icon" />
             About Us
+          </Link>
+
+          <Link 
+            to="/admin/landing-settings" 
+            className={`admin-menu-item ${location.pathname.includes('/admin/landing-settings') ? 'active' : ''}`}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <Monitor className="admin-menu-icon" />
+            Landing Page
+          </Link>
+
+          <div className="admin-menu-title">Moderation</div>
+          <Link 
+            to="/admin/content-moderation" 
+            className={`admin-menu-item ${location.pathname.includes('/admin/content-moderation') ? 'active' : ''}`}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <Shield className="admin-menu-icon" />
+            Content Moderation
           </Link>
 
           <div className="admin-menu-title">System</div>

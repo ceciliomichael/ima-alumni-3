@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Heart } from 'lucide-react';
+import { Calendar, Heart, TrendingUp } from 'lucide-react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { Donation } from '../../types';
+import { User } from '../../types';
 import './Donations.css';
 
 // Define donation categories
@@ -17,12 +18,19 @@ const DONATION_CATEGORIES = [
   'Other'
 ];
 
-const DonationsPage = () => {
+interface DonationsPageProps {
+  user?: User | null;
+}
+
+const DonationsPage = ({ user }: DonationsPageProps) => {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [filteredDonations, setFilteredDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All Categories');
   const [totalAmount, setTotalAmount] = useState(0);
+  
+  // Check if user is authenticated
+  const isAuthenticated = !!user;
   
   useEffect(() => {
     setLoading(true);
@@ -103,6 +111,59 @@ const DonationsPage = () => {
     });
   };
   
+  // Render public view for guests
+  if (!isAuthenticated) {
+    return (
+      <div className="donations-page donations-public">
+        <div className="donations-layout">
+          <div className="donations-content">
+            <div className="donations-header">
+              <div className="donations-title-section">
+                <div className="donations-icon">
+                  <span className="peso-icon" style={{ fontSize: '24px' }}>₱</span>
+                </div>
+                <h1>Donation Progress</h1>
+              </div>
+              <p className="donations-subtitle">Supporting the growth and development of our alumni community</p>
+            </div>
+            
+            <div className="donations-stats-public">
+              <div className="donations-stat-card">
+                <div className="stat-icon">
+                  <TrendingUp size={32} />
+                </div>
+                <div className="stat-content">
+                  <div className="donations-stat-label">Total Amount Raised</div>
+                  <div className="donations-stat-value">
+                    {loading ? (
+                      <div className="stat-loading">Loading...</div>
+                    ) : (
+                      formatCurrency(totalAmount, 'PHP')
+                    )}
+                  </div>
+                  <div className="donations-stat-description">
+                    Thank you to all our generous donors for their support!
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="public-notice">
+              <p>
+                <strong>Privacy Notice:</strong> Individual donor information and donation details are kept private. 
+                Only the total amount raised is displayed to the public.
+              </p>
+              <p className="login-prompt">
+                Want to see more details and make a donation? <a href="/login">Login to your account</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Authenticated user view (full details)
   return (
     <div className="donations-page">
       <div className="donations-layout">

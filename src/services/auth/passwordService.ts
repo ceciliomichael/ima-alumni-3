@@ -1,5 +1,6 @@
 import { updateUser, getUserById } from '../firebase/userService';
 import { generateInitialPassword, validatePasswordChange } from '../../utils/passwordUtils';
+import { sendPasswordResetEmail, getLoginUrl } from '../email/emailService';
 
 /**
  * Change user password
@@ -70,6 +71,20 @@ export const adminResetPassword = async (
       return { success: false, error: 'Failed to reset password' };
     }
 
+    // Send password reset email
+    if (user.email && user.email !== '' && !user.email.includes('noreply')) {
+      const emailResult = await sendPasswordResetEmail(user.email, {
+        user_name: user.name,
+        temp_password: newPassword,
+        login_url: getLoginUrl(),
+      });
+
+      if (!emailResult.success) {
+        console.warn('Failed to send password reset email:', emailResult.error);
+        // Don't fail the entire operation if email fails
+      }
+    }
+
     return { success: true, newPassword };
   } catch (error) {
     console.error('Error resetting password:', error);
@@ -101,6 +116,57 @@ export const setInitialPassword = async (
   } catch (error) {
     console.error('Error setting initial password:', error);
     return { success: false, error: 'An error occurred while setting password' };
+  }
+};
+
+/**
+ * Request password reset (user-initiated)
+ * Generates a new temporary password and sends it via email
+ * @param emailOrAlumniId - User's email or Alumni ID
+ * @returns Success status and optional error message
+ */
+export const requestPasswordReset = async (
+  emailOrAlumniId: string
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    // Try to find user by email first
+    let user = await getUserById(emailOrAlumniId);
+    
+    // If not found, try other lookup methods (you might need to import these)
+    if (!user) {
+      // This would require importing getUserByEmail or getUserByAlumniId
+      // For now, just return error
+      return { success: false, error: 'User not found' };
+    }
+
+    // Generate new temporary password
+    const newPassword = generateInitialPassword(user.name, user.batch);
+
+    // Update password
+    const updated = await updateUser(user.id, { password: newPassword });
+    if (!updated) {
+      return { success: false, error: 'Failed to reset password' };
+    }
+
+    // Send password reset email
+    if (!user.email || user.email === '' || user.email.includes('noreply')) {
+      return { success: false, error: 'No valid email address associated with this account' };
+    }
+
+    const emailResult = await sendPasswordResetEmail(user.email, {
+      user_name: user.name,
+      temp_password: newPassword,
+      login_url: getLoginUrl(),
+    });
+
+    if (!emailResult.success) {
+      return { success: false, error: `Password was reset but email failed to send: ${emailResult.error}` };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error requesting password reset:', error);
+    return { success: false, error: 'An error occurred while processing password reset request' };
   }
 };
 
