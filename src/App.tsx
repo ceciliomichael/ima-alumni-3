@@ -171,7 +171,7 @@ function App() {
           <Route 
             path="/" 
             element={
-              user ? <Navigate to="/home" /> : (
+              user ? <Navigate to="/landing" /> : (
                 <GuestLayout>
                   <LandingPage />
                 </GuestLayout>
@@ -211,7 +211,7 @@ function App() {
 
           {/* --- Authentication Routes --- */}
           <Route path="/login" element={
-            !isLoadingAuth && user ? <Navigate to="/home" /> : <LoginPage onLoginSuccess={handleLoginSuccess} />
+            !isLoadingAuth && user ? <Navigate to="/landing" /> : <LoginPage onLoginSuccess={handleLoginSuccess} />
           } />
           {/* Redirect any attempts to access registration back to login */}
           <Route path="/register" element={<Navigate to="/login" replace />} />
@@ -415,10 +415,10 @@ function App() {
           } />
 
           {/* --- Catch-all Route --- */}
-          {/* If authenticated and route not found, redirect to home. Otherwise, redirect to public landing */}
+          {/* If authenticated and route not found, redirect to landing. Otherwise, redirect to public landing */}
           <Route path="*" element={
             isLoadingAuth ? <div>Loading...</div> : 
-            user ? <Navigate to="/home" /> : <Navigate to="/" />
+            user ? <Navigate to="/landing" /> : <Navigate to="/" />
           } />
 
         </Routes>
