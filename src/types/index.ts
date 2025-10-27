@@ -152,6 +152,7 @@ export interface OfficerPosition {
   batchYear?: string;
   startDate: string;
   endDate?: string;
+  photo?: string;
 }
 
 export interface JobPosting {

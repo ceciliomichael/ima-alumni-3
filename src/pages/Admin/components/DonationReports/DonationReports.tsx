@@ -251,7 +251,8 @@ const DonationReports = () => {
 
         {/* Loading State */}
         {loading && (
-          <div className="loading-spinner">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
             <div>Generating report...</div>
           </div>
         )}

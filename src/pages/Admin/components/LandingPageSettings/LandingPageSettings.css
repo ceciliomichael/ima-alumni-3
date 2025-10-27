@@ -206,6 +206,37 @@
   border-color: #94a3b8;
 }
 
+.info-card {
+  text-align: center;
+}
+
+.info-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  color: #3b82f6;
+}
+
+.info-card h3 {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.info-card p {
+  color: #475569;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.info-note {
+  background: #f1f5f9;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border-left: 3px solid #3b82f6;
+  margin-top: 1.5rem;
+}
+
 .settings-actions {
   display: flex;
   justify-content: flex-end;

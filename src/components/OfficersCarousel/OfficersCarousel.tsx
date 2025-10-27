@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getAllOfficers } from '../../services/firebase/officerService';
 import { getAllAlumni } from '../../services/firebase/alumniService';
 import { OfficerPosition, AlumniRecord } from '../../types';
@@ -22,7 +21,7 @@ const OfficersCarousel = () => {
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % officers.length);
-    }, 5000); // Change every 5 seconds
+    }, 3000); // Change every 3 seconds
 
     return () => clearInterval(interval);
   }, [officers.length, isPaused]);
@@ -57,24 +56,6 @@ const OfficersCarousel = () => {
     }
   };
 
-  const handlePrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + officers.length) % officers.length);
-    setIsPaused(true);
-    setTimeout(() => setIsPaused(false), 10000); // Resume after 10 seconds
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % officers.length);
-    setIsPaused(true);
-    setTimeout(() => setIsPaused(false), 10000);
-  };
-
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
-    setIsPaused(true);
-    setTimeout(() => setIsPaused(false), 10000);
-  };
-
   if (loading) {
     return (
       <div className="officers-carousel-container">
@@ -98,15 +79,11 @@ const OfficersCarousel = () => {
     <div className="officers-carousel-container">
       <h2 className="officers-carousel-title">Our Alumni Officers</h2>
       
-      <div className="officers-carousel">
-        <button 
-          className="carousel-nav-btn carousel-nav-prev"
-          onClick={handlePrevious}
-          aria-label="Previous officer"
-        >
-          <ChevronLeft size={24} />
-        </button>
-
+      <div 
+        className="officers-carousel"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
         <div className="carousel-track">
           {officers.map((officer, index) => {
             const alumni = getAlumniInfo(officer.alumniId);
@@ -120,14 +97,16 @@ const OfficersCarousel = () => {
             else if (isNext) className += ' next';
             else className += ' hidden';
 
+            const photoSrc = officer.photo || alumni?.profileImage;
+
             return (
               <div key={officer.id} className={className}>
                 <div className="officer-card">
                   <div className="officer-image-wrapper">
-                    {alumni?.profileImage ? (
+                    {photoSrc ? (
                       <img 
-                        src={alumni.profileImage} 
-                        alt={alumni.name}
+                        src={photoSrc} 
+                        alt={alumni?.name || 'Officer'}
                         className="officer-image"
                       />
                     ) : (
@@ -149,26 +128,6 @@ const OfficersCarousel = () => {
             );
           })}
         </div>
-
-        <button 
-          className="carousel-nav-btn carousel-nav-next"
-          onClick={handleNext}
-          aria-label="Next officer"
-        >
-          <ChevronRight size={24} />
-        </button>
-      </div>
-
-      {/* Indicators */}
-      <div className="carousel-indicators">
-        {officers.map((_, index) => (
-          <button
-            key={index}
-            className={`carousel-indicator ${index === currentIndex ? 'active' : ''}`}
-            onClick={() => goToSlide(index)}
-            aria-label={`Go to officer ${index + 1}`}
-          />
-        ))}
       </div>
     </div>
   );

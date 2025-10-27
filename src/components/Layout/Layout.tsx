@@ -44,8 +44,8 @@ const Layout = ({ children, isAuthenticated, user, onLogout }: LayoutProps) => {
             <ul className="nav-list">
               <li className="nav-item">
                 <Link 
-                  to="/" 
-                  className={`nav-link ${location.pathname === '/' ? 'active' : ''}`} 
+                  to="/home" 
+                  className={`nav-link ${location.pathname === '/home' ? 'active' : ''}`} 
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Home size={18} /> Home

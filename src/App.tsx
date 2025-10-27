@@ -53,7 +53,8 @@ const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAdminAuthenticated, isLoading } = useAdminAuth();
   
   if (isLoading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+    return <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '1rem' }}>
+      <div className="app-loading-spinner"></div>
       <div>Loading admin authentication...</div>
     </div>;
   }
@@ -64,7 +65,10 @@ const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
 // Helper component for user protected routes
 const ProtectedRoute = ({ children, isAuthenticated, isLoading }: { children: React.ReactNode, isAuthenticated: boolean, isLoading: boolean }) => {
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '1rem' }}>
+      <div className="app-loading-spinner"></div>
+      <div>Loading...</div>
+    </div>;
   }
 
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
@@ -417,7 +421,12 @@ function App() {
           {/* --- Catch-all Route --- */}
           {/* If authenticated and route not found, redirect to landing. Otherwise, redirect to public landing */}
           <Route path="*" element={
-            isLoadingAuth ? <div>Loading...</div> : 
+            isLoadingAuth ? (
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '1rem' }}>
+                <div className="app-loading-spinner"></div>
+                <div>Loading...</div>
+              </div>
+            ) : 
             user ? <Navigate to="/landing" /> : <Navigate to="/" />
           } />
 

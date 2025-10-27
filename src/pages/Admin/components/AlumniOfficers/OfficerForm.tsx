@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Upload, X } from 'lucide-react';
 import { 
   addOfficer, 
   getOfficerById, 
@@ -10,6 +10,7 @@ import {
   getAllAlumni 
 } from '../../../../services/firebase';
 import { OfficerPosition, AlumniRecord } from '../../../../types';
+import { processImageFile } from '../../../../utils/imageUtils';
 import AdminLayout from '../../layout/AdminLayout';
 import './AlumniOfficers.css';
 
@@ -38,9 +39,11 @@ const OfficerForm = () => {
     alumniId: '',
     startDate: new Date().toISOString().split('T')[0],
     endDate: '',
-    batchYear: ''
+    batchYear: '',
+    photo: ''
   });
   
+  const [photoPreview, setPhotoPreview] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -70,6 +73,11 @@ const OfficerForm = () => {
             // Remove id as we don't need it in the form
             const { id: _, ...dataWithoutId } = formattedData;
             setFormData(dataWithoutId);
+            
+            // Set photo preview if exists
+            if (officerData.photo) {
+              setPhotoPreview(officerData.photo);
+            }
           } else {
             // Handle case where officer record doesn't exist
             navigate('/admin/alumni-officers');
@@ -116,6 +124,50 @@ const OfficerForm = () => {
         return newErrors;
       });
     }
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const result = await processImageFile(file, true);
+      
+      if (result.success && result.base64) {
+        setPhotoPreview(result.base64);
+        setFormData(prev => ({
+          ...prev,
+          photo: result.base64!
+        }));
+        
+        // Clear any existing photo errors
+        if (errors.photo) {
+          setErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors.photo;
+            return newErrors;
+          });
+        }
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          photo: result.error || 'Failed to process image'
+        }));
+      }
+    } catch (error) {
+      setErrors(prev => ({
+        ...prev,
+        photo: 'Error processing image file'
+      }));
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoPreview('');
+    setFormData(prev => ({
+      ...prev,
+      photo: ''
+    }));
   };
   
   const validateForm = () => {
@@ -264,6 +316,41 @@ const OfficerForm = () => {
                   {!loadingAlumni && allAlumni.length === 0 && (
                     <div className="admin-form-hint">No alumni records found. Please add alumni records first.</div>
                   )}
+                </div>
+              </div>
+              
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label htmlFor="photo" className="admin-form-label">Officer Photo</label>
+                  <div className="photo-upload-container">
+                    {photoPreview ? (
+                      <div className="photo-preview-wrapper">
+                        <img src={photoPreview} alt="Officer preview" className="photo-preview" />
+                        <button
+                          type="button"
+                          className="photo-remove-btn"
+                          onClick={handleRemovePhoto}
+                        >
+                          <X size={16} />
+                          Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <label htmlFor="photo-input" className="photo-upload-label">
+                        <Upload size={24} />
+                        <span>Click to upload photo</span>
+                        <span className="photo-hint">PNG, JPG, GIF up to 5MB</span>
+                      </label>
+                    )}
+                    <input
+                      id="photo-input"
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </div>
+                  {errors.photo && <div className="admin-form-error">{errors.photo}</div>}
                 </div>
               </div>
               
