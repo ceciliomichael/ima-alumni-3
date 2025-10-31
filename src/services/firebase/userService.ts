@@ -12,7 +12,7 @@ export interface User {
   email: string;
   password: string; // In a real app, this would be hashed
   alumniId?: string; // Alumni ID for authentication
-  batch?: string;
+  batch: string;
   profileImage?: string;
   coverPhoto?: string;
   bio?: string;
