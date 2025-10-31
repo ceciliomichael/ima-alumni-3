@@ -67,6 +67,18 @@ const HomePage = ({ user }: HomePageProps) => {
     };
   }, []);
 
+  // Listen for posts updated events to refresh the feed
+  useEffect(() => {
+    const handlePostsUpdated = () => {
+      loadPosts();
+    };
+
+    window.addEventListener('postsUpdated', handlePostsUpdated);
+    return () => {
+      window.removeEventListener('postsUpdated', handlePostsUpdated);
+    };
+  }, []);
+
   const loadPosts = async () => {
     setIsLoading(true);
     

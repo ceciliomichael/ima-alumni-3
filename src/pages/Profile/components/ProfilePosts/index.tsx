@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { Post, User, Comment, Reply } from '../../../../types';
 import { FilePenLine } from 'lucide-react';
 import PostList from '../../../Home/components/PostList/PostList';
+import PostForm from '../../../Home/components/PostForm/PostForm';
 import { 
   likePost, 
   addComment, 
   addReplyToComment, 
   toggleCommentReaction,
   deletePost,
-  getAllPosts
+  getAllPosts,
+  getPostsByUserId
 } from '../../../../services/firebase/postService';
 import './styles.css';
 
@@ -123,13 +125,40 @@ const ProfilePosts = ({ posts, profileUser, currentUser }: ProfilePostsProps) =>
     }
   };
 
+  const handlePostCreated = async (_newPost: Post) => {
+    try {
+      // Refresh posts from the server
+      const userPosts = await getPostsByUserId(profileUser.id);
+      const sortedPosts = [...userPosts].sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setUpdatedPosts(sortedPosts);
+      
+      // Trigger custom event to update homepage feed globally
+      window.dispatchEvent(new CustomEvent('postsUpdated'));
+      // Also trigger storage event for cross-tab updates
+      window.dispatchEvent(new Event('storage'));
+    } catch (error) {
+      console.error('Error refreshing posts after creation:', error);
+    }
+  };
+
+  const isOwnProfile = profileUser.id === currentUser?.id;
+
   return (
     <div className="profile-posts">
       <div className="posts-header">
-        <h2>{profileUser.id === currentUser?.id ? 'My Posts' : `${profileUser.name}'s Posts`}</h2>
+        <h2>{isOwnProfile ? 'My Posts' : `${profileUser.name}'s Posts`}</h2>
       </div>
       
       <div className="posts-content">
+        {isOwnProfile && (
+          <PostForm 
+            user={currentUser}
+            onPostCreated={handlePostCreated}
+          />
+        )}
+        
         {updatedPosts.length > 0 ? (
           <PostList 
             posts={updatedPosts}
@@ -140,6 +169,7 @@ const ProfilePosts = ({ posts, profileUser, currentUser }: ProfilePostsProps) =>
             onAddReply={handleAddReply}
             onToggleCommentReaction={handleToggleCommentReaction}
             onDeletePost={handleDeletePost}
+            dateFormat="full"
           />
         ) : (
           <div className="empty-posts">
@@ -147,7 +177,7 @@ const ProfilePosts = ({ posts, profileUser, currentUser }: ProfilePostsProps) =>
               <FilePenLine size={48} strokeWidth={1.5}/>
             </div>
             <h3>No posts yet</h3>
-            <p>{profileUser.id === currentUser?.id 
+            <p>{isOwnProfile 
               ? "You haven't created any posts yet. Start sharing with your alumni community!" 
               : `${profileUser.name} hasn't created any posts yet.`}</p>
           </div>

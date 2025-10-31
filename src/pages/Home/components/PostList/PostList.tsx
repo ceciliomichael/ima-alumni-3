@@ -17,6 +17,7 @@ interface PostListProps {
   onAddReply: (postId: string, commentId: string, reply: Reply) => void;
   onToggleCommentReaction: (postId: string, commentId: string) => void;
   onDeletePost?: (postId: string) => void;
+  dateFormat?: 'relative' | 'full';
 }
 
 const PostList = ({ 
@@ -27,7 +28,8 @@ const PostList = ({
   onAddComment,
   onAddReply,
   onToggleCommentReaction,
-  onDeletePost
+  onDeletePost,
+  dateFormat = 'relative'
 }: PostListProps) => {
   const navigate = useNavigate();
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
@@ -55,8 +57,28 @@ const PostList = ({
     };
   }, []);
 
+  // Format date to full format: "Oct. 31, 2025-Friday"
+  const formatFullDate = (date: Date | string) => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    const months = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'Jun.', 'Jul.', 'Aug.', 'Sep.', 'Oct.', 'Nov.', 'Dec.'];
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    
+    const month = months[dateObj.getMonth()];
+    const day = dateObj.getDate();
+    const year = dateObj.getFullYear();
+    const dayOfWeek = days[dateObj.getDay()];
+    
+    return `${month} ${day}, ${year}-${dayOfWeek}`;
+  };
+
   // Format date to a friendly format
   const formatDate = (date: Date | string) => {
+    // Use full date format if specified
+    if (dateFormat === 'full') {
+      return formatFullDate(date);
+    }
+    
+    // Otherwise use relative time format
     const dateObj = typeof date === 'string' ? new Date(date) : date;
     const now = new Date();
     

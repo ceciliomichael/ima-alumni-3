@@ -185,11 +185,15 @@
   box-shadow: var(--shadow-md);
 }
 
-.post-submit-btn:disabled {
-  background-color: var(--gray-300);
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+.post-submit-btn:disabled,
+.btn.btn-primary.post-submit-btn:disabled,
+button.btn.btn-primary.post-submit-btn:disabled {
+  background-color: #3b82f6 !important;
+  color: white !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
 }
 
 .post-cancel-btn {
