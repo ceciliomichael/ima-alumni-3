@@ -1,5 +1,5 @@
 import { useState, ChangeEvent } from 'react';
-import { Camera, Edit, Award } from 'lucide-react';
+import { Camera, Edit, Award, Briefcase, Building, MapPin } from 'lucide-react';
 import { User } from '../../../../types';
 import ImagePlaceholder from '../../../../components/ImagePlaceholder/ImagePlaceholder';
 import './styles.css';
@@ -121,22 +121,45 @@ const ProfileHeader = ({
             <div className="profile-left-section">
               <h3 className="section-title">About Me</h3>
               <p className="user-bio">{user.bio || 'No bio available'}</p>
+              {(user.job || user.company || user.location) && (
+                <div className="personal-info-row">
+                  {user.job && (
+                    <div className="personal-info-item">
+                      <Briefcase size={14} />
+                      <span>{user.job}</span>
+                    </div>
+                  )}
+                  {user.company && (
+                    <div className="personal-info-item">
+                      <Building size={14} />
+                      <span>{user.company}</span>
+                    </div>
+                  )}
+                  {user.location && (
+                    <div className="personal-info-item">
+                      <MapPin size={14} />
+                      <span>{user.location}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             
             <div className="profile-name-section">
               <div className="name-and-badge">
-                <h1>{user.name}</h1>
-                
-                {/* Officer badge - only show if user has an officer position and has chosen to display it */}
-                {showOfficerInfo && user.officerPosition && (
-                  <div className="officer-badge" title={`${user.officerPosition.title} since ${formatDate(user.officerPosition.startDate)}`}>
-                    <Award size={16} />
-                    <span>{user.officerPosition.title}</span>
-                    {user.officerPosition.batchYear && (
-                      <span className="batch-year">Batch {user.officerPosition.batchYear}</span>
-                    )}
-                  </div>
-                )}
+                <h1>
+                  {user.name}
+                  {/* Officer badge - only show if user has an officer position and has chosen to display it */}
+                  {showOfficerInfo && user.officerPosition && (
+                    <div className="officer-badge" title={`${user.officerPosition.title} since ${formatDate(user.officerPosition.startDate)}`}>
+                      <Award size={16} />
+                      <span>{user.officerPosition.title}</span>
+                      {user.officerPosition.batchYear && (
+                        <span className="batch-year">Batch {user.officerPosition.batchYear}</span>
+                      )}
+                    </div>
+                  )}
+                </h1>
               </div>
             </div>
             

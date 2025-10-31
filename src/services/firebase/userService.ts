@@ -1,8 +1,9 @@
 import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { addAlumni } from './alumniService';
+import { addAlumni, getAlumniByUserId, updateAlumni } from './alumniService';
 import { cleanAlumniId } from '../../utils/alumniIdUtils';
 import { updateUserPosts } from './postService';
+import { getOfficersByAlumniId } from './officerService';
 
 // User interface
 export interface User {
@@ -262,7 +263,7 @@ export const updateUser = async (id: string, updatedData: Partial<User>): Promis
     
     // Get the updated document
     const updatedDocSnap = await getDoc(docRef);
-    const updatedUser = {
+    let updatedUser = {
       id: updatedDocSnap.id,
       ...updatedDocSnap.data()
     } as User;
@@ -286,6 +287,80 @@ export const updateUser = async (id: string, updatedData: Partial<User>): Promis
         console.error('Error updating user posts:', error);
         // Don't fail the user update if post update fails
       }
+    }
+    
+    // Sync changes to linked alumni record
+    try {
+      const alumniRecord = await getAlumniByUserId(id);
+      if (alumniRecord) {
+        const alumniUpdates: Partial<typeof alumniRecord> = {};
+        
+        // Sync relevant fields that exist in both User and AlumniRecord
+        if (updatedData.name !== undefined) {
+          alumniUpdates.name = updatedData.name;
+        }
+        if (updatedData.email !== undefined) {
+          alumniUpdates.email = updatedData.email.toLowerCase();
+        }
+        if (updatedData.batch !== undefined) {
+          alumniUpdates.batch = updatedData.batch;
+        }
+        if (updatedData.profileImage !== undefined) {
+          alumniUpdates.profileImage = updatedData.profileImage;
+        }
+        
+        // Only update if there are changes to sync
+        if (Object.keys(alumniUpdates).length > 0) {
+          await updateAlumni(alumniRecord.id, alumniUpdates);
+        }
+      }
+    } catch (error) {
+      console.error('Error syncing changes to alumni record:', error);
+      // Don't fail the user update if alumni sync fails
+    }
+    
+    // Sync officer position if user has an alumniId
+    try {
+      const updatedUserData = updatedDocSnap.data() as Omit<User, 'id'>;
+      if (updatedUserData.alumniId) {
+        const officers = await getOfficersByAlumniId(updatedUserData.alumniId);
+        if (officers && officers.length > 0) {
+          // Use the first active officer position (or first one if none are filtered)
+          const activeOfficer = officers.find(o => !o.endDate || new Date(o.endDate) > new Date()) || officers[0];
+          
+          // Only update if officer position is different or missing
+          const currentOfficerPosition = updatedUserData.officerPosition;
+          const needsUpdate = !currentOfficerPosition || 
+            currentOfficerPosition.title !== activeOfficer.title ||
+            currentOfficerPosition.startDate !== activeOfficer.startDate ||
+            currentOfficerPosition.endDate !== activeOfficer.endDate ||
+            currentOfficerPosition.batchYear !== activeOfficer.batchYear;
+          
+          if (needsUpdate) {
+            await updateDoc(docRef, {
+              officerPosition: {
+                title: activeOfficer.title,
+                startDate: activeOfficer.startDate,
+                endDate: activeOfficer.endDate,
+                batchYear: activeOfficer.batchYear
+              },
+              showOfficerInfo: updatedUserData.showOfficerInfo !== undefined ? updatedUserData.showOfficerInfo : true
+            });
+            
+            // Re-fetch the updated user to include officer position
+            const refreshedDocSnap = await getDoc(docRef);
+            if (refreshedDocSnap.exists()) {
+              updatedUser = {
+                id: refreshedDocSnap.id,
+                ...refreshedDocSnap.data()
+              } as User;
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error syncing officer position:', error);
+      // Don't fail the user update if officer sync fails
     }
     
     // If updating current user, update the current user in localStorage

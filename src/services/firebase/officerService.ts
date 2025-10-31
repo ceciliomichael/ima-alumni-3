@@ -1,8 +1,8 @@
 import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { OfficerPosition } from '../../types';
-import { getAlumniById } from './alumniService';
-import { getUserById, updateUser } from './userService';
+import { OfficerPosition, User } from '../../types';
+import { getAlumniById, updateAlumni } from './alumniService';
+import { getUserById, getUserByAlumniId, updateUser } from './userService';
 
 const COLLECTION_NAME = 'alumni_officers';
 
@@ -188,11 +188,25 @@ export const updateUserWithOfficerInfo = async (officerId: string): Promise<bool
     
     // Get the alumni record to find the associated user
     const alumni = await getAlumniById(officer.alumniId);
-    if (!alumni || !alumni.userId) return false;
+    if (!alumni) return false;
     
-    // Get the user
-    const user = await getUserById(alumni.userId);
-    if (!user) return false;
+    let user: User | null = null;
+    
+    // Try to find user by userId link first
+    if (alumni.userId) {
+      user = await getUserById(alumni.userId);
+    }
+    
+    // If no user found via userId, try to find by matching alumniId field
+    if (!user && alumni.alumniId) {
+      user = await getUserByAlumniId(alumni.alumniId);
+    }
+    
+    // If still no user found, we can't update
+    if (!user) {
+      console.warn(`No user found for alumni record ${alumni.id} with alumniId ${alumni.alumniId}`);
+      return false;
+    }
     
     // Add officer information to the user
     await updateUser(user.id, {
@@ -204,6 +218,11 @@ export const updateUserWithOfficerInfo = async (officerId: string): Promise<bool
       },
       showOfficerInfo: true // Default to showing the information
     });
+    
+    // Also ensure the alumni record has userId linked for future updates
+    if (!alumni.userId) {
+      await updateAlumni(alumni.id, { userId: user.id });
+    }
     
     return true;
   } catch (error) {

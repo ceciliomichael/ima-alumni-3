@@ -64,9 +64,9 @@ const ProfilePage = ({
             const following = await isFollowing(currentUser.id, userToDisplay.id);
             setIsFollowingUser(following);
           }
-        } else {
-          // Viewing own profile
-          userToDisplay = currentUser;
+        } else if (currentUser) {
+          // Viewing own profile - fetch fresh data from Firestore
+          userToDisplay = await getUserById(currentUser.id);
         }
         
         if (userToDisplay) {
