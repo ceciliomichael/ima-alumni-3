@@ -213,6 +213,36 @@ function App() {
             } 
           />
 
+          <Route 
+            path="/events" 
+            element={
+              user ? (
+                <Layout isAuthenticated={!!user} user={user} onLogout={handleLogout}>
+                  <EventsPage />
+                </Layout>
+              ) : (
+                <GuestLayout>
+                  <EventsPage />
+                </GuestLayout>
+              )
+            } 
+          />
+
+          <Route 
+            path="/gallery" 
+            element={
+              user ? (
+                <Layout isAuthenticated={!!user} user={user} onLogout={handleLogout}>
+                  <GalleryPage />
+                </Layout>
+              ) : (
+                <GuestLayout>
+                  <GalleryPage />
+                </GuestLayout>
+              )
+            } 
+          />
+
           {/* --- Authentication Routes --- */}
           <Route path="/login" element={
             !isLoadingAuth && user ? <Navigate to="/landing" /> : <LoginPage onLoginSuccess={handleLoginSuccess} />
@@ -225,7 +255,7 @@ function App() {
             path="/landing" 
             element={
               <ProtectedRoute isAuthenticated={!!user} isLoading={isLoadingAuth}>
-                <LandingPage />
+                <LandingPage showProceedButton={true} />
               </ProtectedRoute>
             } 
           />
@@ -237,26 +267,6 @@ function App() {
               <ProtectedRoute isAuthenticated={!!user} isLoading={isLoadingAuth}>
                 <Layout isAuthenticated={!!user} user={user} onLogout={handleLogout}>
                   <HomePage user={user} />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route 
-            path="/gallery"
-            element={
-              <ProtectedRoute isAuthenticated={!!user} isLoading={isLoadingAuth}>
-                <Layout isAuthenticated={!!user} user={user} onLogout={handleLogout}>
-                  <GalleryPage />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route 
-            path="/events"
-            element={
-              <ProtectedRoute isAuthenticated={!!user} isLoading={isLoadingAuth}>
-                <Layout isAuthenticated={!!user} user={user} onLogout={handleLogout}>
-                  <EventsPage />
                 </Layout>
               </ProtectedRoute>
             }

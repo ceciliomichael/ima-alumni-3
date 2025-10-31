@@ -5,6 +5,7 @@ import { db } from '../../firebase/config';
 // Use the Firestore service for Event type
 import { Event as EventType } from '../../services/firebase/eventService'; 
 import ImagePlaceholder from '../../components/ImagePlaceholder';
+import FeaturedCarousel from '../../components/FeaturedCarousel';
 import './Events.css';
 
 // Remove the local EventType interface, we imported the shared one
@@ -185,41 +186,50 @@ const EventsPage = () => {
                 </div>
               </div>
             ) : filteredEvents.length > 0 ? (
-                <div className="events-grid">
-                {filteredEvents.map(event => (
-                  <div key={event.id} className="event-card">
-                      <div className="event-image">
+              <FeaturedCarousel
+                items={filteredEvents}
+                getKey={(event) => event.id}
+                renderFeatured={(event) => (
+                  <div className="event-featured-item">
+                    <div className="event-featured-image">
                       {event.coverImage ? (
-                        <img src={event.coverImage} alt={event.title} /> // Use coverImage
+                        <img src={event.coverImage} alt={event.title} />
                       ) : (
-                        // Use ImagePlaceholder component
-                        <ImagePlaceholder width="100%" height="200px" text={`${event.title} Event`} />
+                        <ImagePlaceholder width="100%" height="100%" text={`${event.title} Event`} />
                       )}
-                      </div>
-                      <div className="event-content">
-                        <h3 className="event-title">{event.title}</h3>
-                        {/* Added description display */}
-                        <p className="event-description">{event.description}</p> 
-                        <div className="event-details">
-                          <div className="event-detail">
-                            <Calendar size={14} />
-                            {/* Use formatter */}
-                            <span>{formatEventDate(event.date)}</span> 
-                          </div>
-                          <div className="event-detail">
-                            <Clock size={14} />
-                             {/* Use formatter */}
-                            <span>{formatEventTime(event.date)}</span>
-                          </div>
-                          <div className="event-detail">
-                            <MapPin size={14} />
-                            <span>{event.location}</span>
-                          </div>
+                    </div>
+                    <div className="event-featured-overlay">
+                      <h3 className="event-featured-title">{event.title}</h3>
+                      <p className="event-featured-description">{event.description}</p>
+                      <div className="event-featured-details">
+                        <div className="event-featured-detail">
+                          <Calendar size={16} />
+                          <span>{formatEventDate(event.date)}</span>
+                        </div>
+                        <div className="event-featured-detail">
+                          <Clock size={16} />
+                          <span>{formatEventTime(event.date)}</span>
+                        </div>
+                        <div className="event-featured-detail">
+                          <MapPin size={16} />
+                          <span>{event.location}</span>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
+                renderThumb={(event) => (
+                  <div className="event-thumb">
+                    {event.coverImage ? (
+                      <img src={event.coverImage} alt={event.title} />
+                    ) : (
+                      <ImagePlaceholder width="100%" height="100%" text={event.title.substring(0, 3)} />
+                    )}
+                    <div className="event-thumb-title">{event.title}</div>
+                  </div>
+                )}
+                loop={true}
+              />
             ) : (
               <div className="empty-events">
                 <div className="empty-state-icon">

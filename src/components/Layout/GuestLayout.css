@@ -188,6 +188,22 @@
   margin-top: var(--spacing-6);
 }
 
+.guest-main-landing {
+  margin-top: 0;
+}
+
+.guest-main-landing .landing-container {
+  margin-top: 0;
+  padding-top: 0;
+  min-height: calc(100vh - 80px);
+}
+
+@media (max-width: 992px) {
+  .guest-main-landing .landing-container {
+    min-height: calc(100vh - 70px);
+  }
+}
+
 .guest-footer {
   background-color: var(--background-card);
   padding: var(--spacing-6) 0;

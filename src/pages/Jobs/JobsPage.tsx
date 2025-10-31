@@ -3,6 +3,7 @@ import { Search, Briefcase, MapPin, Calendar, Clock, Mail, Link, Plus, Upload } 
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { resizeImage, validateImageFile } from '../../services/firebase/storageService';
+import FeaturedCarousel from '../../components/FeaturedCarousel';
 import './Jobs.css';
 import { 
   addJob,
@@ -317,89 +318,88 @@ const JobsPage = () => {
                 </div>
               </div>
             ) : filteredJobs.length > 0 ? (
-              <div className="jobs-grid">
-                {filteredJobs.map(job => (
-                  <div key={job.id} className="job-card">
-                    <div className="job-card-header">
-                      <div className="job-title-area">
-                        <h3 className="job-title">{job.title}</h3>
-                        <div className="job-meta">
-                          <span className="job-type">{getJobTypeLabel(job.jobType)}</span>
-                          {!isJobActive(job) && <span className="job-expired">Expired</span>}
+              <FeaturedCarousel
+                items={filteredJobs}
+                getKey={(job) => job.id}
+                renderFeatured={(job) => (
+                  <div className="job-featured-card">
+                    <div className="job-featured-header">
+                      <div className="job-featured-title-area">
+                        <h3 className="job-featured-title">{job.title}</h3>
+                        <div className="job-featured-meta">
+                          <span className="job-featured-type">{getJobTypeLabel(job.jobType)}</span>
+                          {!isJobActive(job) && <span className="job-featured-expired">Expired</span>}
                         </div>
                       </div>
-                      <div className="job-company-section">
+                      <div className="job-featured-company-section">
                         {job.companyLogo && (
-                          <div className="job-company-logo">
+                          <div className="job-featured-company-logo">
                             <img src={job.companyLogo} alt={`${job.company} logo`} />
                           </div>
                         )}
-                        <div className="job-company">{job.company}</div>
+                        <div className="job-featured-company">{job.company}</div>
                       </div>
                     </div>
-                  
-                    <div className="job-details">
+                    
+                    <div className="job-featured-details">
                       {job.location && (
-                        <div className="job-detail">
-                          <MapPin size={14} />
+                        <div className="job-featured-detail">
+                          <MapPin size={16} />
                           <span>{job.location}</span>
                         </div>
                       )}
                       {job.salary && (
-                        <div className="job-detail">
+                        <div className="job-featured-detail">
                           <span className="peso-sign">₱</span>
                           <span>{job.salary}</span>
                         </div>
                       )}
                       {job.deadline && (
-                        <div className="job-detail">
-                          <Calendar size={14} />
+                        <div className="job-featured-detail">
+                          <Calendar size={16} />
                           <span>Deadline: {formatDate(job.deadline)}</span>
                         </div>
                       )}
-                      <div className="job-detail">
-                        <Clock size={14} />
-                        <span>Posted: {formatDate(job.postedDate)}</span>
-                      </div>
                     </div>
                     
                     {job.description && (
-                      <div className="job-description-section">
-                        <p className="job-description">{job.description}</p>
+                      <div className="job-featured-description-section">
+                        <p className="job-featured-description">{job.description}</p>
                       </div>
                     )}
                     
-                    {job.requirements && (
-                      <div className="job-requirements">
-                        <h4>Requirements:</h4>
-                        <p>{job.requirements}</p>
-                      </div>
-                    )}
-                    
-                    <div className="job-apply-info">
-                      <h4>How to Apply:</h4>
+                    <div className="job-featured-apply-info">
+                      <strong>Apply:</strong>
                       {job.applicationType === 'email' && (
-                        <div className="job-application-method">
-                          <Mail size={16} />
-                          <span>Send your resume to: <a href={`mailto:${job.contactEmail}`} className="apply-link">{job.contactEmail}</a></span>
-                        </div>
+                        <span><Mail size={14} style={{ display: 'inline', marginLeft: '0.5rem' }} /> {job.contactEmail}</span>
                       )}
                       {job.applicationType === 'website' && (
-                        <div className="job-application-method">
-                          <Link size={16} />
-                          <span>Apply online: <a href={job.applicationUrl} target="_blank" rel="noopener noreferrer" className="apply-link">Application Portal</a></span>
-                        </div>
+                        <a href={job.applicationUrl} target="_blank" rel="noopener noreferrer" className="apply-link">
+                          <Link size={14} /> Application Portal
+                        </a>
                       )}
                       {job.applicationType === 'inPerson' && (
-                        <div className="job-application-method">
-                          <MapPin size={16} />
-                          <span>Apply in person at the company address</span>
-                        </div>
+                        <span><MapPin size={14} style={{ display: 'inline', marginLeft: '0.5rem' }} /> In Person</span>
                       )}
                     </div>
                   </div>
-                ))}
-              </div>
+                )}
+                renderThumb={(job) => (
+                  <div className="job-thumb">
+                    {job.companyLogo ? (
+                      <div className="job-thumb-logo">
+                        <img src={job.companyLogo} alt={job.company} />
+                      </div>
+                    ) : (
+                      <div className="job-thumb-logo-placeholder">
+                        <Briefcase size={24} />
+                      </div>
+                    )}
+                    <div className="job-thumb-title">{job.title}</div>
+                  </div>
+                )}
+                loop={true}
+              />
             ) : (
               <div className="empty-jobs">
                 <div className="empty-state-icon">

@@ -4,6 +4,7 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { Donation } from '../../types';
 import { User } from '../../types';
+import FeaturedCarousel from '../../components/FeaturedCarousel';
 import './Donations.css';
 
 // Define donation categories
@@ -212,39 +213,46 @@ const DonationsPage = ({ user }: DonationsPageProps) => {
               </div>
             </div>
           ) : filteredDonations.length > 0 ? (
-            <div className="donations-grid">
-              {filteredDonations.map(donation => (
-                <div key={donation.id} className="donation-card">
-                  <div className="donation-card-header">
-                    <div className="donation-category">{donation.category}</div>
-                    <div className="donation-amount">{formatCurrency(donation.amount, donation.currency)}</div>
+            <FeaturedCarousel
+              items={filteredDonations}
+              getKey={(donation) => donation.id}
+              renderFeatured={(donation) => (
+                <div className="donation-featured-card">
+                  <div className="donation-featured-header">
+                    <div className="donation-featured-category">{donation.category}</div>
+                    <div className="donation-featured-amount">{formatCurrency(donation.amount, donation.currency)}</div>
                   </div>
                   
-                  <div className="donation-card-content">
-                    <h3 className="donation-title">{donation.purpose}</h3>
+                  <div className="donation-featured-content">
+                    <h3 className="donation-featured-title">{donation.purpose}</h3>
                     {donation.description && (
-                      <p className="donation-description">{donation.description}</p>
+                      <p className="donation-featured-description">{donation.description}</p>
                     )}
                   </div>
                   
-                  <div className="donation-card-footer">
-                    <div className="donation-donor">
-                      <div className="donation-donor-icon">
-                        <Heart size={16} />
-                      </div>
-                      <div className="donation-donor-name">
+                  <div className="donation-featured-footer">
+                    <div className="donation-featured-donor">
+                      <Heart size={20} className="donation-featured-heart" />
+                      <div className="donation-featured-donor-name">
                         {donation.isAnonymous ? 'Anonymous Donor' : donation.donorName}
                       </div>
                     </div>
                     
-                    <div className="donation-date">
-                      <Calendar size={14} />
+                    <div className="donation-featured-date">
+                      <Calendar size={16} />
                       <span>{formatDate(donation.donationDate)}</span>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              )}
+              renderThumb={(donation) => (
+                <div className="donation-thumb">
+                  <div className="donation-thumb-amount">{formatCurrency(donation.amount, donation.currency)}</div>
+                  <div className="donation-thumb-category">{donation.category}</div>
+                </div>
+              )}
+              loop={true}
+            />
           ) : (
             <div className="empty-donations">
               <div className="empty-state-icon">

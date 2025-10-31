@@ -79,6 +79,7 @@
 /* About Tab Styles */
 .about-tabs {
   display: flex;
+  gap: 0.5rem;
   background-color: var(--background-card);
   border-radius: var(--radius-lg);
   padding: 0.5rem;

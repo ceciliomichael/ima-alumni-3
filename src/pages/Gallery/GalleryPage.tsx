@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Image, Search, Grid, Bookmark, Upload, X, FileText } from 'lucide-react';
 import GalleryCard from './components/GalleryCard';
 import AlbumViewerModal from './components/AlbumViewerModal';
+import FeaturedCarousel from '../../components/FeaturedCarousel';
 import { addGalleryItem, getUniqueAlbums } from '../../services/firebase/galleryService';
 import { GalleryPost } from '../../types';
 import { getCurrentUser } from '../../services/firebase/userService';
@@ -363,24 +364,58 @@ const GalleryPage = () => {
               </div>
             </div>
           ) : filteredImages.length > 0 ? (
-            <div className={`gallery-grid ${viewMode === 'masonry' ? 'masonry-layout' : ''}`}>
-              {filteredImages.map(image => (
-                <div key={image.id} className={`gallery-item ${viewMode === 'masonry' ? 'masonry-item' : ''}`}>
-                  <GalleryCard 
-                    image={{
-                      id: image.id,
-                      title: image.title,
-                      url: image.imageUrl,
-                      date: image.postedDate,
-                      album: getDisplayCategoryName(image.albumCategory),
-                      likes: (image.likedBy?.length || 0)
-                    }}
-                    galleryItem={image}
-                    onImageClick={handleImageClick}
+            viewMode === 'masonry' ? (
+              <div className="gallery-grid masonry-layout">
+                {filteredImages.map(image => (
+                  <div key={image.id} className="gallery-item masonry-item">
+                    <GalleryCard 
+                      image={{
+                        id: image.id,
+                        title: image.title,
+                        url: image.imageUrl,
+                        date: image.postedDate,
+                        album: getDisplayCategoryName(image.albumCategory),
+                        likes: (image.likedBy?.length || 0)
+                      }}
+                      galleryItem={image}
+                      onImageClick={handleImageClick}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <FeaturedCarousel
+                items={filteredImages}
+                getKey={(item) => item.id}
+                renderFeatured={(item) => (
+                  <div 
+                    className="gallery-featured-item"
+                    onClick={() => handleImageClick(item, 0)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <img 
+                      src={item.imageUrl} 
+                      alt={item.title}
+                      className="gallery-featured-image"
+                    />
+                    <div className="gallery-featured-overlay">
+                      <h3>{item.title}</h3>
+                      <div className="gallery-featured-meta">
+                        <span className="featured-album">{getDisplayCategoryName(item.albumCategory)}</span>
+                        <span className="featured-date">{new Date(item.postedDate).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                renderThumb={(item) => (
+                  <img 
+                    src={item.imageUrl} 
+                    alt={item.title}
                   />
-                </div>
-              ))}
-            </div>
+                )}
+                loop={true}
+              />
+            )
           ) : (
             <div className="empty-gallery">
               <div className="empty-state-icon">

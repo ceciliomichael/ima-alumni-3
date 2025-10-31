@@ -1,5 +1,5 @@
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { LogIn, Home, Info, Menu, X } from 'lucide-react';
+import { LogIn, Home, Info, Menu, X, Calendar, Image } from 'lucide-react';
 import { useState } from 'react';
 import './GuestLayout.css';
 
@@ -59,6 +59,24 @@ const GuestLayout = ({ children }: GuestLayoutProps) => {
                   <span className="peso-icon">₱</span> Donations
                 </Link>
               </li>
+              <li className="guest-nav-item">
+                <Link 
+                  to="/events" 
+                  className={`guest-nav-link ${location.pathname === '/events' ? 'active' : ''}`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Calendar size={18} /> Events
+                </Link>
+              </li>
+              <li className="guest-nav-item">
+                <Link 
+                  to="/gallery" 
+                  className={`guest-nav-link ${location.pathname === '/gallery' ? 'active' : ''}`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <Image size={18} /> Gallery
+                </Link>
+              </li>
             </ul>
           </nav>
 
@@ -75,16 +93,18 @@ const GuestLayout = ({ children }: GuestLayoutProps) => {
       </header>
       <div className="guest-header-placeholder"></div>
 
-      <main className="guest-main">
+      <main className={`guest-main ${location.pathname === '/' ? 'guest-main-landing' : ''}`}>
         {children}
       </main>
 
-      <footer className="guest-footer">
-        <div className="guest-footer-content">
-          <p>&copy; {new Date().getFullYear()} Immaculate Mary Academy Alumni Association. All rights reserved.</p>
-          <p className="guest-footer-tagline">Once an Immaculatian, always an Immaculatian!</p>
-        </div>
-      </footer>
+      {location.pathname !== '/' && (
+        <footer className="guest-footer">
+          <div className="guest-footer-content">
+            <p>&copy; {new Date().getFullYear()} Immaculate Mary Academy Alumni Association. All rights reserved.</p>
+            <p className="guest-footer-tagline">Once an Immaculatian, always an Immaculatian!</p>
+          </div>
+        </footer>
+      )}
     </div>
   );
 };

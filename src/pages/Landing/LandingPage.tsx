@@ -3,7 +3,11 @@ import { ArrowRight } from 'lucide-react';
 import OfficersCarousel from '../../components/OfficersCarousel';
 import './Landing.css';
 
-const LandingPage = () => {
+interface LandingPageProps {
+  showProceedButton?: boolean;
+}
+
+const LandingPage = ({ showProceedButton = false }: LandingPageProps) => {
   const navigate = useNavigate();
 
   const handleProceed = () => {
@@ -35,12 +39,14 @@ const LandingPage = () => {
           <OfficersCarousel />
         </div>
         
-        <div className="action-section">
-          <button className="proceed-btn" onClick={handleProceed}>
-            <span>Proceed to Home</span>
-            <ArrowRight size={20} />
-          </button>
-        </div>
+        {showProceedButton && (
+          <div className="action-section">
+            <button className="proceed-btn" onClick={handleProceed}>
+              <span>Proceed to Home</span>
+              <ArrowRight size={20} />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
