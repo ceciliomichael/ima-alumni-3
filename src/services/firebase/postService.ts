@@ -402,3 +402,89 @@ export const updatePost = async (postId: string, updatedData: Partial<Post>): Pr
     return null;
   }
 };
+
+// Update all posts by a user when their profile changes
+export const updateUserPosts = async (userId: string, updates: { userName?: string; userImage?: string }): Promise<boolean> => {
+  try {
+    // Get all posts by this user
+    const userPosts = await getPostsByUserId(userId);
+    
+    if (userPosts.length === 0) {
+      return true; // No posts to update
+    }
+    
+    // Update each post
+    const updatePromises = userPosts.map(async (post) => {
+      const updateData: Partial<Post> = {};
+      let commentsUpdated = false;
+      
+      // Update post-level fields
+      if (updates.userName !== undefined) {
+        updateData.userName = updates.userName;
+      }
+      
+      if (updates.userImage !== undefined) {
+        updateData.userImage = updates.userImage;
+      }
+      
+      // Update comments and replies by this user
+      if (post.comments && post.comments.length > 0) {
+        const updatedComments = post.comments.map(comment => {
+          // Check if this comment is by the user
+          if (comment.userId === userId) {
+            commentsUpdated = true;
+            const updatedComment = { ...comment };
+            
+            if (updates.userName !== undefined) {
+              updatedComment.userName = updates.userName;
+            }
+            
+            if (updates.userImage !== undefined) {
+              updatedComment.userImage = updates.userImage;
+            }
+            
+            // Update replies by this user
+            if (comment.replies && comment.replies.length > 0) {
+              updatedComment.replies = comment.replies.map(reply => {
+                if (reply.userId === userId) {
+                  const updatedReply = { ...reply };
+                  
+                  if (updates.userName !== undefined) {
+                    updatedReply.userName = updates.userName;
+                  }
+                  
+                  if (updates.userImage !== undefined) {
+                    updatedReply.userImage = updates.userImage;
+                  }
+                  
+                  return updatedReply;
+                }
+                return reply;
+              });
+            }
+            
+            return updatedComment;
+          }
+          return comment;
+        });
+        
+        if (commentsUpdated) {
+          updateData.comments = updatedComments;
+        }
+      }
+      
+      // Only update if there are changes
+      if (Object.keys(updateData).length > 0) {
+        return updatePost(post.id, updateData);
+      }
+      
+      return post;
+    });
+    
+    await Promise.all(updatePromises);
+    return true;
+  } catch (error) {
+    console.error('Error updating user posts:', error);
+    return false;
+  }
+};

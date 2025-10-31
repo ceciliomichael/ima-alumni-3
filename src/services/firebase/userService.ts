@@ -2,6 +2,7 @@ import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, 
 import { db } from '../../firebase/config';
 import { addAlumni } from './alumniService';
 import { cleanAlumniId } from '../../utils/alumniIdUtils';
+import { updateUserPosts } from './postService';
 
 // User interface
 export interface User {
@@ -265,6 +266,27 @@ export const updateUser = async (id: string, updatedData: Partial<User>): Promis
       id: updatedDocSnap.id,
       ...updatedDocSnap.data()
     } as User;
+    
+    // If profileImage or name changed, update all user's posts
+    if (updatedData.profileImage !== undefined || updatedData.name !== undefined) {
+      try {
+        const postUpdates: { userName?: string; userImage?: string } = {};
+        
+        if (updatedData.name !== undefined) {
+          postUpdates.userName = updatedData.name;
+        }
+        
+        if (updatedData.profileImage !== undefined) {
+          postUpdates.userImage = updatedData.profileImage;
+        }
+        
+        // Update all posts by this user
+        await updateUserPosts(id, postUpdates);
+      } catch (error) {
+        console.error('Error updating user posts:', error);
+        // Don't fail the user update if post update fails
+      }
+    }
     
     // If updating current user, update the current user in localStorage
     const currentUser = getCurrentUser();
