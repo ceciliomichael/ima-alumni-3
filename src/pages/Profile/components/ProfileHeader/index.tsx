@@ -117,40 +117,42 @@ const ProfileHeader = ({
         </div>
         
         <div className="profile-info">
-          <div className="profile-name-section">
-            <div className="name-and-badge">
-            <h1>{user.name}</h1>
-              
-              {/* Officer badge - only show if user has an officer position and has chosen to display it */}
-              {showOfficerInfo && user.officerPosition && (
-                <div className="officer-badge" title={`${user.officerPosition.title} since ${formatDate(user.officerPosition.startDate)}`}>
-                  <Award size={16} />
-                  <span>{user.officerPosition.title}</span>
-                  {user.officerPosition.batchYear && (
-                    <span className="batch-year">Batch {user.officerPosition.batchYear}</span>
-                  )}
-                </div>
-              )}
+          <div className="profile-info-row">
+            <div className="profile-left-section">
+              <h3 className="section-title">About Me</h3>
+              <p className="user-bio">{user.bio || 'No bio available'}</p>
             </div>
             
-            <div className="profile-actions">
-              {showEditButton && (
-                <button 
-                  className="edit-profile-btn"
-                  onClick={onEditClick}
-                >
-                  <Edit size={16} />
-                  <span>Edit Profile</span>
-                </button>
-              )}
-              
-
+            <div className="profile-name-section">
+              <div className="name-and-badge">
+                <h1>{user.name}</h1>
+                
+                {/* Officer badge - only show if user has an officer position and has chosen to display it */}
+                {showOfficerInfo && user.officerPosition && (
+                  <div className="officer-badge" title={`${user.officerPosition.title} since ${formatDate(user.officerPosition.startDate)}`}>
+                    <Award size={16} />
+                    <span>{user.officerPosition.title}</span>
+                    {user.officerPosition.batchYear && (
+                      <span className="batch-year">Batch {user.officerPosition.batchYear}</span>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-          
-          <div className="profile-metadata">
-            <div className="user-info">
-              <div className="profile-batch">Batch {user.batch}</div>
+            
+            <div className="profile-right-section">
+              <div className="profile-quick-info">
+                <div className="profile-batch">Batch {user.batch}</div>
+                {showEditButton && (
+                  <button 
+                    className="edit-profile-btn"
+                    onClick={onEditClick}
+                  >
+                    <Edit size={16} />
+                    <span>Edit Profile</span>
+                  </button>
+                )}
+              </div>
               
               {/* Officer details section - only show if user has enabled it */}
               {showOfficerInfo && user.officerPosition && (

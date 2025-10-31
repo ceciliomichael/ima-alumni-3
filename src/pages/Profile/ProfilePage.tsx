@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { User } from '../../types';
 import ProfileHeader from './components/ProfileHeader';
-import ProfileAbout from './components/ProfileAbout';
+import ProfileGallery from './components/ProfileGallery';
 import ProfileActivity from './components/ProfileActivity';
 import ProfileForm from './components/ProfileForm';
 import ProfilePosts from './components/ProfilePosts';
@@ -317,14 +317,7 @@ const ProfilePage = ({
           
           <div className="profile-body">
             <div className="profile-sidebar">
-              <ProfileAbout 
-                bio={profileUser.bio || ''}
-                email={profileUser.email || ''}
-                job={profileUser.job || ''}
-                company={profileUser.company || ''}
-                location={profileUser.location || ''}
-                socialLinks={profileUser.socialLinks || {}}
-              />
+              <ProfileGallery posts={posts} />
               <ProfileActivity stats={activityStats} />
             </div>
             
