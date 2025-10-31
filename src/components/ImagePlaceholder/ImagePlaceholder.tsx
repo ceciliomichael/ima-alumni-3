@@ -1,3 +1,4 @@
+import React from 'react';
 import './ImagePlaceholder.css';
 
 interface ImagePlaceholderProps {
@@ -11,6 +12,7 @@ interface ImagePlaceholderProps {
   size?: 'small' | 'medium' | 'large';
   className?: string;
   isAvatar?: boolean;
+  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 const ImagePlaceholder = ({
@@ -23,7 +25,8 @@ const ImagePlaceholder = ({
   name = '',
   size = 'medium',
   className = '',
-  isAvatar = false
+  isAvatar = false,
+  onClick
 }: ImagePlaceholderProps) => {
   const borderRadius = shape === 'circle' ? '50%' : shape === 'square' ? '8px' : '4px';
   
@@ -68,12 +71,15 @@ const ImagePlaceholder = ({
   }
 
   if (isAvatar) {
+    // Use square shape if className indicates modal usage, otherwise use circle
+    const avatarBorderRadius = className.includes('modal-avatar-placeholder') ? '8px' : '50%';
     return (
-      <div 
+      <div
         className={`default-avatar ${className}`}
+        onClick={onClick}
         style={{
           backgroundColor: getColorFromName(name),
-          borderRadius: '50%',
+          borderRadius: avatarBorderRadius,
           width: avatarSize,
           height: avatarSize,
           display: 'flex',
@@ -87,7 +93,8 @@ const ImagePlaceholder = ({
           lineHeight: '1',
           fontSize: fontSize,
           textTransform: 'uppercase',
-          objectFit: 'cover'
+          objectFit: 'cover',
+          ...(onClick && { cursor: 'pointer' })
         }}
       >
         {getInitials(name)}
@@ -96,8 +103,9 @@ const ImagePlaceholder = ({
   }
   
   return (
-    <div 
+    <div
       className={`image-placeholder ${className}`}
+      onClick={onClick}
       style={{
         backgroundColor: color,
         borderRadius,
@@ -111,7 +119,8 @@ const ImagePlaceholder = ({
         fontWeight: 'bold',
         textAlign: 'center',
         overflow: 'hidden',
-        position: 'relative'
+        position: 'relative',
+        ...(onClick && { cursor: 'pointer' })
       }}
     >
       {text && <div style={{ fontSize: '24px', marginBottom: '5px' }}>{text}</div>}

@@ -427,6 +427,20 @@
   cursor: default;
 }
 
+.modal-avatar-placeholder {
+  width: 500px !important;
+  height: 500px !important;
+  max-width: 90vw;
+  max-height: 90vh;
+  min-width: 350px;
+  min-height: 350px;
+  font-size: 180px !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  cursor: default;
+  aspect-ratio: 1;
+  object-fit: contain;
+}
+
 .image-modal-close {
   position: absolute;
   top: 10px;

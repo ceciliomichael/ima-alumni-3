@@ -92,13 +92,13 @@ const ProfileHeader = ({
       </div>
       
       <div className="profile-info-wrapper">
-        <div 
-          className="profile-avatar clickable-avatar" 
-          onClick={() => user.profileImage && setShowImageModal(true)}
+        <div
+          className="profile-avatar clickable-avatar"
+          onClick={() => setShowImageModal(true)}
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
-            if ((e.key === 'Enter' || e.key === ' ') && user.profileImage) {
+            if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               setShowImageModal(true);
             }
@@ -218,27 +218,37 @@ const ProfileHeader = ({
       </div>
       
       {/* Image Modal */}
-      {showImageModal && user.profileImage && (
-        <div 
-          className="image-modal-overlay" 
+      {showImageModal && (
+        <div
+          className="image-modal-overlay"
           onClick={() => setShowImageModal(false)}
           role="dialog"
           aria-modal="true"
           aria-label="Profile picture preview"
         >
           <div className="image-modal-content">
-            <button 
-              className="image-modal-close" 
+            <button
+              className="image-modal-close"
               onClick={() => setShowImageModal(false)}
               aria-label="Close"
             >
               <X size={24} />
             </button>
-            <img 
-              src={user.profileImage} 
-              alt={user.name} 
-              onClick={(e) => e.stopPropagation()}
-            />
+            {user.profileImage ? (
+              <img
+                src={user.profileImage}
+                alt={user.name}
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <ImagePlaceholder
+                isAvatar
+                size="large"
+                name={user.name || ''}
+                className="modal-avatar-placeholder"
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
           </div>
         </div>
       )}
