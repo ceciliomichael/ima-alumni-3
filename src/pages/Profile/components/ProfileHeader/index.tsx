@@ -1,5 +1,5 @@
 import { useState, ChangeEvent } from 'react';
-import { Camera, Edit, Award, Briefcase, Building, MapPin } from 'lucide-react';
+import { Camera, Edit, Award, Briefcase, Building, MapPin, X } from 'lucide-react';
 import { User } from '../../../../types';
 import ImagePlaceholder from '../../../../components/ImagePlaceholder/ImagePlaceholder';
 import './styles.css';
@@ -23,6 +23,7 @@ const ProfileHeader = ({
 }: ProfileHeaderProps) => {
   const isViewingSelf = currentUserId === user.id;
   const [isUploading, setIsUploading] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
   
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>, type: 'profile' | 'cover') => {
     const file = e.target.files?.[0];
@@ -91,7 +92,19 @@ const ProfileHeader = ({
       </div>
       
       <div className="profile-info-wrapper">
-        <div className="profile-avatar">
+        <div 
+          className="profile-avatar clickable-avatar" 
+          onClick={() => user.profileImage && setShowImageModal(true)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if ((e.key === 'Enter' || e.key === ' ') && user.profileImage) {
+              e.preventDefault();
+              setShowImageModal(true);
+            }
+          }}
+          aria-label="View profile picture"
+        >
           {user.profileImage ? (
             <img src={user.profileImage} alt={user.name} />
           ) : (
@@ -103,7 +116,11 @@ const ProfileHeader = ({
             />
           )}
           {isViewingSelf && (
-            <label className="change-avatar-btn" aria-label="Change profile picture">
+            <label 
+              className="change-avatar-btn" 
+              aria-label="Change profile picture"
+              onClick={(e) => e.stopPropagation()}
+            >
               <Camera size={16} />
               <input 
                 type="file" 
@@ -199,6 +216,32 @@ const ProfileHeader = ({
           </div>
         </div>
       </div>
+      
+      {/* Image Modal */}
+      {showImageModal && user.profileImage && (
+        <div 
+          className="image-modal-overlay" 
+          onClick={() => setShowImageModal(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Profile picture preview"
+        >
+          <div className="image-modal-content">
+            <button 
+              className="image-modal-close" 
+              onClick={() => setShowImageModal(false)}
+              aria-label="Close"
+            >
+              <X size={24} />
+            </button>
+            <img 
+              src={user.profileImage} 
+              alt={user.name} 
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
