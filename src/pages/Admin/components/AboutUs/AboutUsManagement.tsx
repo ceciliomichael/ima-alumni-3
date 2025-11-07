@@ -55,7 +55,7 @@ const AboutUsManagement = () => {
   const [visionMissionForm, setVisionMissionForm] = useState({
     vision: '',
     mission: '',
-    goals: ['', '', '']
+    goals: ['', '', '', '']
   });
   
   const [organizationForm, setOrganizationForm] = useState({
@@ -103,7 +103,7 @@ const AboutUsManagement = () => {
         setVisionMissionForm({
           vision: vision.vision,
           mission: vision.mission,
-          goals: vision.goals.length >= 3 ? vision.goals : [...vision.goals, '', '', '']
+          goals: vision.goals.length >= 4 ? vision.goals : [...vision.goals, '', '', '', ''].slice(0, 4)
         });
       }
       

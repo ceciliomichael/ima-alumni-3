@@ -355,7 +355,8 @@ export const initializeDefaultAboutContent = async (): Promise<void> => {
           goals: [
             'To bring students to an awareness of their responsibilities to the community and help them develop their social virtues and instilling the 21st century learning skills required for effective service to the local community.',
             'To show in the students\' daily life a dynamic love of God, a sense of personal worth and respect for others to enable them to relate harmoniously with their family, the school, and the community.',
-            'To demonstrate academic excellence in studies and exemplify knowledge, skills, and habits by producing integrated and globally competitive graduates.'
+            'To demonstrate academic excellence in studies and exemplify knowledge, skills, and habits by producing integrated and globally competitive graduates.',
+            'Additional goal to be defined by the school administration.'
           ]
         },
         updatedBy: 'system'
