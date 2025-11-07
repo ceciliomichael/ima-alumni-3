@@ -146,6 +146,10 @@
 }
 
 /* History Section Styles */
+.history-section .about-slideshow {
+  margin-bottom: 2rem;
+}
+
 .timeline {
   position: relative;
   padding-left: 2rem;
@@ -214,6 +218,10 @@
 }
 
 /* Vision & Mission Section Styles */
+.vision-section .about-slideshow {
+  margin-bottom: 2rem;
+}
+
 .vision-content {
   display: grid;
   gap: 2rem;
@@ -464,6 +472,11 @@
     flex-direction: column;
     text-align: center;
   }
+  
+  .history-section .about-slideshow,
+  .vision-section .about-slideshow {
+    margin-bottom: 1.5rem;
+  }
 }
 
 @media (max-width: 576px) {
@@ -490,4 +503,9 @@
   .org-chart-image-container {
     padding: 1rem;
   }
-} 
+  
+  .history-section .about-slideshow,
+  .vision-section .about-slideshow {
+    margin-bottom: 1rem;
+  }
+}

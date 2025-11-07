@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Eye, Target, CheckSquare, MapPin, Mail, Phone } from 'lucide-react';
-import { 
-  getHistoryItems, 
-  getVisionMission, 
+import { MapPin, Mail, Phone } from 'lucide-react';
+import {
+  getHistoryItems,
+  getVisionMission,
   getOrganizationChart,
   getContactInfo,
   HistoryItem,
@@ -10,6 +10,7 @@ import {
   OrganizationChart,
   ContactInfo
 } from '../../services/firebase/aboutService';
+import AboutSlideshow from '../../components/AboutSlideshow';
 import './About.css';
 
 const AboutPage = () => {
@@ -99,19 +100,11 @@ const AboutPage = () => {
               </div>
               
               {historyItems.length > 0 ? (
-                <div className="timeline">
-                  {historyItems.map((item) => (
-                    <div key={item.id} className="timeline-item">
-                      <div className="timeline-marker">
-                        <div className="timeline-year">{item.year}</div>
-                      </div>
-                      <div className="timeline-content">
-                        <h3>{item.title}</h3>
-                        <p>{item.description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <AboutSlideshow
+                  type="history"
+                  historyItems={historyItems}
+                  autoPlayMs={4000}
+                />
               ) : (
                 <div className="empty-content">
                   <p>No history items available at the moment.</p>
@@ -128,49 +121,11 @@ const AboutPage = () => {
               </div>
               
               {visionMission ? (
-                <div className="vision-content">
-                  <div className="vision-card">
-                    <div className="card-icon">
-                      <div className="icon-circle">
-                        <Eye size={24} />
-                      </div>
-                    </div>
-                    <div className="card-content">
-                      <h3>Vision</h3>
-                      <p>{visionMission.vision}</p>
-                    </div>
-                  </div>
-
-                  <div className="mission-card">
-                    <div className="card-icon">
-                      <div className="icon-circle">
-                        <Target size={24} />
-                      </div>
-                    </div>
-                    <div className="card-content">
-                      <h3>Mission</h3>
-                      <p>{visionMission.mission}</p>
-                    </div>
-                  </div>
-
-                  {visionMission.goals && visionMission.goals.length > 0 && (
-                    <div className="goals-card">
-                      <div className="card-icon">
-                        <div className="icon-circle">
-                          <CheckSquare size={24} />
-                        </div>
-                      </div>
-                      <div className="card-content">
-                        <h3>Goals</h3>
-                        <ol className="goals-list">
-                          {visionMission.goals.map((goal, index) => (
-                            <li key={index}>{goal}</li>
-                          ))}
-                        </ol>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <AboutSlideshow
+                  type="vision"
+                  visionMission={visionMission}
+                  autoPlayMs={5000}
+                />
               ) : (
                 <div className="empty-content">
                   <p>Vision and mission information will be available soon.</p>
