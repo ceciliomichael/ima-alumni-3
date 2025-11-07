@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Image, Search, Grid, Bookmark, Upload, X, FileText } from 'lucide-react';
+import { Image, Search, Bookmark, Upload, X, FileText } from 'lucide-react';
 import GalleryCard from './components/GalleryCard';
 import AlbumViewerModal from './components/AlbumViewerModal';
 import FeaturedCarousel from '../../components/FeaturedCarousel';
@@ -306,14 +306,6 @@ const GalleryPage = () => {
                 <span>Upload</span>
               </button>
               <div className="view-toggle">
-                <button 
-                  className={`view-mode-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                  onClick={() => handleViewModeChange('grid')}
-                  aria-label="Grid view (all photos)"
-                  title="Show all photos"
-                >
-                  <Grid size={18} />
-                </button>
                 <button 
                   className={`view-mode-btn ${viewMode === 'masonry' ? 'active' : ''}`}
                   onClick={() => handleViewModeChange('masonry')}
