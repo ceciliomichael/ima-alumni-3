@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { User } from '../../types';
-import { searchUsers } from '../../pages/Admin/services/localStorage/userService';
+import { searchUsers } from '../../services/firebase/userService';
 import ImagePlaceholder from '../ImagePlaceholder/ImagePlaceholder';
 import './UserSearch.css';
 
@@ -11,21 +11,31 @@ const UserSearch = () => {
   const [results, setResults] = useState<User[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isResultsVisible, setIsResultsVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   // Handle search input change
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setQuery(value);
     
     if (value.trim()) {
-      const searchResults = searchUsers(value);
-      setResults(searchResults);
-      setIsResultsVisible(true);
+      setIsLoading(true);
+      try {
+        const searchResults = await searchUsers(value);
+        setResults(searchResults);
+        setIsResultsVisible(true);
+      } catch (error) {
+        console.error('Error searching users:', error);
+        setResults([]);
+      } finally {
+        setIsLoading(false);
+      }
     } else {
       setResults([]);
       setIsResultsVisible(false);
+      setIsLoading(false);
     }
   };
 
@@ -77,7 +87,7 @@ const UserSearch = () => {
           <input
             type="text"
             className="user-search-input"
-            placeholder="Search alumni..."
+            placeholder={isLoading ? "Searching..." : "Search alumni..."}
             value={query}
             onChange={handleSearchChange}
             onFocus={() => {
@@ -87,11 +97,15 @@ const UserSearch = () => {
             }}
           />
           {query && (
-            <button className="user-search-clear" onClick={() => {
-              setQuery('');
-              setResults([]);
-              setIsResultsVisible(false);
-            }}>
+            <button
+              className="user-search-clear"
+              onClick={() => {
+                setQuery('');
+                setResults([]);
+                setIsResultsVisible(false);
+                setIsLoading(false);
+              }}
+            >
               <X size={16} />
             </button>
           )}
@@ -99,9 +113,13 @@ const UserSearch = () => {
         
         {isResultsVisible && (
           <div className="user-search-results">
-            {results.length > 0 ? (
+            {isLoading ? (
+              <div className="user-search-no-results">
+                <p>Searching...</p>
+              </div>
+            ) : results.length > 0 ? (
               results.map(user => (
-                <div 
+                <div
                   key={user.id}
                   className="user-search-result"
                   onClick={() => navigateToProfile(user.id)}
@@ -123,11 +141,11 @@ const UserSearch = () => {
                   </div>
                 </div>
               ))
-            ) : (
+            ) : query.trim() ? (
               <div className="user-search-no-results">
                 <p>No users found</p>
               </div>
-            )}
+            ) : null}
           </div>
         )}
       </div>
