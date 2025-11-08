@@ -1,10 +1,10 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { User } from '../../types';
 import { Home, Image, Calendar, Info, Bell, LogOut, Menu, X, User as UserIcon, Briefcase } from 'lucide-react';
-import { useState } from 'react';
 import UserSearch from '../UserSearch/UserSearch';
 import ImagePlaceholder from '../ImagePlaceholder/ImagePlaceholder';
+import { subscribeToNotifications } from '../../services/firebase/notificationService';
 import './Layout.css';
 
 interface LayoutProps {
@@ -16,11 +16,24 @@ interface LayoutProps {
 
 const Layout = ({ children, isAuthenticated, user, onLogout }: LayoutProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const location = useLocation();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  // Subscribe to notifications to get unread count
+  useEffect(() => {
+    if (isAuthenticated) {
+      const unsubscribe = subscribeToNotifications((notifications) => {
+        const unread = notifications.filter(n => !n.isRead).length;
+        setUnreadCount(unread);
+      });
+
+      return () => unsubscribe();
+    }
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return <>{children}</>;
@@ -105,6 +118,9 @@ const Layout = ({ children, isAuthenticated, user, onLogout }: LayoutProps) => {
               <div className="notification-icon">
                 <Link to="/notifications" className="notification-button" title="Notifications">
                   <Bell size={20} />
+                  {unreadCount > 0 && (
+                    <span className="notification-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                  )}
                 </Link>
               </div>
               <div className="user-profile">

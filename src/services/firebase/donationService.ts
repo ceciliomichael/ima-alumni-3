@@ -12,6 +12,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { Donation, DonationReport } from '../../types';
+import { createDonationNotification } from './notificationService';
 
 const DONATIONS_COLLECTION = 'donations';
 
@@ -76,6 +77,22 @@ export const addDonation = async (donation: Omit<Donation, 'id'>): Promise<strin
     };
     
     const docRef = await addDoc(donationsRef, newDonation);
+    
+    // Create a notification for this donation if it's public
+    if (donation.isPublic) {
+      try {
+        await createDonationNotification(
+          donation.donorName,
+          donation.amount,
+          donation.currency,
+          donation.isAnonymous || false
+        );
+      } catch (notificationError) {
+        console.error('Failed to create donation notification:', notificationError);
+        // Don't throw - donation was created successfully even if notification fails
+      }
+    }
+    
     return docRef.id;
   } catch (error) {
     console.error('Error adding donation:', error);

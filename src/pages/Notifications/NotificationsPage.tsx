@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { Bell, Calendar, Briefcase, AtSign, Check, Trash2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bell, Calendar, Briefcase, AtSign, Check, Trash2, Heart } from 'lucide-react';
 import './Notifications.css';
+import { subscribeToNotifications, markNotificationAsRead, deleteNotification as deleteNotificationFromDB } from '../../services/firebase/notificationService';
 
 interface Notification {
   id: string;
-  type: 'event' | 'job' | 'mention' | 'system';
+  type: 'event' | 'job' | 'mention' | 'system' | 'donation';
   title: string;
   message: string;
   createdAt: string;
@@ -14,6 +15,7 @@ interface Notification {
 const NotificationsPage = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [activeFilter, setActiveFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
 
   // Format date helper
   const formatDate = (dateStr: string) => {
@@ -42,6 +44,17 @@ const NotificationsPage = () => {
     }
   };
 
+  // Set up real-time listener for notifications
+  useEffect(() => {
+    setLoading(true);
+    const unsubscribe = subscribeToNotifications((fetchedNotifications) => {
+      setNotifications(fetchedNotifications);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   // Filter notifications based on active filter
   const filteredNotifications = notifications.filter(notification => {
     switch(activeFilter) {
@@ -51,25 +64,37 @@ const NotificationsPage = () => {
         return notification.type === 'event';
       case 'job':
         return notification.type === 'job';
+      case 'donation':
+        return notification.type === 'donation';
       default:
         return true;
     }
   });
 
   // Mark notification as read
-  const markAsRead = (id: string) => {
-    setNotifications(prevNotifications => 
-      prevNotifications.map(notification => 
-        notification.id === id ? { ...notification, isRead: true } : notification
-      )
-    );
+  const markAsRead = async (id: string) => {
+    try {
+      await markNotificationAsRead(id);
+      setNotifications(prevNotifications => 
+        prevNotifications.map(notification => 
+          notification.id === id ? { ...notification, isRead: true } : notification
+        )
+      );
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
   };
 
   // Delete notification
-  const deleteNotification = (id: string) => {
-    setNotifications(prevNotifications => 
-      prevNotifications.filter(notification => notification.id !== id)
-    );
+  const deleteNotification = async (id: string) => {
+    try {
+      await deleteNotificationFromDB(id);
+      setNotifications(prevNotifications => 
+        prevNotifications.filter(notification => notification.id !== id)
+      );
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
   };
 
   // Mark all as read
@@ -88,6 +113,8 @@ const NotificationsPage = () => {
         return <Briefcase size={18} />;
       case 'mention':
         return <AtSign size={18} />;
+      case 'donation':
+        return <Heart size={18} />;
       default:
         return <Bell size={18} />;
     }
@@ -131,14 +158,29 @@ const NotificationsPage = () => {
         >
           Jobs
         </button>
+        <button 
+          className={`filter-button ${activeFilter === 'donation' ? 'active' : ''}`}
+          onClick={() => setActiveFilter('donation')}
+        >
+          Donations
+        </button>
       </div>
 
       <div className="notifications-list">
-        {filteredNotifications.length > 0 ? (
+        {loading ? (
+          <div className="empty-notifications">
+            <div className="empty-icon">
+              <Bell size={64} />
+            </div>
+            <h3>Loading notifications...</h3>
+            <p>Please wait while we fetch your notifications.</p>
+          </div>
+        ) : filteredNotifications.length > 0 ? (
           filteredNotifications.map(notification => (
             <div 
               key={notification.id} 
               className={`notification-item ${!notification.isRead ? 'unread' : ''}`}
+              onClick={() => !notification.isRead && markAsRead(notification.id)}
             >
               <div className={`notification-icon ${notification.type}`}>
                 {getNotificationIcon(notification.type)}
@@ -154,7 +196,10 @@ const NotificationsPage = () => {
                 {!notification.isRead && (
                   <button 
                     className="action-button read-button" 
-                    onClick={() => markAsRead(notification.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      markAsRead(notification.id);
+                    }}
                     title="Mark as read"
                   >
                     <Check size={16} />
@@ -162,7 +207,10 @@ const NotificationsPage = () => {
                 )}
                 <button 
                   className="action-button delete-button" 
-                  onClick={() => deleteNotification(notification.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteNotification(notification.id);
+                  }}
                   title="Delete notification"
                 >
                   <Trash2 size={16} />

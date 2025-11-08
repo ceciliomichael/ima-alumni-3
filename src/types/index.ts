@@ -115,7 +115,7 @@ export interface Job {
 
 export interface Notification {
   id: string;
-  type: 'event' | 'job' | 'mention' | 'system';
+  type: 'event' | 'job' | 'mention' | 'system' | 'donation';
   title: string;
   message: string;
   isRead: boolean;

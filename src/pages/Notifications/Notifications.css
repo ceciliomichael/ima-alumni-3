@@ -7,18 +7,6 @@
   min-height: calc(100vh - 72px);
 }
 
-.notifications-page::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 200px;
-  background-image: var(--gradient-primary);
-  opacity: 0.05;
-  z-index: 0;
-}
-
 .notifications-header {
   position: relative;
   z-index: 1;
@@ -47,11 +35,20 @@
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  outline: none;
 }
 
 .mark-all-read:hover {
-  background: rgba(var(--primary-color-rgb), 0.1);
+  background: var(--primary-color);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.mark-all-read:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .notifications-filters {
@@ -66,24 +63,35 @@
 
 .filter-button {
   padding: 0.6rem 1.2rem;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 8px;
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
+  background: #f8f9fa;
+  color: #6c757d;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   white-space: nowrap;
+  outline: none;
 }
 
 .filter-button:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
+  background: #e9ecef;
+  color: #495057;
+  border-color: #dee2e6;
 }
 
 .filter-button.active {
   background: var(--primary-color);
   color: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.filter-button.active:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .notifications-list {
@@ -99,27 +107,28 @@
   align-items: flex-start;
   gap: 1rem;
   padding: 1.25rem;
-  background: var(--bg-card);
+  background: white;
+  border: 1px solid #e9ecef;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: background-color 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  border-color: #dee2e6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
 }
 
 .notification-item.unread {
-  background: var(--bg-hover);
-  position: relative;
+  background: #f8f9fa;
+  border-color: var(--primary-color);
+  border-left-width: 3px;
 }
 
-.notification-item.unread::before {
-  content: '';
-  position: absolute;
-  left: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 8px;
-  height: 8px;
-  background: var(--primary-color);
-  border-radius: 50%;
+.notification-item.unread:hover {
+  background: #f1f3f5;
 }
 
 .notification-icon {
@@ -150,6 +159,11 @@
 .notification-icon.system {
   background: rgba(241, 196, 15, 0.15);
   color: #f1c40f;
+}
+
+.notification-icon.donation {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
 }
 
 .notification-content {
@@ -193,21 +207,29 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   color: var(--text-secondary);
+  outline: none;
 }
 
 .action-button:hover {
-  background: var(--bg-secondary);
+  background: #f8f9fa;
   color: var(--text-primary);
+  transform: scale(1.1);
+}
+
+.action-button:active {
+  transform: scale(0.95);
 }
 
 .read-button:hover {
   color: #2ecc71;
+  background: rgba(46, 204, 113, 0.1);
 }
 
 .delete-button:hover {
   color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
 }
 
 .empty-notifications {
