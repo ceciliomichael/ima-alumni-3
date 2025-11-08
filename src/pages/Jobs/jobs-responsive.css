@@ -1,0 +1,89 @@
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+  .jobs-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .jobs-skeleton-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 992px) {
+  .jobs-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+
+  .jobs-skeleton-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .jobs-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .create-job-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .jobs-tabs {
+    flex-wrap: wrap;
+  }
+
+  .jobs-tab {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .jobs-tab.active::after {
+    display: none;
+  }
+
+  .jobs-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .jobs-skeleton-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    max-height: 95vh;
+    width: 95%;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .cancel-button, .submit-button {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .jobs-tab {
+    padding: 0.5rem;
+    font-size: 0.8125rem;
+  }
+
+  .jobs-tab svg {
+    display: none;
+  }
+
+  .job-card {
+    max-width: 100%;
+  }
+}

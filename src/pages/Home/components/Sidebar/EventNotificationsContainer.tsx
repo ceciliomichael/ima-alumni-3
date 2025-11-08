@@ -42,7 +42,7 @@ const EventNotificationsContainer = () => {
           // Check if event was just approved (transition from unapproved to approved)
           const wasApproved = previousEventsRef.current.get(event.id) || false;
 
-          if (event.isApproved && !wasApproved && !event.isTest) {
+          if (event.isApproved && !wasApproved) {
             const notification: EventNotificationData = {
               id: `event-${event.id}-${Date.now()}`,
               title: event.title,
@@ -74,7 +74,7 @@ const EventNotificationsContainer = () => {
   }
 
   return (
-    <div className="event-notifications-container">
+    <>
       {notifications.map((notification) => (
         <EventNotification
           key={notification.id}
@@ -82,7 +82,7 @@ const EventNotificationsContainer = () => {
           onClose={handleCloseNotification}
         />
       ))}
-    </div>
+    </>
   );
 };
 

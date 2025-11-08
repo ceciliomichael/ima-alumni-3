@@ -120,6 +120,8 @@ export interface Notification {
   message: string;
   isRead: boolean;
   createdAt: string;
+  // Reference to the source item (event, job, or donation ID)
+  sourceId?: string;
 }
 
 // Admin types

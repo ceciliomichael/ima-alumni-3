@@ -23,13 +23,19 @@
   margin: 0;
 }
 
-.mark-all-read {
+.notifications-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mark-all-read,
+.clear-all-notifications {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   background: transparent;
-  color: var(--primary-color);
-  border: 1px solid var(--primary-color);
+  border: 1px solid;
   border-radius: 8px;
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
@@ -37,6 +43,12 @@
   cursor: pointer;
   transition: all 0.2s ease;
   outline: none;
+  min-height: 44px;
+}
+
+.mark-all-read {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 .mark-all-read:hover {
@@ -49,6 +61,23 @@
 .mark-all-read:active {
   transform: translateY(0);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.clear-all-notifications {
+  color: #e74c3c;
+  border-color: #e74c3c;
+}
+
+.clear-all-notifications:hover {
+  background: #e74c3c;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.clear-all-notifications:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(231, 76, 60, 0.3);
 }
 
 .notifications-filters {
@@ -277,6 +306,17 @@
     align-items: flex-start;
     gap: 1rem;
   }
+
+  .notifications-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .mark-all-read,
+  .clear-all-notifications {
+    width: 100%;
+    justify-content: center;
+  }
   
   .notification-item {
     flex-direction: column;
@@ -290,5 +330,12 @@
     margin-left: 0;
     margin-top: 1rem;
     align-self: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .mark-all-read span,
+  .clear-all-notifications span {
+    font-size: 0.8rem;
   }
 } 

@@ -1,0 +1,148 @@
+/* Table and List Styles */
+
+.alumni-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.alumni-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.alumni-avatar-placeholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--primary-light);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.alumni-name-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.alumni-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.alumni-position {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin-top: 0.125rem;
+}
+
+/* Alumni Action Buttons */
+.alumni-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.alumni-action-btn {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8125rem;
+  border-radius: var(--radius-md);
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.alumni-action-btn.view {
+  background-color: var(--gray-100);
+  color: var(--text-secondary);
+}
+
+.alumni-action-btn.view:hover {
+  background-color: var(--gray-200);
+  color: var(--text-primary);
+}
+
+.alumni-action-btn.edit {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+}
+
+.alumni-action-btn.edit:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.alumni-action-btn.delete {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--error-color);
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.alumni-action-btn.delete:hover {
+  background-color: var(--error-color);
+  color: white;
+}
+
+/* Pagination Styles */
+.admin-pagination {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  margin-top: 1.5rem;
+}
+
+.admin-pagination-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gray-200);
+  background-color: white;
+  color: var(--text-primary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.admin-pagination-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.admin-pagination-btn.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .alumni-actions {
+    flex-wrap: wrap;
+  }
+  
+  .alumni-action-btn {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .alumni-action-btn.delete {
+    flex: 0 0 auto;
+  }
+}
+

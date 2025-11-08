@@ -114,39 +114,13 @@
   transform: scale(0.95);
 }
 
-/* Notification container for stacking */
-.job-notifications-container {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000;
-  max-width: 320px;
+/* Individual notification styling - positioning handled by UnifiedNotificationContainer */
+.job-notification {
   width: 100%;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 0.75rem;
-}
-
-.job-notifications-container .job-notification {
-  pointer-events: all;
-}
-
-.job-notifications-container > * {
-  pointer-events: all;
-  margin-bottom: 0;
 }
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
-  .job-notifications-container {
-    bottom: 10px;
-    right: 10px;
-    left: 10px;
-    max-width: none;
-    gap: 0.5rem;
-  }
-  
   .job-notification-content {
     padding: 0.875rem;
   }
@@ -158,9 +132,6 @@
 }
 
 @media (max-width: 480px) {
-  .job-notifications-container {
-    gap: 0.5rem;
-  }
   .job-notification-content {
     padding: 0.75rem;
     gap: 0.5rem;

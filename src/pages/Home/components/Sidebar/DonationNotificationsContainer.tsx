@@ -40,11 +40,6 @@ const DonationNotificationsContainer = () => {
             ...change.doc.data()
           } as Donation;
 
-          // Skip notifications for test items
-          if (donation.isTest) {
-            return;
-          }
-
           const notification: DonationNotificationData = {
             id: `donation-${donation.id}`,
             donorName: donation.donorName,
@@ -73,7 +68,7 @@ const DonationNotificationsContainer = () => {
   }
 
   return (
-    <div className="donation-notifications-container">
+    <>
       {notifications.map((notification) => (
         <DonationNotification
           key={notification.id}
@@ -81,7 +76,7 @@ const DonationNotificationsContainer = () => {
           onClose={handleCloseNotification}
         />
       ))}
-    </div>
+    </>
   );
 };
 

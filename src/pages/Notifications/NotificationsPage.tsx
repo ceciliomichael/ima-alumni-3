@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Bell, Calendar, Briefcase, AtSign, Check, Trash2, Heart } from 'lucide-react';
+import { Bell, Calendar, Briefcase, AtSign, Check, Trash2, Heart, X } from 'lucide-react';
 import './Notifications.css';
-import { subscribeToNotifications, markNotificationAsRead, deleteNotification as deleteNotificationFromDB } from '../../services/firebase/notificationService';
+import { subscribeToNotifications, markNotificationAsRead, deleteNotification as deleteNotificationFromDB, markAllNotificationsAsRead, clearAllNotifications, validateAndCleanupNotifications } from '../../services/firebase/notificationService';
 
 interface Notification {
   id: string;
@@ -47,6 +47,12 @@ const NotificationsPage = () => {
   // Set up real-time listener for notifications
   useEffect(() => {
     setLoading(true);
+    
+    // Clean up orphaned notifications on page load
+    validateAndCleanupNotifications().catch((error) => {
+      console.error('Error cleaning up notifications:', error);
+    });
+    
     const unsubscribe = subscribeToNotifications((fetchedNotifications) => {
       setNotifications(fetchedNotifications);
       setLoading(false);
@@ -98,10 +104,25 @@ const NotificationsPage = () => {
   };
 
   // Mark all as read
-  const markAllAsRead = () => {
-    setNotifications(prevNotifications => 
-      prevNotifications.map(notification => ({ ...notification, isRead: true }))
-    );
+  const markAllAsRead = async () => {
+    try {
+      await markAllNotificationsAsRead();
+      // The real-time listener will automatically update the UI
+      console.log('All notifications marked as read');
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
+  };
+
+  // Clear all notifications
+  const clearAllNotifs = async () => {
+    try {
+      await clearAllNotifications();
+      // The real-time listener will automatically update the UI
+      console.log('All notifications cleared');
+    } catch (error) {
+      console.error('Error clearing all notifications:', error);
+    }
   };
 
   // Get notification icon based on type
@@ -126,10 +147,16 @@ const NotificationsPage = () => {
         <h1 className="page-title">Notifications</h1>
         
         {notifications.length > 0 && (
-          <button className="mark-all-read" onClick={markAllAsRead}>
-            <Check size={16} />
-            <span>Mark all as read</span>
-          </button>
+          <div className="notifications-actions">
+            <button className="mark-all-read" onClick={markAllAsRead}>
+              <Check size={16} />
+              <span>Mark all as read</span>
+            </button>
+            <button className="clear-all-notifications" onClick={clearAllNotifs}>
+              <X size={16} />
+              <span>Clear notifications</span>
+            </button>
+          </div>
         )}
       </div>
 

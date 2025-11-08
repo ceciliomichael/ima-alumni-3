@@ -12,7 +12,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { Donation, DonationReport } from '../../types';
-import { createDonationNotification } from './notificationService';
+import { createDonationNotification, deleteNotificationsBySourceId } from './notificationService';
 
 const DONATIONS_COLLECTION = 'donations';
 
@@ -78,14 +78,15 @@ export const addDonation = async (donation: Omit<Donation, 'id'>): Promise<strin
     
     const docRef = await addDoc(donationsRef, newDonation);
     
-    // Create a notification for this donation if it's public (skip test items)
-    if (donation.isPublic && !donation.isTest) {
+    // Create a notification for this donation if it's public (including test items)
+    if (donation.isPublic) {
       try {
         await createDonationNotification(
           donation.donorName,
           donation.amount,
           donation.currency,
-          donation.isAnonymous || false
+          donation.isAnonymous || false,
+          docRef.id // Pass the donation ID to prevent duplicates
         );
       } catch (notificationError) {
         console.error('Failed to create donation notification:', notificationError);
@@ -127,6 +128,14 @@ export const deleteDonation = async (id: string): Promise<void> => {
   try {
     const donationRef = doc(db, DONATIONS_COLLECTION, id);
     await deleteDoc(donationRef);
+    
+    // Delete associated notifications
+    try {
+      await deleteNotificationsBySourceId(id);
+    } catch (notificationError) {
+      console.error('Failed to delete donation notifications:', notificationError);
+      // Don't throw - donation was deleted successfully
+    }
   } catch (error) {
     console.error('Error deleting donation:', error);
     throw error;

@@ -1,0 +1,36 @@
+/* Unified notification container for stacking all notification types */
+.unified-notifications-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  max-width: 320px;
+  width: 100%;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.75rem;
+}
+
+.unified-notifications-container > * {
+  pointer-events: all;
+  margin-bottom: 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .unified-notifications-container {
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .unified-notifications-container {
+    gap: 0.5rem;
+  }
+}
+

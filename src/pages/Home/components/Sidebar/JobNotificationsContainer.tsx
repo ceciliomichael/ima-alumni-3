@@ -41,7 +41,7 @@ const JobNotificationsContainer = () => {
           // Check if job was just approved (transition from unapproved to approved)
           const wasApproved = previousJobsRef.current.get(job.id) || false;
 
-          if (job.isApproved && !wasApproved && !job.isTest) {
+          if (job.isApproved && !wasApproved) {
             const notification: JobNotificationData = {
               id: `job-${job.id}-${Date.now()}`,
               title: job.title,
@@ -72,7 +72,7 @@ const JobNotificationsContainer = () => {
   }
 
   return (
-    <div className="job-notifications-container">
+    <>
       {notifications.map((notification) => (
         <JobNotification
           key={notification.id}
@@ -80,7 +80,7 @@ const JobNotificationsContainer = () => {
           onClose={handleCloseNotification}
         />
       ))}
-    </div>
+    </>
   );
 };
 

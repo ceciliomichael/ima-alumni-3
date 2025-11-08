@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import LoginPage from './pages/Auth/LoginPage';
 import LandingPage from './pages/Landing';
@@ -17,6 +17,7 @@ import { User } from './types';
 import DonationNotificationsContainer from './pages/Home/components/Sidebar/DonationNotificationsContainer';
 import JobNotificationsContainer from './pages/Home/components/Sidebar/JobNotificationsContainer';
 import EventNotificationsContainer from './pages/Home/components/Sidebar/EventNotificationsContainer';
+import UnifiedNotificationContainer from './components/UnifiedNotificationContainer';
 
 // Import Firebase services
 import { getCurrentUser as getStoredUser, logoutUser } from './services/firebase/userService';
@@ -95,6 +96,25 @@ const convertUser = (serviceUser: ServiceUser | null): User | null => {
   };
 };
 
+// Wrapper component to show notifications only for regular users (not admin)
+const UserNotificationsWrapper = ({ user }: { user: User | null }) => {
+  const location = useLocation();
+  const onAdminRoute = location.pathname.startsWith('/admin');
+
+  // Only show notifications if user exists and we're not on an admin route
+  if (!user || onAdminRoute) {
+    return null;
+  }
+  
+  return (
+    <UnifiedNotificationContainer>
+      <DonationNotificationsContainer />
+      <JobNotificationsContainer />
+      <EventNotificationsContainer />
+    </UnifiedNotificationContainer>
+  );
+};
+
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
@@ -170,14 +190,8 @@ function App() {
   return (
     <Router>
       <AdminAuthProvider>
-        {/* Add notification containers */}
-        {user && (
-          <>
-            <DonationNotificationsContainer />
-            <JobNotificationsContainer />
-            <EventNotificationsContainer />
-          </>
-        )}
+        {/* Add notification containers - only for regular users, not admin */}
+        <UserNotificationsWrapper user={user} />
         <Routes>
           {/* --- Public Routes (No Authentication Required) --- */}
           <Route 

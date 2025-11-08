@@ -1,6 +1,6 @@
 import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { createJobNotification } from './notificationService';
+import { createJobNotification, deleteNotificationsBySourceId } from './notificationService';
 
 // Define the Job interface
 export interface Job {
@@ -67,10 +67,19 @@ export const addJob = async (job: Omit<Job, 'id' | 'postedDate'>): Promise<Job> 
     
     const docRef = await addDoc(collection(db, COLLECTION_NAME), newJob);
     
-    return {
+    const createdJob = {
       id: docRef.id,
       ...newJob
     };
+    
+    // If job is created as approved, create notification
+    if (createdJob.isApproved) {
+      createJobNotification(createdJob.title, createdJob.company, createdJob.id).catch((error) => {
+        console.error('Failed to create job notification:', error);
+      });
+    }
+    
+    return createdJob;
   } catch (error) {
     console.error('Error adding job:', error);
     throw error;
@@ -103,6 +112,15 @@ export const deleteJob = async (id: string): Promise<boolean> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
     await deleteDoc(docRef);
+    
+    // Delete associated notifications
+    try {
+      await deleteNotificationsBySourceId(id);
+    } catch (notificationError) {
+      console.error('Failed to delete job notifications:', notificationError);
+      // Don't throw - job was deleted successfully
+    }
+    
     return true;
   } catch (error) {
     console.error('Error deleting job:', error);
@@ -178,9 +196,9 @@ export const approveJob = async (id: string, approve: boolean): Promise<Job | nu
   
   // Only create notification if job is being approved for the FIRST time
   // (transitioning from unapproved to approved)
-  if (approve && updatedJob && !wasApproved && !updatedJob.isTest) {
-    // Fire and forget - don't wait for notification creation
-    createJobNotification(updatedJob.title, updatedJob.company).catch((error) => {
+  if (approve && updatedJob && !wasApproved) {
+    // Fire and forget - don't wait for notification creation (including for test items)
+    createJobNotification(updatedJob.title, updatedJob.company, updatedJob.id).catch((error) => {
       console.error('Failed to create job notification:', error);
     });
   }

@@ -35,14 +35,14 @@ function FeaturedCarousel<T>({
 
   const goToSlide = useCallback((index: number) => {
     if (items.length === 0) return;
-    
+
     let newIndex = index;
     if (loop) {
       newIndex = ((index % items.length) + items.length) % items.length;
     } else {
       newIndex = Math.max(0, Math.min(index, items.length - 1));
     }
-    
+
     setCurrentIndex(newIndex);
 
     // Scroll thumbnail into view
@@ -77,6 +77,15 @@ function FeaturedCarousel<T>({
 
     return () => clearInterval(interval);
   }, [autoplayMs, isPaused, items.length, goToNext]);
+
+  // Reset currentIndex when items array changes and current item is no longer available
+  useEffect(() => {
+    if (items.length === 0) {
+      setCurrentIndex(0);
+    } else if (currentIndex >= items.length) {
+      setCurrentIndex(0);
+    }
+  }, [items]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -143,7 +152,7 @@ function FeaturedCarousel<T>({
         onTouchEnd={onTouchEnd}
       >
         <div className="featured-content">
-          {renderFeatured(items[currentIndex])}
+          {items.length > 0 && currentIndex < items.length ? renderFeatured(items[currentIndex]) : null}
         </div>
 
         {/* Navigation Arrows */}
