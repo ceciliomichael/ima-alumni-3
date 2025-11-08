@@ -228,6 +228,7 @@ const DonationsManagement = () => {
         description: `Test donation for ${randomPurpose.toLowerCase()}. This is a simulated donation for testing purposes.`,
         isPublic: true,
         isAnonymous: isAnonymous,
+        isTest: true, // Mark as test item to skip notifications
         donationDate: new Date().toISOString()
       };
 

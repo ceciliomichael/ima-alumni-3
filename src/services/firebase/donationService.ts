@@ -78,8 +78,8 @@ export const addDonation = async (donation: Omit<Donation, 'id'>): Promise<strin
     
     const docRef = await addDoc(donationsRef, newDonation);
     
-    // Create a notification for this donation if it's public
-    if (donation.isPublic) {
+    // Create a notification for this donation if it's public (skip test items)
+    if (donation.isPublic && !donation.isTest) {
       try {
         await createDonationNotification(
           donation.donorName,

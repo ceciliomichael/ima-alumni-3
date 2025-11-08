@@ -40,6 +40,11 @@ const DonationNotificationsContainer = () => {
             ...change.doc.data()
           } as Donation;
 
+          // Skip notifications for test items
+          if (donation.isTest) {
+            return;
+          }
+
           const notification: DonationNotificationData = {
             id: `donation-${donation.id}`,
             donorName: donation.donorName,

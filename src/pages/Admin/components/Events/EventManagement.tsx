@@ -181,7 +181,8 @@ const EventManagement = () => {
         location: randomLocation,
         date: futureDate.toISOString(),
         isApproved: true, // Automatically approve test events
-        createdBy: 'admin-test'
+        createdBy: 'admin-test',
+        isTest: true // Mark as test item to skip notifications
       };
 
       await addEvent(testEvent);

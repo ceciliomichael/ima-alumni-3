@@ -146,3 +146,42 @@ export const createDonationNotification = async (
     isRead: false
   });
 };
+
+// Create job notification
+export const createJobNotification = async (
+  jobTitle: string,
+  company: string
+): Promise<string> => {
+  const title = 'New Job Posting';
+  const message = `${company} is hiring for ${jobTitle}`;
+
+  return addNotification({
+    type: 'job',
+    title,
+    message,
+    isRead: false
+  });
+};
+
+// Create event notification
+export const createEventNotification = async (
+  eventTitle: string,
+  eventDate: string,
+  location: string
+): Promise<string> => {
+  const title = 'New Event';
+  const date = new Date(eventDate);
+  const formattedDate = date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
+  const message = `${eventTitle} on ${formattedDate} at ${location}`;
+
+  return addNotification({
+    type: 'event',
+    title,
+    message,
+    isRead: false
+  });
+};

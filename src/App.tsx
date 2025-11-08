@@ -15,6 +15,8 @@ import Layout from './components/Layout/Layout';
 import GuestLayout from './components/Layout/GuestLayout';
 import { User } from './types';
 import DonationNotificationsContainer from './pages/Home/components/Sidebar/DonationNotificationsContainer';
+import JobNotificationsContainer from './pages/Home/components/Sidebar/JobNotificationsContainer';
+import EventNotificationsContainer from './pages/Home/components/Sidebar/EventNotificationsContainer';
 
 // Import Firebase services
 import { getCurrentUser as getStoredUser, logoutUser } from './services/firebase/userService';
@@ -168,8 +170,14 @@ function App() {
   return (
     <Router>
       <AdminAuthProvider>
-        {/* Add donation notifications container */}
-        {user && <DonationNotificationsContainer />}
+        {/* Add notification containers */}
+        {user && (
+          <>
+            <DonationNotificationsContainer />
+            <JobNotificationsContainer />
+            <EventNotificationsContainer />
+          </>
+        )}
         <Routes>
           {/* --- Public Routes (No Authentication Required) --- */}
           <Route 

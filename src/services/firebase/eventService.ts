@@ -2,6 +2,7 @@ import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc } from '
 import { db } from '../../firebase/config';
 import { sendBulkEventNotifications, getEventUrl } from '../email/emailService';
 import { getAllUsers } from './userService';
+import { createEventNotification } from './notificationService';
 
 // Define the Event interface
 export interface Event {
@@ -66,11 +67,16 @@ export const addEvent = async (event: Omit<Event, 'id' | 'createdAt'>): Promise<
       ...newEvent
     };
     
-    // If event is created as approved, send notification emails
-    if (createdEvent.isApproved) {
+    // If event is created as approved, send notification emails and create in-app notification
+    if (createdEvent.isApproved && !createdEvent.isTest) {
       // Fire and forget - don't wait for email sending
       sendEventNotifications(createdEvent).catch((error) => {
         console.error('Failed to send event notifications:', error);
+      });
+
+      // Also create in-app notification
+      createEventNotification(createdEvent.title, createdEvent.date, createdEvent.location).catch((error) => {
+        console.error('Failed to create event notification:', error);
       });
     }
     
@@ -180,10 +186,15 @@ export const approveEvent = async (id: string, approve: boolean): Promise<Event 
   
   // Only send notification emails if event is being approved for the FIRST time
   // (transitioning from unapproved to approved)
-  if (approve && updatedEvent && !wasApproved) {
+  if (approve && updatedEvent && !wasApproved && !updatedEvent.isTest) {
     // Fire and forget - don't wait for email sending
     sendEventNotifications(updatedEvent).catch((error) => {
       console.error('Failed to send event notifications:', error);
+    });
+
+    // Also create in-app notification
+    createEventNotification(updatedEvent.title, updatedEvent.date, updatedEvent.location).catch((error) => {
+      console.error('Failed to create event notification:', error);
     });
   }
   

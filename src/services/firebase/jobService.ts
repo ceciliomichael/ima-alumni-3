@@ -1,5 +1,6 @@
 import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { db } from '../../firebase/config';
+import { createJobNotification } from './notificationService';
 
 // Define the Job interface
 export interface Job {
@@ -169,7 +170,22 @@ export const getJobsByType = async (jobType: Job['jobType']): Promise<Job[]> => 
 
 // Approve or reject a job
 export const approveJob = async (id: string, approve: boolean): Promise<Job | null> => {
-  return updateJob(id, { isApproved: approve });
+  // Get current job state before updating
+  const currentJob = await getJobById(id);
+  const wasApproved = currentJob?.isApproved || false;
+  
+  const updatedJob = await updateJob(id, { isApproved: approve });
+  
+  // Only create notification if job is being approved for the FIRST time
+  // (transitioning from unapproved to approved)
+  if (approve && updatedJob && !wasApproved && !updatedJob.isTest) {
+    // Fire and forget - don't wait for notification creation
+    createJobNotification(updatedJob.title, updatedJob.company).catch((error) => {
+      console.error('Failed to create job notification:', error);
+    });
+  }
+  
+  return updatedJob;
 };
 
 // Get job statistics

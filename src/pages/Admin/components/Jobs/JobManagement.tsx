@@ -244,6 +244,7 @@ const JobManagement = () => {
         jobType: randomJobType,
         salary: randomSalary,
         deadline: deadlineDate.toISOString(),
+        isTest: true, // Mark as test item to skip notifications
         applicationType: 'email' as Job['applicationType']
       };
 
