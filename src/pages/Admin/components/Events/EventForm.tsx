@@ -54,7 +54,8 @@ const EventForm = () => {
         .then((eventData: Event | null) => {
           if (eventData) {
             // Exclude id and createdAt from the form
-            const { id: _, createdAt: __, ...restData } = eventData;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, createdAt, ...restData } = eventData;
             setFormData(restData);
             
             // If there's a cover image, set it as the preview
@@ -160,7 +161,7 @@ const EventForm = () => {
     
     try {
       // Process the uploaded image if any
-      let eventData = { ...formData };
+      const eventData = { ...formData };
       
       if (uploadFile) {
         // Resize and convert to base64 with more aggressive compression

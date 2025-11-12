@@ -27,7 +27,7 @@ export const migrateExistingPosts = async () => {
       const postData = docSnapshot.data();
       
       // Skip if already has moderation fields
-      if (postData.hasOwnProperty('isApproved')) {
+      if (Object.prototype.hasOwnProperty.call(postData, 'isApproved')) {
         skippedCount++;
         continue;
       }

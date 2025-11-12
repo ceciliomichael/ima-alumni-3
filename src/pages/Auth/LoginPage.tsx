@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { LogIn, CreditCard, Lock, Eye, EyeOff } from 'lucide-react';
 import { loginByAlumniIdAndPassword, AlumniIdLoginResult, validateAlumniIdInput } from '../../services/auth/alumniIdLoginService';
 import { User as ServiceUser } from '../../services/firebase/userService';
-import { formatAlumniId } from '../../utils/alumniIdUtils';
 import './Auth.css';
 
 interface LoginPageProps {
@@ -25,13 +24,12 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
     
     // Format Alumni ID as user types
     if (name === 'alumniId') {
-      // Remove non-digits and limit to 12 digits
-      const digitsOnly = value.replace(/\D/g, '').slice(0, 12);
-      const formatted = formatAlumniId(digitsOnly);
+      // Allow digits, letters, and dash, limit to 8 characters (6 digits + dash + 1 letter)
+      const cleaned = value.replace(/[^0-9A-Za-z-]/g, '').slice(0, 8).toUpperCase();
       
       setFormData((prev) => ({
         ...prev,
-        [name]: formatted,
+        [name]: cleaned,
       }));
     } else {
       setFormData((prev) => ({
@@ -118,7 +116,7 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
               {errors.general && <div className="form-error" style={{ marginBottom: '1rem', textAlign: 'center' }}>{errors.general}</div>}
               
               <div className="form-group">
-                <label htmlFor="alumniId" className="form-label">LRN (Learner's Reference Number)</label>
+                <label htmlFor="alumniId" className="form-label">Alumni ID</label>
                 <div className="input-group">
                   <div className="input-icon">
                     <CreditCard size={18} />
@@ -128,16 +126,16 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                     id="alumniId"
                     name="alumniId"
                     className={`form-control ${errors.alumniId ? 'error' : ''}`}
-                    placeholder="1234 5678 9012"
+                    placeholder="123456-A"
                     value={formData.alumniId}
                     onChange={handleChange}
                     autoComplete="username"
-                    maxLength={14}
+                    maxLength={8}
                   />
                 </div>
                 {errors.alumniId && <div className="form-error">{errors.alumniId}</div>}
                 <div className="form-hint">
-                  Enter your 12-digit LRN provided by the administrator
+                  Enter your Alumni ID (6 digits, dash, 1 letter)
                 </div>
               </div>
 

@@ -85,7 +85,7 @@ function FeaturedCarousel<T>({
     } else if (currentIndex >= items.length) {
       setCurrentIndex(0);
     }
-  }, [items]);
+  }, [items, currentIndex]);
 
   // Keyboard navigation
   useEffect(() => {

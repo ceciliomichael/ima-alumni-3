@@ -92,6 +92,13 @@ export interface Event {
   date: string;
   location: string;
   image?: string;
+  coverImage?: string;
+  createdAt?: string;
+  isApproved?: boolean;
+  moderationStatus?: 'pending' | 'approved' | 'rejected';
+  rejectionReason?: string;
+  moderatedBy?: string;
+  moderatedAt?: string;
 }
 
 export interface Announcement {
@@ -209,8 +216,8 @@ export interface Donation {
   donationDate: string;
   archiveMonth?: number; // Month for archiving (1-12)
   archiveYear?: number; // Year for archiving
-  createdAt?: any; // Firestore timestamp
-  updatedAt?: any; // Firestore timestamp
+  createdAt?: string | { seconds: number; nanoseconds: number }; // Firestore timestamp
+  updatedAt?: string | { seconds: number; nanoseconds: number }; // Firestore timestamp
 }
 
 export interface DonationReport {

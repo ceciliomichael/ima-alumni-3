@@ -71,7 +71,7 @@ const OfficerForm = () => {
             };
             
             // Remove id as we don't need it in the form
-            const { id: _, ...dataWithoutId } = formattedData;
+            const { id: _id, ...dataWithoutId } = formattedData;
             setFormData(dataWithoutId);
             
             // Set photo preview if exists
@@ -154,7 +154,7 @@ const OfficerForm = () => {
           photo: result.error || 'Failed to process image'
         }));
       }
-    } catch (error) {
+    } catch {
       setErrors(prev => ({
         ...prev,
         photo: 'Error processing image file'

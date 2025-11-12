@@ -168,7 +168,7 @@ const RegisterPage = () => {
                 });
               }
             }
-          } catch (err) {
+          } catch {
             setErrors(prev => ({
               ...prev,
               [type === 'profile' ? 'profileImage' : 'coverPhoto']: 'Error processing image'
@@ -177,7 +177,7 @@ const RegisterPage = () => {
         }
       };
       reader.readAsDataURL(file);
-    } catch (err) {
+    } catch {
       setErrors(prev => ({
         ...prev,
         [type === 'profile' ? 'profileImage' : 'coverPhoto']: 'Error reading file'

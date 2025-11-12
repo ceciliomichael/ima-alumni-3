@@ -189,7 +189,7 @@ const AlumniView = () => {
                 <div className="detail-value">{alumni.email}</div>
               </div>
               <div className="detail-item">
-                <div className="detail-label">Alumni ID (LRN)</div>
+                <div className="detail-label">Alumni ID</div>
                 <div className="detail-value">{alumni.alumniId || 'Not assigned'}</div>
               </div>
               <div className="detail-item">

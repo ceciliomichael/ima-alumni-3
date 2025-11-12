@@ -130,7 +130,7 @@ export const requestPasswordReset = async (
 ): Promise<{ success: boolean; error?: string }> => {
   try {
     // Try to find user by email first
-    let user = await getUserById(emailOrAlumniId);
+    const user = await getUserById(emailOrAlumniId);
     
     // If not found, try other lookup methods (you might need to import these)
     if (!user) {

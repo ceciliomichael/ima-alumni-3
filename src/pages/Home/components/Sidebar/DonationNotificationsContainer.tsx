@@ -46,7 +46,9 @@ const DonationNotificationsContainer = () => {
             amount: donation.amount,
             currency: donation.currency,
             isAnonymous: donation.isAnonymous,
-            timestamp: donation.createdAt?.toMillis?.() || Date.now()
+            timestamp: typeof donation.createdAt === 'object' && donation.createdAt && 'seconds' in donation.createdAt 
+              ? donation.createdAt.seconds * 1000 
+              : Date.now()
           };
 
           setNotifications(prev => [notification, ...prev].slice(0, 10));

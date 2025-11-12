@@ -125,7 +125,7 @@ const ProfilePosts = ({ posts, profileUser, currentUser }: ProfilePostsProps) =>
     }
   };
 
-  const handlePostCreated = async (_newPost: Post) => {
+  const handlePostCreated = async () => {
     try {
       // Refresh posts from the server
       const userPosts = await getPostsByUserId(profileUser.id);

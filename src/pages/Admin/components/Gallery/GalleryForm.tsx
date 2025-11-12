@@ -78,7 +78,8 @@ const GalleryForm = () => {
           
           if (galleryData) {
             // Exclude id and postedDate from the form
-            const { id: _, postedDate: __, ...restData } = galleryData;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, postedDate, ...restData } = galleryData;
             setFormData(restData);
             
             // Set album title if it's an album

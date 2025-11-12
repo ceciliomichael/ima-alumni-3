@@ -135,7 +135,7 @@ export const adminLogin = async (username: string, password: string): Promise<Ad
     console.log('AdminService: Login successful for username:', username);
     
     // Return user without password (storage is handled in AdminAuthContext)
-    const { password: _, ...userWithoutPassword } = adminUser;
+    const { password: _password, ...userWithoutPassword } = adminUser;
     const safeUser = { ...userWithoutPassword, password: '******' } as AdminUser;
     
     return safeUser;

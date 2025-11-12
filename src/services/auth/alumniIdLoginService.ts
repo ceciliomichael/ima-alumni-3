@@ -75,7 +75,7 @@ export const loginByAlumniIdAndPassword = async (alumniId: string, password: str
     if (!alumniId.trim()) {
       return {
         success: false,
-        error: 'Please enter your LRN'
+        error: 'Please enter your Alumni ID'
       };
     }
 
@@ -91,7 +91,7 @@ export const loginByAlumniIdAndPassword = async (alumniId: string, password: str
     if (!validation.isValid) {
       return {
         success: false,
-        error: validation.error || 'Invalid LRN format'
+        error: validation.error || 'Invalid Alumni ID format'
       };
     }
 
@@ -105,7 +105,7 @@ export const loginByAlumniIdAndPassword = async (alumniId: string, password: str
       if (user.password !== password) {
         return {
           success: false,
-          error: 'Invalid LRN or password'
+          error: 'Invalid Alumni ID or password'
         };
       }
       setCurrentUser(user);
@@ -137,7 +137,7 @@ export const loginByAlumniIdAndPassword = async (alumniId: string, password: str
       if (ensuredUser.password !== password) {
         return {
           success: false,
-          error: 'Invalid LRN or password'
+          error: 'Invalid Alumni ID or password'
         };
       }
       setCurrentUser(ensuredUser);

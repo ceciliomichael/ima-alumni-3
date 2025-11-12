@@ -162,13 +162,12 @@ const AlumniRecords = () => {
     }
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const filterData = async () => {
       await applyFilters();
     };
     filterData();
-  }, [batchFilter, statusFilter, searchQuery]);
+  }, [batchFilter, statusFilter, searchQuery, applyFilters]);
 
   const getInitials = (name: string): string => {
     return name

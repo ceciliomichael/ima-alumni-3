@@ -91,7 +91,7 @@ const AdminLoginPage = () => {
       } else {
         setLoginError('Invalid username or password. Please try again.');
       }
-    } catch (error) {
+    } catch {
       setLoginError('An error occurred during login. Please try again.');
     } finally {
       setIsSubmitting(false);

@@ -46,7 +46,7 @@ const AlumniForm = () => {
           
           if (alumniData) {
             // Exclude id and dateRegistered from the form
-            const { id: _, dateRegistered: __, ...restData } = alumniData;
+            const { id: _id, dateRegistered: _dateRegistered, ...restData } = alumniData;
             
             // Format Alumni ID for display
             if (restData.alumniId) {
@@ -82,12 +82,12 @@ const AlumniForm = () => {
     
     // Format Alumni ID as user types
     if (name === 'alumniId') {
-      const digitsOnly = value.replace(/\D/g, '').slice(0, 12);
-      const formatted = formatAlumniId(digitsOnly);
+      // Allow digits, letters, and dash, limit to 8 characters (6 digits + dash + 1 letter)
+      const cleaned = value.replace(/[^0-9A-Za-z-]/g, '').slice(0, 8).toUpperCase();
       
       setFormData(prev => ({
         ...prev,
-        [name]: formatted
+        [name]: cleaned
       }));
     } else {
       setFormData(prev => ({
@@ -134,7 +134,7 @@ const AlumniForm = () => {
           profileImage: result.error || 'Failed to process image'
         }));
       }
-    } catch (error) {
+    } catch {
       setErrors(prev => ({
         ...prev,
         profileImage: 'Error processing image file'
@@ -301,9 +301,9 @@ const AlumniForm = () => {
                     className={`admin-form-input ${errors.alumniId ? 'admin-input-error' : ''}`}
                     value={formData.alumniId}
                     onChange={handleChange}
-                    placeholder="1234 5678 9012"
+                    placeholder="123456-A"
                     disabled={isSubmitting}
-                    maxLength={14}
+                    maxLength={8}
                   />
                   {!isEditing && (
                     <button
@@ -319,7 +319,7 @@ const AlumniForm = () => {
                 </div>
                 {errors.alumniId && <div className="admin-form-error">{errors.alumniId}</div>}
                 <div className="form-hint">
-                  12-digit Alumni ID for user authentication
+                  Alumni ID format: 6 digits, dash, 1 letter (e.g., 123456-A)
                 </div>
               </div>
               

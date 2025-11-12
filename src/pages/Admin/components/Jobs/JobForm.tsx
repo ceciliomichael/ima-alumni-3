@@ -66,7 +66,8 @@ const JobForm = () => {
         .then((jobData: Job | null) => {
           if (jobData) {
             // Exclude id and postedDate from the form
-            const { id: _, postedDate: __, ...restData } = jobData;
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, postedDate, ...restData } = jobData;
             
             // Format date for input field
             if (restData.deadline) {
@@ -204,7 +205,7 @@ const JobForm = () => {
     
     try {
       // Convert deadline to ISO date if it exists
-      let submissionData = { ...formData };
+      const submissionData = { ...formData };
       if (submissionData.deadline) {
         submissionData.deadline = new Date(submissionData.deadline).toISOString();
       }

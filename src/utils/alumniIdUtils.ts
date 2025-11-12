@@ -1,30 +1,39 @@
 /**
- * Alumni ID format: 1234 5678 9012 (12 digits with spaces)
+ * Alumni ID format: 123456-A (6 digits + dash + 1 letter)
  */
 
 /**
  * Validates if an Alumni ID follows the correct format
  */
 export const validateAlumniId = (alumniId: string): boolean => {
-  const cleanId = alumniId.replace(/\s/g, '');
-  return /^\d{12}$/.test(cleanId);
+  return /^\d{6}-[A-Z]$/i.test(alumniId.trim());
 };
 
 /**
- * Formats an Alumni ID to the standard format with spaces
+ * Formats an Alumni ID to the standard format with dash
  */
 export const formatAlumniId = (alumniId: string): string => {
-  const cleanId = alumniId.replace(/\s/g, '');
-  if (cleanId.length !== 12) return alumniId;
+  const cleaned = alumniId.replace(/[^0-9A-Za-z]/g, '').toUpperCase();
   
-  return `${cleanId.slice(0, 4)} ${cleanId.slice(4, 8)} ${cleanId.slice(8, 12)}`;
+  // If it already has the correct format, return as is
+  if (/^\d{6}-[A-Z]$/.test(alumniId)) return alumniId.toUpperCase();
+  
+  // Extract digits and letter
+  const digits = cleaned.replace(/[^0-9]/g, '').slice(0, 6);
+  const letter = cleaned.replace(/[^A-Z]/g, '').slice(0, 1);
+  
+  if (digits.length === 6 && letter.length === 1) {
+    return `${digits}-${letter}`;
+  }
+  
+  return alumniId;
 };
 
 /**
- * Removes spaces from Alumni ID for storage/comparison
+ * Normalizes Alumni ID for storage/comparison (uppercase)
  */
 export const cleanAlumniId = (alumniId: string): string => {
-  return alumniId.replace(/\s/g, '');
+  return alumniId.trim().toUpperCase();
 };
 
 /**
@@ -32,8 +41,9 @@ export const cleanAlumniId = (alumniId: string): string => {
  * Note: In production, this should ensure uniqueness against the database
  */
 export const generateAlumniId = (): string => {
-  const id = Array.from({ length: 12 }, () => Math.floor(Math.random() * 10)).join('');
-  return formatAlumniId(id);
+  const digits = Array.from({ length: 6 }, () => Math.floor(Math.random() * 10)).join('');
+  const letter = String.fromCharCode(65 + Math.floor(Math.random() * 26)); // A-Z
+  return `${digits}-${letter}`;
 };
 
 /**
@@ -44,15 +54,11 @@ export const validateAndFormatAlumniId = (input: string): { isValid: boolean; fo
     return { isValid: false, error: 'Alumni ID is required' };
   }
 
-  const cleanInput = cleanAlumniId(input);
+  const formatted = formatAlumniId(input);
   
-  if (cleanInput.length !== 12) {
-    return { isValid: false, error: 'Alumni ID must be exactly 12 digits' };
+  if (!validateAlumniId(formatted)) {
+    return { isValid: false, error: 'Alumni ID must be in format: 123456-A (6 digits, dash, 1 letter)' };
   }
 
-  if (!validateAlumniId(input)) {
-    return { isValid: false, error: 'Alumni ID must contain only numbers' };
-  }
-
-  return { isValid: true, formatted: formatAlumniId(cleanInput) };
+  return { isValid: true, formatted };
 };

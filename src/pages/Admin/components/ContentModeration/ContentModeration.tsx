@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   MessageSquare, Calendar, Briefcase, CheckCircle, XCircle, 
   Search, Filter, AlertCircle, Clock, Trash
@@ -41,15 +41,37 @@ const ContentModeration = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
 
   // Moderation modal state
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<Post | Event | Job | null>(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
 
-  useEffect(() => {
-    loadContent();
-  }, [activeTab, filter]);
+  const filterByStatus = useCallback(<T extends { isApproved?: boolean; moderationStatus?: string }>(items: T[]): T[] => {
+    if (filter === 'all') return items;
+    if (filter === 'pending') return items.filter(item => !item.isApproved);
+    if (filter === 'approved') return items.filter(item => item.isApproved === true);
+    if (filter === 'rejected') return items.filter(item => item.moderationStatus === 'rejected');
+    return items;
+  }, [filter]);
 
-  const loadContent = async () => {
+  const loadPosts = useCallback(async () => {
+    const allPosts = await getAllPosts();
+    const filtered = filterByStatus(allPosts);
+    setPosts(filtered);
+  }, [filterByStatus]);
+
+  const loadEvents = useCallback(async () => {
+    const allEvents = await getAllEvents();
+    const filtered = filterByStatus(allEvents);
+    setEvents(filtered);
+  }, [filterByStatus]);
+
+  const loadJobs = useCallback(async () => {
+    const allJobs = await getAllJobs();
+    const filtered = filterByStatus(allJobs);
+    setJobs(filtered);
+  }, [filterByStatus]);
+
+  const loadContent = useCallback(async () => {
     setLoading(true);
     try {
       switch (activeTab) {
@@ -68,33 +90,11 @@ const ContentModeration = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab, loadPosts, loadEvents, loadJobs]);
 
-  const loadPosts = async () => {
-    const allPosts = await getAllPosts();
-    const filtered = filterByStatus(allPosts);
-    setPosts(filtered);
-  };
-
-  const loadEvents = async () => {
-    const allEvents = await getAllEvents();
-    const filtered = filterByStatus(allEvents);
-    setEvents(filtered);
-  };
-
-  const loadJobs = async () => {
-    const allJobs = await getAllJobs();
-    const filtered = filterByStatus(allJobs);
-    setJobs(filtered);
-  };
-
-  const filterByStatus = (items: any[]) => {
-    if (filter === 'all') return items;
-    if (filter === 'pending') return items.filter(item => !item.isApproved);
-    if (filter === 'approved') return items.filter(item => item.isApproved === true);
-    if (filter === 'rejected') return items.filter(item => item.moderationStatus === 'rejected');
-    return items;
-  };
+  useEffect(() => {
+    loadContent();
+  }, [loadContent]);
 
   const handleApprove = async (id: string, type: ContentTab) => {
     if (!adminUser) return;
@@ -121,7 +121,7 @@ const ContentModeration = () => {
     }
   };
 
-  const handleReject = (item: any) => {
+  const handleReject = (item: Post | Event | Job) => {
     setSelectedItem(item);
     setShowRejectModal(true);
   };

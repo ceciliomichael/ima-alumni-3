@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Post } from '../../../../types';
+import { Post, Comment, Reply } from '../../../../types';
 
 const STORAGE_KEY = 'posts';
 
@@ -65,7 +65,7 @@ export const likePost = (postId: string, userId: string): Post | null => {
 };
 
 // Add a comment to a post
-export const addComment = (postId: string, comment: any): Post | null => {
+export const addComment = (postId: string, comment: Comment): Post | null => {
   const posts = getAllPosts();
   const index = posts.findIndex(post => post.id === postId);
   
@@ -105,7 +105,7 @@ export const initializePostData = () => {
 };
 
 // Add a reply to a comment
-export const addReplyToComment = (postId: string, commentId: string, reply: any): Post | null => {
+export const addReplyToComment = (postId: string, commentId: string, reply: Reply): Post | null => {
   const posts = getAllPosts();
   const postIndex = posts.findIndex(post => post.id === postId);
   

@@ -216,7 +216,7 @@ const CSVImport = () => {
                   <code>Male,,Alumni ID,Female,,Alumni ID</code>
                 </div>
                 <div className="csv-format-row">
-                  <code>Añinon,Micheal,123456789098,Amandoron,Reweljay,998765432123</code>
+                  <code>Añinon,Micheal,123456-A,Amandoron,Reweljay,654321-B</code>
                 </div>
                 <div className="csv-format-notes">
                   <ul>

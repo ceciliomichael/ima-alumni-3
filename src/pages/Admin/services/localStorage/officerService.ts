@@ -113,8 +113,8 @@ export const updateUserWithOfficerInfo = (officerId: string): boolean => {
   const usersJson = localStorage.getItem(USER_STORAGE_KEY);
   if (!usersJson) return false;
   
-  const users = JSON.parse(usersJson);
-  const userIndex = users.findIndex((user: any) => user.id === alumni.userId);
+  const users = JSON.parse(usersJson) as Array<{ id: string; [key: string]: unknown }>;
+  const userIndex = users.findIndex((user) => user.id === alumni.userId);
   
   if (userIndex === -1) return false;
   
@@ -144,8 +144,8 @@ export const removeOfficerInfoFromUser = (alumniId: string): boolean => {
   const usersJson = localStorage.getItem(USER_STORAGE_KEY);
   if (!usersJson) return false;
   
-  const users = JSON.parse(usersJson);
-  const userIndex = users.findIndex((user: any) => user.id === alumni.userId);
+  const users = JSON.parse(usersJson) as Array<{ id: string; officerPosition?: unknown; showOfficerInfo?: unknown; [key: string]: unknown }>;
+  const userIndex = users.findIndex((user) => user.id === alumni.userId);
   
   if (userIndex === -1) return false;
   
@@ -153,6 +153,7 @@ export const removeOfficerInfoFromUser = (alumniId: string): boolean => {
   if (!users[userIndex].officerPosition) return false;
   
   // Remove officer information from the user
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { officerPosition, showOfficerInfo, ...userWithoutOfficerInfo } = users[userIndex];
   users[userIndex] = userWithoutOfficerInfo;
   
