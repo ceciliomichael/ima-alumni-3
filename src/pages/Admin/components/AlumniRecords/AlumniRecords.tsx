@@ -167,7 +167,7 @@ const AlumniRecords = () => {
       await applyFilters();
     };
     filterData();
-  }, [batchFilter, statusFilter, searchQuery, applyFilters]);
+  }, [batchFilter, statusFilter, searchQuery]);
 
   const getInitials = (name: string): string => {
     return name
