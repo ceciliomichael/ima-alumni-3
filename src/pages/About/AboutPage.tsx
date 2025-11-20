@@ -79,7 +79,7 @@ const AboutPage = () => {
             className={`about-tab ${activeTab === 'history' ? 'active' : ''}`}
             onClick={() => navigate('/about-us/history')}
           >
-            History
+            Achievement
           </button>
           <button 
             className={`about-tab ${activeTab === 'vision' ? 'active' : ''}`}
@@ -105,7 +105,7 @@ const AboutPage = () => {
           {activeTab === 'history' && (
             <div className="history-section">
               <div className="section-header">
-                <h2>Achievements</h2>
+                <h2>Achievement</h2>
                 <p>A timeline of our journey and achievements</p>
               </div>
               
