@@ -24,6 +24,7 @@ export interface User {
     batchYear?: string;
   };
   showOfficerInfo?: boolean; // Whether to display officer information on profile
+  deletedAt?: string; // Timestamp for soft delete
 }
 
 export interface AuthState {

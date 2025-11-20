@@ -1,9 +1,10 @@
-import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, addDoc, updateDoc, query, where } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { addAlumni, getAlumniByUserId, updateAlumni } from './alumniService';
+import { addAlumni, getAlumniByUserId, updateAlumni, getAllAlumni } from './alumniService';
 import { cleanAlumniId } from '../../utils/alumniIdUtils';
 import { updateUserPosts } from './postService';
 import { getOfficersByAlumniId } from './officerService';
+import { AlumniRecord } from '../../types';
 
 // User interface
 export interface User {
@@ -35,14 +36,15 @@ export interface User {
     batchYear?: string;
   };
   showOfficerInfo?: boolean; // Whether to display officer information on profile
+  deletedAt?: string; // Timestamp for soft delete
 }
 
 const COLLECTION_NAME = 'users';
 const CURRENT_USER_KEY = 'currentUser'; // Still using localStorage for current user session
 
 // Utility function to filter out undefined values from an object
-const filterUndefinedValues = (obj: Record<string, any>): Record<string, any> => {
-  const filtered: Record<string, any> = {};
+const filterUndefinedValues = (obj: Record<string, unknown>): Record<string, unknown> => {
+  const filtered: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj)) {
     if (value !== undefined) {
       filtered[key] = value;
@@ -55,10 +57,12 @@ const filterUndefinedValues = (obj: Record<string, any>): Record<string, any> =>
 export const getAllUsers = async (): Promise<User[]> => {
   try {
     const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as User));
+    return querySnapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as User))
+      .filter(user => !user.deletedAt); // Exclude soft-deleted users
   } catch (error) {
     console.error('Error getting users:', error);
     return [];
@@ -245,7 +249,7 @@ export const updateUser = async (id: string, updatedData: Partial<User>): Promis
     }
     
     // For profileImage and coverPhoto, only include them if they have values
-    const finalUpdateData: Record<string, any> = { ...cleanedUpdatedData };
+    const finalUpdateData: Record<string, unknown> = { ...cleanedUpdatedData };
     
     // Only include profileImage if it's being explicitly updated with a value
     if (updatedData.profileImage !== undefined) {
@@ -393,11 +397,13 @@ export const approveUser = async (id: string): Promise<User | null> => {
   return updateUser(id, { isActive: true });
 };
 
-// Delete user
+// Delete user (soft delete)
 export const deleteUser = async (id: string): Promise<boolean> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
-    await deleteDoc(docRef);
+    await updateDoc(docRef, {
+      deletedAt: new Date().toISOString()
+    });
     
     // If deleting current user, logout
     const currentUser = getCurrentUser();
@@ -424,7 +430,7 @@ export const createUser = async (payload: {
   alumniId?: string;
 }): Promise<User | null> => {
   try {
-    const baseUser: any = {
+    const baseUser: Partial<User> & { password?: string } = {
       name: payload.name,
       email: (payload.email || `noreply+${Date.now()}@ima.local`).toLowerCase(),
       password: payload.password || '',
@@ -458,14 +464,27 @@ export const searchUsers = async (query: string): Promise<User[]> => {
   try {
     if (!query.trim()) return [];
     
+    // Get all active alumni records to filter against
+    const alumniRecords: AlumniRecord[] = await getAllAlumni();
+    const validUserIds = new Set(
+      alumniRecords
+        .filter((alumni: AlumniRecord) => alumni.userId) // Only alumni with linked user accounts
+        .map((alumni: AlumniRecord) => alumni.userId!)
+    );
+    
     // Firestore doesn't support direct text search like localStorage
     // We'll get all users and filter them client-side
     // In a production app, consider using a more scalable approach like Algolia
     const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
-    const users = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as User));
+    const users = querySnapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as User))
+      .filter(user => 
+        !user.deletedAt && // Exclude soft-deleted users
+        validUserIds.has(user.id) // Only show users with valid alumni records
+      );
     
     const lowerCaseQuery = query.toLowerCase().trim();
     return users.filter(user => 
