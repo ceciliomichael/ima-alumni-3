@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { 
-  Search, Plus, Edit, Trash, CheckCircle, XCircle,
+  Search, Plus, Edit, Trash,
   Briefcase, MapPin, Calendar, DollarSign, Mail, Clock, Zap
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
   getAllJobs, 
   searchJobs, 
-  deleteJob, 
-  approveJob,
+  deleteJob,
   getJobsByType,
   addJob,
   Job
@@ -20,7 +19,6 @@ const JobManagement = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | Job['jobType']>('all');
-  const [approvalFilter, setApprovalFilter] = useState<'all' | 'approved' | 'pending'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'expired'>('all');
   const navigate = useNavigate();
 
@@ -43,11 +41,8 @@ const JobManagement = () => {
         filteredJobs = await getJobsByType(typeFilter);
       }
       
-      // Apply approval filter
-      if (approvalFilter !== 'all') {
-        const isApproved = approvalFilter === 'approved';
-        filteredJobs = filteredJobs.filter(job => job.isApproved === isApproved);
-      }
+      // Only show approved jobs (approval happens in Content Moderation)
+      filteredJobs = filteredJobs.filter(job => job.isApproved === true);
       
       // Apply status filter (active/expired)
       if (statusFilter !== 'all') {
@@ -83,7 +78,7 @@ const JobManagement = () => {
     if (!loading) {
       loadJobsData();
     }
-  }, [typeFilter, approvalFilter, statusFilter]);
+  }, [typeFilter, statusFilter]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -127,17 +122,7 @@ const JobManagement = () => {
     }
   };
 
-  const handleApprove = async (id: string, approve: boolean) => {
-    try {
-      setLoading(true);
-      await approveJob(id, approve);
-      await loadJobsData();
-    } catch (error) {
-      console.error('Error updating job approval status:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'No deadline';
@@ -297,15 +282,6 @@ const JobManagement = () => {
             <option value="expired">Expired</option>
           </select>
           
-          <select 
-            className="admin-filter-select"
-            value={approvalFilter}
-            onChange={(e) => setApprovalFilter(e.target.value as 'all' | 'approved' | 'pending')}
-          >
-            <option value="all">All Approval</option>
-            <option value="approved">Approved</option>
-            <option value="pending">Pending</option>
-          </select>
         </div>
         
         <button 
@@ -386,38 +362,6 @@ const JobManagement = () => {
                   </div>
                   
                   <div className="admin-job-actions">
-                    <div className={`admin-job-status ${job.isApproved ? 'admin-job-status-approved' : 'admin-job-status-pending'}`}>
-                      {job.isApproved ? (
-                        <>
-                          <CheckCircle size={14} />
-                          Approved
-                        </>
-                      ) : (
-                        <>
-                          <Clock size={14} />
-                          Pending Approval
-                        </>
-                      )}
-                    </div>
-                  
-                    {!job.isApproved && (
-                      <button 
-                        className="admin-action-btn admin-action-approve"
-                        onClick={() => handleApprove(job.id, true)}
-                        title="Approve"
-                      >
-                        <CheckCircle size={16} />
-                      </button>
-                    )}
-                    {job.isApproved && (
-                      <button 
-                        className="admin-action-btn admin-action-reject"
-                        onClick={() => handleApprove(job.id, false)}
-                        title="Unapprove"
-                      >
-                        <XCircle size={16} />
-                      </button>
-                    )}
                     <button 
                       className="admin-action-btn admin-action-edit"
                       onClick={() => navigate(`/admin/jobs/edit/${job.id}`)}

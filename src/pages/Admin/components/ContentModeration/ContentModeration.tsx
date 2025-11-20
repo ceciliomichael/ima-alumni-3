@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
-  MessageSquare, Calendar, Briefcase, CheckCircle, XCircle, 
+  MessageSquare, Briefcase, CheckCircle, XCircle, 
   Search, Filter, AlertCircle, Clock, Trash
 } from 'lucide-react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
@@ -12,12 +12,6 @@ import {
   type Post 
 } from '../../../../services/firebase/postService';
 import { 
-  getAllEvents, 
-  approveEvent,
-  deleteEvent,
-  Event 
-} from '../../../../services/firebase/eventService';
-import { 
   getAllJobs, 
   approveJob,
   deleteJob,
@@ -25,7 +19,7 @@ import {
 } from '../../../../services/firebase/jobService';
 import './ContentModeration.css';
 
-type ContentTab = 'posts' | 'events' | 'jobs';
+type ContentTab = 'posts' | 'jobs';
 type ModerationFilter = 'all' | 'pending' | 'approved' | 'rejected';
 
 const ContentModeration = () => {
@@ -37,11 +31,10 @@ const ContentModeration = () => {
 
   // State for different content types
   const [posts, setPosts] = useState<Post[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
 
   // Moderation modal state
-  const [selectedItem, setSelectedItem] = useState<Post | Event | Job | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Post | Job | null>(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
 
@@ -59,12 +52,6 @@ const ContentModeration = () => {
     setPosts(filtered);
   }, [filterByStatus]);
 
-  const loadEvents = useCallback(async () => {
-    const allEvents = await getAllEvents();
-    const filtered = filterByStatus(allEvents);
-    setEvents(filtered);
-  }, [filterByStatus]);
-
   const loadJobs = useCallback(async () => {
     const allJobs = await getAllJobs();
     const filtered = filterByStatus(allJobs);
@@ -78,9 +65,6 @@ const ContentModeration = () => {
         case 'posts':
           await loadPosts();
           break;
-        case 'events':
-          await loadEvents();
-          break;
         case 'jobs':
           await loadJobs();
           break;
@@ -90,7 +74,7 @@ const ContentModeration = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeTab, loadPosts, loadEvents, loadJobs]);
+  }, [activeTab, loadPosts, loadJobs]);
 
   useEffect(() => {
     loadContent();
@@ -105,9 +89,6 @@ const ContentModeration = () => {
         case 'posts':
           await moderatePost(id, true, adminUser.name);
           break;
-        case 'events':
-          await approveEvent(id, true);
-          break;
         case 'jobs':
           await approveJob(id, true);
           break;
@@ -121,7 +102,7 @@ const ContentModeration = () => {
     }
   };
 
-  const handleReject = (item: Post | Event | Job) => {
+  const handleReject = (item: Post | Job) => {
     setSelectedItem(item);
     setShowRejectModal(true);
   };
@@ -134,9 +115,6 @@ const ContentModeration = () => {
       switch (activeTab) {
         case 'posts':
           await moderatePost(selectedItem.id, false, adminUser.name, rejectionReason);
-          break;
-        case 'events':
-          await approveEvent(selectedItem.id, false);
           break;
         case 'jobs':
           await approveJob(selectedItem.id, false);
@@ -164,9 +142,6 @@ const ContentModeration = () => {
       switch (type) {
         case 'posts':
           await deletePost(id);
-          break;
-        case 'events':
-          await deleteEvent(id);
           break;
         case 'jobs':
           await deleteJob(id);
@@ -294,67 +269,6 @@ const ContentModeration = () => {
     </div>
   );
 
-  const renderEventCard = (event: Event) => (
-    <div key={event.id} className="moderation-card">
-      <div className="moderation-card-header">
-        <div className="moderation-event-info">
-          {event.coverImage && (
-            <img src={event.coverImage} alt={event.title} className="moderation-event-image" />
-          )}
-          <div>
-            <h4>{event.title}</h4>
-            <p className="moderation-date">{formatDate(event.date)}</p>
-            <p className="moderation-location">{event.location}</p>
-          </div>
-        </div>
-        <div className={`moderation-status ${event.isApproved ? 'approved' : 'pending'}`}>
-          {event.isApproved ? (
-            <><CheckCircle size={16} /> Approved</>
-          ) : (
-            <><Clock size={16} /> Pending</>
-          )}
-        </div>
-      </div>
-
-      <div className="moderation-content">
-        <p>{event.description}</p>
-      </div>
-
-      <div className="moderation-actions">
-        {!event.isApproved && (
-          <>
-            <button 
-              className="moderation-btn approve"
-              onClick={() => handleApprove(event.id, 'events')}
-            >
-              <CheckCircle size={16} /> Approve
-            </button>
-            <button 
-              className="moderation-btn reject"
-              onClick={() => handleReject(event)}
-            >
-              <XCircle size={16} /> Reject
-            </button>
-          </>
-        )}
-        {event.isApproved && (
-          <button 
-            className="moderation-btn reject"
-            onClick={() => handleReject(event)}
-          >
-            <XCircle size={16} /> Unapprove
-          </button>
-        )}
-        <button 
-          className="moderation-btn delete"
-          onClick={() => handleDelete(event.id, 'events')}
-        >
-          <Trash size={16} /> Delete
-        </button>
-      </div>
-    </div>
-  );
-
   const renderJobCard = (job: Job) => (
     <div key={job.id} className="moderation-card">
       <div className="moderation-card-header">
@@ -431,16 +345,6 @@ const ContentModeration = () => {
             )}
           </button>
           <button
-            className={`moderation-tab ${activeTab === 'events' ? 'active' : ''}`}
-            onClick={() => setActiveTab('events')}
-          >
-            <Calendar size={20} />
-            Events
-            {filter === 'pending' && events.filter(e => !e.isApproved).length > 0 && (
-              <span className="moderation-badge">{events.filter(e => !e.isApproved).length}</span>
-            )}
-          </button>
-          <button
             className={`moderation-tab ${activeTab === 'jobs' ? 'active' : ''}`}
             onClick={() => setActiveTab('jobs')}
           >
@@ -491,20 +395,6 @@ const ContentModeration = () => {
                       <MessageSquare size={48} />
                       <h3>No posts found</h3>
                       <p>There are no posts matching your filter criteria.</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {activeTab === 'events' && (
-                <div className="moderation-grid">
-                  {events.length > 0 ? (
-                    events.map(event => renderEventCard(event))
-                  ) : (
-                    <div className="moderation-empty">
-                      <Calendar size={48} />
-                      <h3>No events found</h3>
-                      <p>There are no events matching your filter criteria.</p>
                     </div>
                   )}
                 </div>

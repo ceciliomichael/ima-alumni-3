@@ -8,9 +8,9 @@ export default defineConfig({
     open: true,
     host: true,
     strictPort: false,
-    allowedHosts: ['ima-alumni.echosphere.dpdns.org'],
+    allowedHosts: ['ima-alumni.echosphere.dpdns.org', 'ima-alumni.echosphere.systems'],
     cors: {
-      origin: ['https://ima-alumni.echosphere.dpdns.org/'],
+      origin: ['https://ima-alumni.echosphere.dpdns.org/', 'ima-alumni.echosphere.systems'],
       credentials: true
     }
   },

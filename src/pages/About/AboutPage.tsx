@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Mail, Phone } from 'lucide-react';
 import {
   getHistoryItems,
@@ -14,12 +15,21 @@ import AboutSlideshow from '../../components/AboutSlideshow';
 import './About.css';
 
 const AboutPage = () => {
-  const [activeTab, setActiveTab] = useState('history');
+  const { tab } = useParams<{ tab?: string }>();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(tab || 'history');
   const [historyItems, setHistoryItems] = useState<HistoryItem[]>([]);
   const [visionMission, setVisionMission] = useState<VisionMissionContent | null>(null);
   const [organizationChart, setOrganizationChart] = useState<OrganizationChart | null>(null);
   const [contactInfo, setContactInfo] = useState<ContactInfo | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Update active tab when URL parameter changes
+  useEffect(() => {
+    if (tab && ['history', 'vision', 'organization', 'contact'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [tab]);
 
   useEffect(() => {
     const loadContent = async () => {
@@ -67,25 +77,25 @@ const AboutPage = () => {
         <div className="about-tabs">
           <button 
             className={`about-tab ${activeTab === 'history' ? 'active' : ''}`}
-            onClick={() => setActiveTab('history')}
+            onClick={() => navigate('/about-us/history')}
           >
             History
           </button>
           <button 
             className={`about-tab ${activeTab === 'vision' ? 'active' : ''}`}
-            onClick={() => setActiveTab('vision')}
+            onClick={() => navigate('/about-us/vision')}
           >
             Vision & Mission
           </button>
           <button 
             className={`about-tab ${activeTab === 'organization' ? 'active' : ''}`}
-            onClick={() => setActiveTab('organization')}
+            onClick={() => navigate('/about-us/organization')}
           >
             Organizational Chart
           </button>
           <button 
             className={`about-tab ${activeTab === 'contact' ? 'active' : ''}`}
-            onClick={() => setActiveTab('contact')}
+            onClick={() => navigate('/about-us/contact')}
           >
             Contact Us
           </button>
@@ -95,7 +105,7 @@ const AboutPage = () => {
           {activeTab === 'history' && (
             <div className="history-section">
               <div className="section-header">
-                <h2>Our History</h2>
+                <h2>Achievements</h2>
                 <p>A timeline of our journey and achievements</p>
               </div>
               

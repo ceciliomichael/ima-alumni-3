@@ -316,6 +316,7 @@
     border-radius: 12px;
     border: 1px solid var(--gray-200);
     background-color: var(--gray-50);
+    color: var(--text-primary);
   }
   
   .guest-nav-link.active {

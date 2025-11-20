@@ -6,31 +6,36 @@ import { cleanAlumniId } from '../../utils/alumniIdUtils';
 
 const COLLECTION_NAME = 'alumni_records';
 
-// Get all alumni records
+// Get all alumni records (excluding deleted)
 export const getAllAlumni = async (): Promise<AlumniRecord[]> => {
   try {
     const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as AlumniRecord));
+    return querySnapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as AlumniRecord))
+      .filter(alumni => !alumni.deletedAt); // Exclude soft-deleted records
   } catch (error) {
     console.error('Error getting alumni records:', error);
     return [];
   }
 };
 
-// Get alumni by ID
+// Get alumni by ID (excluding deleted)
 export const getAlumniById = async (id: string): Promise<AlumniRecord | null> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
     const docSnap = await getDoc(docRef);
     
     if (docSnap.exists()) {
-      return {
+      const alumni = {
         id: docSnap.id,
         ...docSnap.data()
       } as AlumniRecord;
+      
+      // Return null if deleted
+      return alumni.deletedAt ? null : alumni;
     }
     return null;
   } catch (error) {
@@ -39,16 +44,18 @@ export const getAlumniById = async (id: string): Promise<AlumniRecord | null> =>
   }
 };
 
-// Get alumni by batch
+// Get alumni by batch (excluding deleted)
 export const getAlumniByBatch = async (batch: string): Promise<AlumniRecord[]> => {
   try {
     const q = query(collection(db, COLLECTION_NAME), where("batch", "==", batch));
     const querySnapshot = await getDocs(q);
     
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as AlumniRecord));
+    return querySnapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as AlumniRecord))
+      .filter(alumni => !alumni.deletedAt); // Exclude soft-deleted records
   } catch (error) {
     console.error('Error getting alumni by batch:', error);
     return [];
@@ -96,11 +103,14 @@ export const updateAlumni = async (id: string, updatedData: Partial<AlumniRecord
   }
 };
 
-// Delete alumni record
+// Delete alumni record (soft delete)
 export const deleteAlumni = async (id: string): Promise<boolean> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
-    await deleteDoc(docRef);
+    await updateDoc(docRef, {
+      deletedAt: new Date().toISOString(),
+      isActive: false // Also mark as inactive
+    });
     return true;
   } catch (error) {
     console.error('Error deleting alumni record:', error);
@@ -108,17 +118,19 @@ export const deleteAlumni = async (id: string): Promise<boolean> => {
   }
 };
 
-// Search alumni
+// Search alumni (excluding deleted)
 export const searchAlumni = async (query: string): Promise<AlumniRecord[]> => {
   try {
     // Firestore doesn't support direct text search like localStorage
     // We'll get all records and filter them client-side
     // In a production app, consider using a more scalable approach like Algolia
     const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
-    const alumniRecords = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as AlumniRecord));
+    const alumniRecords = querySnapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as AlumniRecord))
+      .filter(alumni => !alumni.deletedAt); // Exclude soft-deleted records
     
     const lowerCaseQuery = query.toLowerCase();
     return alumniRecords.filter(alumni => 
@@ -194,7 +206,7 @@ export const approveAlumniWithUser = async (id: string): Promise<AlumniRecord | 
   }
 };
 
-// Get alumni record by user ID
+// Get alumni record by user ID (excluding deleted)
 export const getAlumniByUserId = async (userId: string): Promise<AlumniRecord | null> => {
   try {
     const q = query(collection(db, COLLECTION_NAME), where("userId", "==", userId));
@@ -205,17 +217,20 @@ export const getAlumniByUserId = async (userId: string): Promise<AlumniRecord | 
     }
     
     const doc = querySnapshot.docs[0];
-    return {
+    const alumni = {
       id: doc.id,
       ...doc.data()
     } as AlumniRecord;
+    
+    // Return null if deleted
+    return alumni.deletedAt ? null : alumni;
   } catch (error) {
     console.error('Error getting alumni by user ID:', error);
     return null;
   }
 };
 
-// Get alumni record by Alumni ID
+// Get alumni record by Alumni ID (excluding deleted)
 export const getAlumniByAlumniId = async (alumniId: string): Promise<AlumniRecord | null> => {
   try {
     const cleanId = cleanAlumniId(alumniId);
@@ -227,10 +242,13 @@ export const getAlumniByAlumniId = async (alumniId: string): Promise<AlumniRecor
     }
     
     const doc = querySnapshot.docs[0];
-    return {
+    const alumni = {
       id: doc.id,
       ...doc.data()
     } as AlumniRecord;
+    
+    // Return null if deleted
+    return alumni.deletedAt ? null : alumni;
   } catch (error) {
     console.error('Error getting alumni by Alumni ID:', error);
     return null;

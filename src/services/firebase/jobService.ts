@@ -65,7 +65,12 @@ export const addJob = async (job: Omit<Job, 'id' | 'postedDate'>): Promise<Job> 
       postedDate: new Date().toISOString()
     };
     
-    const docRef = await addDoc(collection(db, COLLECTION_NAME), newJob);
+    // Remove undefined fields to prevent Firebase errors
+    const cleanedJob = Object.fromEntries(
+      Object.entries(newJob).filter(([_, value]) => value !== undefined)
+    );
+    
+    const docRef = await addDoc(collection(db, COLLECTION_NAME), cleanedJob);
     
     const createdJob = {
       id: docRef.id,
@@ -90,7 +95,13 @@ export const addJob = async (job: Omit<Job, 'id' | 'postedDate'>): Promise<Job> 
 export const updateJob = async (id: string, updatedData: Partial<Job>): Promise<Job | null> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
-    await updateDoc(docRef, updatedData);
+    
+    // Remove undefined fields to prevent Firebase errors
+    const cleanedData = Object.fromEntries(
+      Object.entries(updatedData).filter(([_, value]) => value !== undefined)
+    );
+    
+    await updateDoc(docRef, cleanedData);
     
     // Get the updated document
     const updatedDoc = await getDoc(docRef);

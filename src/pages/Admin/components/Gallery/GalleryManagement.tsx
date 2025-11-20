@@ -155,6 +155,7 @@ const GalleryManagement = () => {
     }
   };
 
+
   // Gets the title of a specific linked event using the item.event (Event ID)
   const getEventTitle = (eventId?: string) => {
     if (!eventId) return 'No Linked Event';

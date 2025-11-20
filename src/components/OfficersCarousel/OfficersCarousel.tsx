@@ -6,6 +6,24 @@ import './OfficersCarousel.css';
 
 const MAX_DISPLAYED_OFFICERS = 6;
 
+// Define the order of officer titles
+const TITLE_ORDER: { [key: string]: number } = {
+  'President': 1,
+  'Vice President': 2,
+  'Secretary': 3,
+  'Treasurer': 4,
+  'Batch President': 5
+};
+
+// Sort officers by title order
+const sortOfficersByTitle = (officers: OfficerPosition[]): OfficerPosition[] => {
+  return officers.sort((a, b) => {
+    const orderA = TITLE_ORDER[a.title] || 999;
+    const orderB = TITLE_ORDER[b.title] || 999;
+    return orderA - orderB;
+  });
+};
+
 const OfficersCarousel = () => {
   const [officers, setOfficers] = useState<OfficerPosition[]>([]);
   const [alumniMap, setAlumniMap] = useState<Map<string, AlumniRecord>>(new Map());
@@ -56,7 +74,9 @@ const OfficersCarousel = () => {
         map.set(alumni.id, alumni);
       });
 
-      setOfficers(activeOfficers);
+      // Sort officers by title before setting state
+      const sortedOfficers = sortOfficersByTitle(activeOfficers);
+      setOfficers(sortedOfficers);
       setAlumniMap(map);
     } catch (error) {
       console.error('Error loading officers:', error);

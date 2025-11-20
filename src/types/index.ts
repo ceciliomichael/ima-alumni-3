@@ -151,6 +151,7 @@ export interface AlumniRecord {
   position?: string;
   profileImage?: string;
   userId?: string;
+  deletedAt?: string; // Timestamp for soft delete
   // other alumni details
 }
 

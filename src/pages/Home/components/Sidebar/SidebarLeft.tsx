@@ -58,26 +58,26 @@ const SidebarLeft = ({ user }: SidebarLeftProps) => {
       <div className="sidebar-card">
         <h3 className="sidebar-title">About</h3>
         <ul className="sidebar-menu">
-          <li className={`sidebar-menu-item ${isActive('/about/history') || (isActive('/about') && !isActivePrefix('/about/')) ? 'active' : ''}`}>
-            <Link to="/about/history" className="sidebar-menu-link">
+          <li className={`sidebar-menu-item ${isActive('/about-us/history') || isActive('/about-us') ? 'active' : ''}`}>
+            <Link to="/about-us/history" className="sidebar-menu-link">
               <BookOpen size={20} />
               <span>History</span>
             </Link>
           </li>
-          <li className={`sidebar-menu-item ${isActive('/about/vision') ? 'active' : ''}`}>
-            <Link to="/about/vision" className="sidebar-menu-link">
+          <li className={`sidebar-menu-item ${isActive('/about-us/vision') ? 'active' : ''}`}>
+            <Link to="/about-us/vision" className="sidebar-menu-link">
               <Building size={20} />
               <span>Vision & Mission</span>
             </Link>
           </li>
-          <li className={`sidebar-menu-item ${isActive('/about/organization') ? 'active' : ''}`}>
-            <Link to="/about/organization" className="sidebar-menu-link">
+          <li className={`sidebar-menu-item ${isActive('/about-us/organization') ? 'active' : ''}`}>
+            <Link to="/about-us/organization" className="sidebar-menu-link">
               <Users size={20} />
               <span>Organization</span>
             </Link>
           </li>
-          <li className={`sidebar-menu-item ${isActive('/about/contact') ? 'active' : ''}`}>
-            <Link to="/about/contact" className="sidebar-menu-link">
+          <li className={`sidebar-menu-item ${isActive('/about-us/contact') ? 'active' : ''}`}>
+            <Link to="/about-us/contact" className="sidebar-menu-link">
               <Settings size={20} />
               <span>Contact Us</span>
             </Link>

@@ -59,7 +59,7 @@
 
 .officers-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 300px));
+  grid-template-columns: repeat(3, 1fr);
   gap: clamp(1.5rem, 3vw, 2.5rem);
   width: 100%;
   animation: fadeIn 0.5s ease-in-out;
@@ -204,7 +204,7 @@
 /* Responsive Design - Mobile First */
 @media (max-width: 1024px) {
   .officers-grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 280px));
+    grid-template-columns: repeat(3, 1fr);
     gap: clamp(1.25rem, 2.5vw, 2rem);
   }
 }
