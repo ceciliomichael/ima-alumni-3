@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { User } from '../../types';
-import { searchUsers } from '../../services/firebase/userService';
+import { AlumniRecord } from '../../types';
+import { searchAlumni } from '../../services/firebase/alumniService';
 import ImagePlaceholder from '../ImagePlaceholder/ImagePlaceholder';
 import './UserSearch.css';
 
 const UserSearch = () => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<User[]>([]);
+  const [results, setResults] = useState<AlumniRecord[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isResultsVisible, setIsResultsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,11 +23,11 @@ const UserSearch = () => {
     if (value.trim()) {
       setIsLoading(true);
       try {
-        const searchResults = await searchUsers(value);
+        const searchResults = await searchAlumni(value);
         setResults(searchResults);
         setIsResultsVisible(true);
       } catch (error) {
-        console.error('Error searching users:', error);
+        console.error('Error searching alumni:', error);
         setResults([]);
       } finally {
         setIsLoading(false);
@@ -54,10 +54,17 @@ const UserSearch = () => {
   }, []);
 
   // Navigate to user profile
-  const navigateToProfile = (userId: string) => {
+  const navigateToProfile = async (alumni: AlumniRecord) => {
     setIsResultsVisible(false);
     setQuery('');
-    navigate(`/profile/${userId}`);
+    
+    // If alumni has a linked userId, navigate to their profile
+    if (alumni.userId) {
+      navigate(`/profile/${alumni.userId}`);
+    } else {
+      // If no userId, show an alert that the alumni hasn't registered yet
+      alert(`${alumni.name} hasn't registered an account yet.`);
+    }
   };
 
   // Toggle search input on mobile
@@ -118,32 +125,32 @@ const UserSearch = () => {
                 <p>Searching...</p>
               </div>
             ) : results.length > 0 ? (
-              results.map(user => (
+              results.map(alumni => (
                 <div
-                  key={user.id}
+                  key={alumni.id}
                   className="user-search-result"
-                  onClick={() => navigateToProfile(user.id)}
+                  onClick={() => navigateToProfile(alumni)}
                 >
                   <div className="user-search-avatar">
-                    {user.profileImage ? (
-                      <img src={user.profileImage} alt={user.name} />
+                    {alumni.profileImage ? (
+                      <img src={alumni.profileImage} alt={alumni.name} />
                     ) : (
                       <ImagePlaceholder
                         isAvatar
                         size="small"
-                        name={user.name}
+                        name={alumni.name}
                       />
                     )}
                   </div>
                   <div className="user-search-info">
-                    <h4 className="user-search-name">{user.name}</h4>
-                    <p className="user-search-batch">{user.batch}</p>
+                    <h4 className="user-search-name">{alumni.name}</h4>
+                    <p className="user-search-batch">{alumni.batch}</p>
                   </div>
                 </div>
               ))
             ) : query.trim() ? (
               <div className="user-search-no-results">
-                <p>No users found</p>
+                <p>No alumni found</p>
               </div>
             ) : null}
           </div>

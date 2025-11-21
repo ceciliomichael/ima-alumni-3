@@ -130,6 +130,8 @@ export const deleteAlumni = async (id: string): Promise<boolean> => {
 // Search alumni (excluding deleted)
 export const searchAlumni = async (query: string): Promise<AlumniRecord[]> => {
   try {
+    if (!query.trim()) return [];
+    
     // Firestore doesn't support direct text search like localStorage
     // We'll get all records and filter them client-side
     // In a production app, consider using a more scalable approach like Algolia
@@ -142,11 +144,14 @@ export const searchAlumni = async (query: string): Promise<AlumniRecord[]> => {
       .filter(alumni => !alumni.deletedAt); // Exclude soft-deleted records
     
     const lowerCaseQuery = query.toLowerCase();
-    return alumniRecords.filter(alumni => 
-      alumni.name.toLowerCase().includes(lowerCaseQuery) ||
-      alumni.email.toLowerCase().includes(lowerCaseQuery) ||
-      alumni.batch.toLowerCase().includes(lowerCaseQuery)
-    );
+    return alumniRecords
+      .filter(alumni => 
+        alumni.name.toLowerCase().includes(lowerCaseQuery) ||
+        alumni.email.toLowerCase().includes(lowerCaseQuery) ||
+        alumni.batch.toLowerCase().includes(lowerCaseQuery) ||
+        (alumni.alumniId && alumni.alumniId.toLowerCase().includes(lowerCaseQuery))
+      )
+      .slice(0, 10); // Limit to 10 results for performance
   } catch (error) {
     console.error('Error searching alumni:', error);
     return [];
