@@ -8,6 +8,7 @@ import {
   updateEvent,
   Event
 } from '../../../../services/firebase/eventService';
+import { validateTitle, validateLocation } from '../../../../utils/formValidation';
 import AdminLayout from '../../layout/AdminLayout';
 import './Events.css';
 import './EventForm.css';
@@ -130,18 +131,24 @@ const EventForm = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!formData.title.trim()) {
-      newErrors.title = 'Event title is required';
+    // Validate title
+    const titleValidation = validateTitle(formData.title);
+    if (!titleValidation.isValid) {
+      newErrors.title = titleValidation.error || 'Event title is required';
     }
     
+    // Validate description
     if (!formData.description.trim()) {
       newErrors.description = 'Event description is required';
     }
     
-    if (!formData.location.trim()) {
-      newErrors.location = 'Event location is required';
+    // Validate location
+    const locationValidation = validateLocation(formData.location);
+    if (!locationValidation.isValid) {
+      newErrors.location = locationValidation.error || 'Event location is required';
     }
     
+    // Validate date
     if (!formData.date) {
       newErrors.date = 'Event date and time is required';
     }

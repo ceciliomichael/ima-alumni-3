@@ -11,6 +11,7 @@ import {
 import { AlumniRecord } from '../../../../types';
 import { generateAlumniId, validateAndFormatAlumniId, formatAlumniId, cleanAlumniId } from '../../../../utils/alumniIdUtils';
 import { processImageFile } from '../../../../utils/imageUtils';
+import { validateName } from '../../../../utils/formValidation';
 import AdminLayout from '../../layout/AdminLayout';
 import './AlumniRecords.css';
 
@@ -178,10 +179,13 @@ const AlumniForm = () => {
   const validateForm = async () => {
     const newErrors: Record<string, string> = {};
     
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+    // Validate name
+    const nameValidation = validateName(formData.name);
+    if (!nameValidation.isValid) {
+      newErrors.name = nameValidation.error || 'Name is required';
     }
     
+    // Validate email
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
@@ -204,6 +208,7 @@ const AlumniForm = () => {
       }
     }
     
+    // Validate batch year
     if (!formData.batch.trim()) {
       newErrors.batch = 'Batch year is required';
     } else if (isNaN(Number(formData.batch))) {

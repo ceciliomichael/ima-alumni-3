@@ -1,8 +1,17 @@
-import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { db } from '../../firebase/config';
+import { 
+  collection, 
+  addDoc, 
+  getDocs, 
+  getDoc, 
+  doc, 
+  updateDoc, 
+  query, 
+  where
+} from 'firebase/firestore';
 import { AlumniRecord } from '../../types';
+import { cleanAlumniId, validateAndFormatAlumniId } from '../../utils/alumniIdUtils';
 import { approveUser } from './userService';
-import { cleanAlumniId } from '../../utils/alumniIdUtils';
 
 const COLLECTION_NAME = 'alumni_records';
 
@@ -301,25 +310,32 @@ export const importAlumniFromCSV = async (csvText: string, batchYear: string): P
           if (maleName && maleAlumniId && maleName !== 'Male') {
             const cleanId = cleanAlumniId(maleAlumniId);
             
-            // Check if alumni ID already exists
-            const exists = await checkAlumniIdExistsInRecords(cleanId);
-            if (!exists) {
-              const alumniRecord: Omit<AlumniRecord, 'id'> = {
-                name: maleName,
-                email: `${maleName.toLowerCase().replace(/\s+/g, '.')}@example.com`, // Placeholder email
-                alumniId: cleanId,
-                batch: batchYear,
-                isActive: true,
-                profileImage: '',
-                position: '',
-                dateRegistered: new Date().toISOString()
-              };
-              
-              await addAlumni(alumniRecord);
-              imported.push(alumniRecord as AlumniRecord);
-            } else {
+            // Validate alumni ID format (must be 6 digits + dash + 1 letter)
+            const validation = validateAndFormatAlumniId(cleanId);
+            if (!validation.isValid) {
               skipped++;
-              errors.push(`Skipped ${maleName} - Alumni ID ${maleAlumniId} already exists`);
+              errors.push(`Skipped ${maleName} - Invalid Alumni ID format: ${maleAlumniId} (must be 6 digits-1 letter, e.g., 123456-A)`);
+            } else {
+              // Check if alumni ID already exists
+              const exists = await checkAlumniIdExistsInRecords(cleanId);
+              if (!exists) {
+                const alumniRecord: Omit<AlumniRecord, 'id'> = {
+                  name: maleName,
+                  email: `${maleName.toLowerCase().replace(/\s+/g, '.')}@example.com`, // Placeholder email
+                  alumniId: cleanId,
+                  batch: batchYear,
+                  isActive: true,
+                  profileImage: '',
+                  position: '',
+                  dateRegistered: new Date().toISOString()
+                };
+                
+                await addAlumni(alumniRecord);
+                imported.push(alumniRecord as AlumniRecord);
+              } else {
+                skipped++;
+                errors.push(`Skipped ${maleName} - Alumni ID ${maleAlumniId} already exists`);
+              }
             }
           }
           
@@ -327,25 +343,32 @@ export const importAlumniFromCSV = async (csvText: string, batchYear: string): P
           if (femaleName && femaleAlumniId && femaleName !== 'Female') {
             const cleanId = cleanAlumniId(femaleAlumniId);
             
-            // Check if alumni ID already exists
-            const exists = await checkAlumniIdExistsInRecords(cleanId);
-            if (!exists) {
-              const alumniRecord: Omit<AlumniRecord, 'id'> = {
-                name: femaleName,
-                email: `${femaleName.toLowerCase().replace(/\s+/g, '.')}@example.com`, // Placeholder email
-                alumniId: cleanId,
-                batch: batchYear,
-                isActive: true,
-                profileImage: '',
-                position: '',
-                dateRegistered: new Date().toISOString()
-              };
-              
-              await addAlumni(alumniRecord);
-              imported.push(alumniRecord as AlumniRecord);
-            } else {
+            // Validate alumni ID format (must be 6 digits + dash + 1 letter)
+            const validation = validateAndFormatAlumniId(cleanId);
+            if (!validation.isValid) {
               skipped++;
-              errors.push(`Skipped ${femaleName} - Alumni ID ${femaleAlumniId} already exists`);
+              errors.push(`Skipped ${femaleName} - Invalid Alumni ID format: ${femaleAlumniId} (must be 6 digits-1 letter, e.g., 123456-A)`);
+            } else {
+              // Check if alumni ID already exists
+              const exists = await checkAlumniIdExistsInRecords(cleanId);
+              if (!exists) {
+                const alumniRecord: Omit<AlumniRecord, 'id'> = {
+                  name: femaleName,
+                  email: `${femaleName.toLowerCase().replace(/\s+/g, '.')}@example.com`, // Placeholder email
+                  alumniId: cleanId,
+                  batch: batchYear,
+                  isActive: true,
+                  profileImage: '',
+                  position: '',
+                  dateRegistered: new Date().toISOString()
+                };
+                
+                await addAlumni(alumniRecord);
+                imported.push(alumniRecord as AlumniRecord);
+              } else {
+                skipped++;
+                errors.push(`Skipped ${femaleName} - Alumni ID ${femaleAlumniId} already exists`);
+              }
             }
           }
         }

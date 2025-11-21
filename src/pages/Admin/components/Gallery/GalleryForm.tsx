@@ -10,6 +10,7 @@ import {
 import { GalleryPost } from '../../../../types';
 import { getAllEvents, Event } from '../../../../services/firebase/eventService';
 import { resizeImage, validateImageFile } from '../../../../services/firebase/storageService';
+import { validateTitle } from '../../../../utils/formValidation';
 import AdminLayout from '../../layout/AdminLayout';
 import './Gallery.css';
 import './GalleryForm.css';
@@ -246,8 +247,10 @@ const GalleryForm = () => {
     const newErrors: Record<string, string> = {};
     
     if (isAlbum) {
-      if (!albumTitle.trim()) {
-        newErrors.albumTitle = 'Album title is required';
+      // Validate album title
+      const albumTitleValidation = validateTitle(albumTitle);
+      if (!albumTitleValidation.isValid) {
+        newErrors.albumTitle = albumTitleValidation.error || 'Album title is required';
       }
       
       if (uploadedImages.length === 0) {
@@ -260,8 +263,10 @@ const GalleryForm = () => {
         newErrors.imageTitles = 'All images must have titles';
       }
     } else {
-      if (!formData.title.trim()) {
-        newErrors.title = 'Title is required';
+      // Validate single image title
+      const titleValidation = validateTitle(formData.title);
+      if (!titleValidation.isValid) {
+        newErrors.title = titleValidation.error || 'Title is required';
       }
       
       if (!formData.description.trim()) {

@@ -12,6 +12,7 @@ import {
   Job
 } from '../../../../services/firebase/jobService';
 import { resizeImage, validateImageFile } from '../../../../services/firebase/storageService';
+import { validateTitle, validateCompanyName, validateLocation } from '../../../../utils/formValidation';
 import AdminLayout from '../../layout/AdminLayout';
 import './Jobs.css';
 import './JobForm.css';
@@ -160,32 +161,42 @@ const JobForm = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    if (!formData.title.trim()) {
-      newErrors.title = 'Job title is required';
+    // Validate title
+    const titleValidation = validateTitle(formData.title);
+    if (!titleValidation.isValid) {
+      newErrors.title = titleValidation.error || 'Job title is required';
     }
     
-    if (!formData.company.trim()) {
-      newErrors.company = 'Company name is required';
+    // Validate company
+    const companyValidation = validateCompanyName(formData.company);
+    if (!companyValidation.isValid) {
+      newErrors.company = companyValidation.error || 'Company name is required';
     }
     
-    if (!formData.location.trim()) {
-      newErrors.location = 'Job location is required';
+    // Validate location
+    const locationValidation = validateLocation(formData.location);
+    if (!locationValidation.isValid) {
+      newErrors.location = locationValidation.error || 'Job location is required';
     }
     
+    // Validate description
     if (!formData.description.trim()) {
       newErrors.description = 'Job description is required';
     }
     
+    // Validate requirements
     if (!formData.requirements.trim()) {
       newErrors.requirements = 'Job requirements are required';
     }
     
+    // Validate contact email
     if (!formData.contactEmail.trim()) {
       newErrors.contactEmail = 'Contact email is required';
     } else if (!/^\S+@\S+\.\S+$/.test(formData.contactEmail)) {
       newErrors.contactEmail = 'Please enter a valid email address';
     }
     
+    // Validate application URL if website type
     if (formData.applicationType === 'website' && !formData.applicationUrl?.trim()) {
       newErrors.applicationUrl = 'Application URL is required for website application type';
     }
