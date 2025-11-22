@@ -7,11 +7,10 @@ import {
   Filter, 
   Eye, 
   EyeOff, 
-  Calendar,
-  Zap
+  Calendar
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { getAllDonations, deleteDonation, toggleDonationVisibility, addDonation } from '../../../../services/firebase/donationService';
+import { getAllDonations, deleteDonation, toggleDonationVisibility } from '../../../../services/firebase/donationService';
 import { Donation } from '../../../../types';
 import AdminLayout from '../../layout/AdminLayout';
 import './Donations.css';
@@ -191,59 +190,6 @@ const DonationsManagement = () => {
     navigate(`/admin/donations/edit/${id}`);
   };
 
-  // Test donation function
-  const handleTestDonation = async () => {
-    try {
-      setLoading(true);
-      
-      // Generate random test data
-      const testDonors = [
-        'John Doe', 'Maria Santos', 'Pedro Reyes', 'Ana Cruz', 'Carlos Garcia',
-        'Lisa Wang', 'Miguel Torres', 'Sarah Johnson', 'David Lee', 'Grace Kim'
-      ];
-      const testAmounts = [1000, 2500, 5000, 7500, 10000, 15000, 20000, 25000, 50000];
-      const testPurposes = [
-        'Computer Lab Equipment', 'Scholarship Fund', 'Library Books', 
-        'Building Renovation', 'Alumni Homecoming', 'Sports Equipment',
-        'Science Laboratory', 'Student Activities', 'Faculty Development'
-      ];
-      const testCategories = [
-        'Equipment Fund', 'Scholarship Fund', 'Library Fund', 
-        'Building Fund', 'Special Projects', 'General Operations'
-      ];
-
-      const randomDonor = testDonors[Math.floor(Math.random() * testDonors.length)];
-      const randomAmount = testAmounts[Math.floor(Math.random() * testAmounts.length)];
-      const randomPurpose = testPurposes[Math.floor(Math.random() * testPurposes.length)];
-      const randomCategory = testCategories[Math.floor(Math.random() * testCategories.length)];
-      const isAnonymous = Math.random() < 0.3; // 30% chance of being anonymous
-
-      const testDonation = {
-        donorName: isAnonymous ? 'Anonymous Donor' : randomDonor,
-        donorEmail: isAnonymous ? undefined : `${randomDonor.toLowerCase().replace(' ', '.')}@example.com`,
-        amount: randomAmount,
-        currency: 'PHP',
-        purpose: randomPurpose,
-        category: randomCategory,
-        description: `Test donation for ${randomPurpose.toLowerCase()}. This is a simulated donation for testing purposes.`,
-        isPublic: true,
-        isAnonymous: isAnonymous,
-        isTest: true, // Mark as test item to skip notifications
-        donationDate: new Date().toISOString()
-      };
-
-      await addDonation(testDonation);
-      await loadDonationsData();
-      
-      alert(`Test donation added successfully!\nDonor: ${testDonation.donorName}\nAmount: ₱${testDonation.amount.toLocaleString()}\nPurpose: ${testDonation.purpose}`);
-    } catch (error) {
-      console.error('Error adding test donation:', error);
-      alert('Failed to add test donation. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <AdminLayout title="Donations Management">
       <div className="admin-toolbar">
@@ -304,15 +250,6 @@ const DonationsManagement = () => {
             </select>
           </div>
         </div>
-        
-        <button 
-          className="admin-add-btn admin-test-btn"
-          onClick={handleTestDonation}
-          title="Add a random test donation for testing notifications"
-        >
-          <Zap size={20} />
-          Test Donate
-        </button>
         
         <button 
           className="admin-add-btn"
