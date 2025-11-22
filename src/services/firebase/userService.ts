@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, addDoc, updateDoc, query, where, FieldValue } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, addDoc, updateDoc, query, where } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { addAlumni, getAlumniByUserId, updateAlumni, getAllAlumni } from './alumniService';
 import { cleanAlumniId } from '../../utils/alumniIdUtils';
@@ -249,7 +249,7 @@ export const updateUser = async (id: string, updatedData: Partial<User>): Promis
     }
     
     // For profileImage and coverPhoto, only include them if they have values
-    const finalUpdateData = { ...cleanedUpdatedData } as { [x: string]: FieldValue | Partial<unknown> | undefined };
+    const finalUpdateData = { ...cleanedUpdatedData } as any;
     
     // Only include profileImage if it's being explicitly updated with a value
     if (updatedData.profileImage !== undefined) {
