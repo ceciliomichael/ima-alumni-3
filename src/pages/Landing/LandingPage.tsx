@@ -24,7 +24,7 @@ const LandingPage = ({ showProceedButton = false }: LandingPageProps) => {
         </div>
         <div className="logo-right">
           <div className="logo-circle">
-            <img src="/images/church-logo.png" alt="Catholic Church Logo" />
+            <img src="/association-logo.png" alt="Association Logo" />
           </div>
         </div>
       </div>

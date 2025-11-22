@@ -124,6 +124,8 @@ export const exportReportToPDF = (report: DonationReport): void => {
     return;
   }
 
+  const assetBaseUrl = window.location.origin;
+
   const htmlContent = `
     <!DOCTYPE html>
     <html>
@@ -134,6 +136,17 @@ export const exportReportToPDF = (report: DonationReport): void => {
           font-family: Arial, sans-serif;
           padding: 20px;
           color: #333;
+        }
+        .report-header {
+          width: 100%;
+          border-bottom: 3px solid #0f172a;
+          padding-bottom: 16px;
+          margin-bottom: 24px;
+        }
+        .header-banner {
+          width: 100%;
+          height: auto;
+          display: block;
         }
         h1 {
           color: #1e40af;
@@ -198,6 +211,9 @@ export const exportReportToPDF = (report: DonationReport): void => {
       </style>
     </head>
     <body>
+      <div class="report-header">
+        <img class="header-banner" src="${assetBaseUrl}/header.png" alt="Immaculate Mary Academy Header" />
+      </div>
       <h1>Donation Report</h1>
       <p>Generated on: ${new Date().toLocaleString()}</p>
       
@@ -278,7 +294,7 @@ export const exportReportToPDF = (report: DonationReport): void => {
           </tr>
         </thead>
         <tbody>
-          ${report.donations.map((donation: any) => `
+          ${report.donations.map((donation: Donation) => `
             <tr>
               <td>${new Date(donation.donationDate).toLocaleDateString()}</td>
               <td>${donation.donorName}${donation.isAnonymous ? ' (Anonymous)' : ''}</td>
