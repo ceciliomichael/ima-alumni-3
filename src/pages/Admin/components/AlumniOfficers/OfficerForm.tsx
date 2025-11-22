@@ -4,7 +4,8 @@ import { ArrowLeft, Save, Upload, X } from 'lucide-react';
 import { 
   addOfficer, 
   getOfficerById, 
-  updateOfficer
+  updateOfficer,
+  getOfficersByTitle
 } from '../../../../services/firebase';
 import { 
   getAllAlumni 
@@ -72,6 +73,7 @@ const OfficerForm = () => {
             
             // Remove id as we don't need it in the form
             const { id: _id, ...dataWithoutId } = formattedData;
+            void _id;
             setFormData(dataWithoutId);
             
             // Set photo preview if exists
@@ -193,6 +195,51 @@ const OfficerForm = () => {
     return Object.keys(newErrors).length === 0;
   };
   
+  const checkPositionAvailability = async (): Promise<boolean> => {
+    if (!formData.title) {
+      return true;
+    }
+
+    try {
+      const existingPositions = await getOfficersByTitle(formData.title);
+      const normalizedBatchYear = formData.batchYear?.trim();
+
+      const hasConflict = existingPositions.some(officer => {
+        if (isEditing && id && officer.id === id) {
+          return false;
+        }
+
+        if (formData.title === 'Batch President') {
+          return (
+            !!normalizedBatchYear &&
+            !!officer.batchYear &&
+            officer.batchYear.trim() === normalizedBatchYear
+          );
+        }
+
+        return true;
+      });
+
+      if (hasConflict) {
+        setErrors(prev => ({
+          ...prev,
+          title: formData.title === 'Batch President'
+            ? 'This batch already has a Batch President assigned.'
+            : 'An officer is already assigned to this position.'
+        }));
+      }
+
+      return !hasConflict;
+    } catch (error) {
+      console.error('Error validating officer position:', error);
+      setErrors(prev => ({
+        ...prev,
+        title: 'Unable to verify position availability. Please try again.'
+      }));
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -203,6 +250,12 @@ const OfficerForm = () => {
     setIsSubmitting(true);
     
     try {
+      const isPositionAvailable = await checkPositionAvailability();
+      if (!isPositionAvailable) {
+        setIsSubmitting(false);
+        return;
+      }
+
       // Format dates for storage
       const formattedData = {
         ...formData,
