@@ -18,10 +18,6 @@ const SidebarLeft = ({ user }: SidebarLeftProps) => {
     return location.pathname === path;
   };
 
-  // Check if a path starts with a prefix
-  const isActivePrefix = (prefix: string) => {
-    return location.pathname.startsWith(prefix);
-  };
 
   return (
     <div className="sidebar-container">
