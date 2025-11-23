@@ -40,7 +40,7 @@ const ContentModeration = () => {
 
   const filterByStatus = useCallback(<T extends { isApproved?: boolean; moderationStatus?: string }>(items: T[]): T[] => {
     if (filter === 'all') return items;
-    if (filter === 'pending') return items.filter(item => !item.isApproved);
+    if (filter === 'pending') return items.filter(item => !item.isApproved && item.moderationStatus !== 'rejected');
     if (filter === 'approved') return items.filter(item => item.isApproved === true);
     if (filter === 'rejected') return items.filter(item => item.moderationStatus === 'rejected');
     return items;
@@ -90,7 +90,7 @@ const ContentModeration = () => {
           await moderatePost(id, true, adminUser.name);
           break;
         case 'jobs':
-          await approveJob(id, true);
+          await approveJob(id, true, adminUser.name);
           break;
       }
       await loadContent();
@@ -107,30 +107,30 @@ const ContentModeration = () => {
     setShowRejectModal(true);
   };
 
-  const confirmReject = async () => {
-    if (!selectedItem || !adminUser) return;
+const confirmReject = async () => {
+  if (!selectedItem || !adminUser) return;
 
-    try {
-      setLoading(true);
-      switch (activeTab) {
-        case 'posts':
-          await moderatePost(selectedItem.id, false, adminUser.name, rejectionReason);
-          break;
-        case 'jobs':
-          await approveJob(selectedItem.id, false);
-          break;
-      }
-      setShowRejectModal(false);
-      setRejectionReason('');
-      setSelectedItem(null);
-      await loadContent();
-    } catch (error) {
-      console.error('Error rejecting content:', error);
-      alert('Failed to reject content. Please try again.');
-    } finally {
-      setLoading(false);
+  try {
+    setLoading(true);
+    switch (activeTab) {
+      case 'posts':
+        await moderatePost(selectedItem.id, false, adminUser.name, rejectionReason);
+        break;
+      case 'jobs':
+        await approveJob(selectedItem.id, false, adminUser.name, rejectionReason);
+        break;
     }
-  };
+    setShowRejectModal(false);
+    setRejectionReason('');
+    setSelectedItem(null);
+    await loadContent();
+  } catch (error) {
+    console.error('Error rejecting content:', error);
+    alert('Failed to reject content. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDelete = async (id: string, type: ContentTab) => {
     if (!window.confirm('Are you sure you want to delete this content? This action cannot be undone.')) {
@@ -282,9 +282,11 @@ const ContentModeration = () => {
             <p className="moderation-location">{job.location}</p>
           </div>
         </div>
-        <div className={`moderation-status ${job.isApproved ? 'approved' : 'pending'}`}>
+        <div className={`moderation-status ${job.isApproved ? 'approved' : job.moderationStatus === 'rejected' ? 'rejected' : 'pending'}`}>
           {job.isApproved ? (
             <><CheckCircle size={16} /> Approved</>
+          ) : job.moderationStatus === 'rejected' ? (
+            <><XCircle size={16} /> Rejected</>
           ) : (
             <><Clock size={16} /> Pending</>
           )}
@@ -295,8 +297,15 @@ const ContentModeration = () => {
         <p>{job.description.substring(0, 200)}...</p>
       </div>
 
+      {job.moderationStatus === 'rejected' && job.rejectionReason && (
+        <div className="moderation-rejection-reason">
+          <AlertCircle size={16} />
+          <span>Rejection reason: {job.rejectionReason}</span>
+        </div>
+      )}
+
       <div className="moderation-actions">
-        {!job.isApproved && (
+        {!job.isApproved && job.moderationStatus !== 'rejected' && (
           <>
             <button 
               className="moderation-btn approve"
@@ -340,8 +349,8 @@ const ContentModeration = () => {
           >
             <MessageSquare size={20} />
             Posts
-            {filter === 'pending' && posts.filter(p => !p.isApproved).length > 0 && (
-              <span className="moderation-badge">{posts.filter(p => !p.isApproved).length}</span>
+            {filter === 'pending' && posts.filter(p => !p.isApproved && p.moderationStatus !== 'rejected').length > 0 && (
+              <span className="moderation-badge">{posts.filter(p => !p.isApproved && p.moderationStatus !== 'rejected').length}</span>
             )}
           </button>
           <button
@@ -350,8 +359,8 @@ const ContentModeration = () => {
           >
             <Briefcase size={20} />
             Jobs
-            {filter === 'pending' && jobs.filter(j => !j.isApproved).length > 0 && (
-              <span className="moderation-badge">{jobs.filter(j => !j.isApproved).length}</span>
+            {filter === 'pending' && jobs.filter(j => !j.isApproved && j.moderationStatus !== 'rejected').length > 0 && (
+              <span className="moderation-badge">{jobs.filter(j => !j.isApproved && j.moderationStatus !== 'rejected').length}</span>
             )}
           </button>
         </div>

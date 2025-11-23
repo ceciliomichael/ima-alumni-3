@@ -119,6 +119,18 @@ export interface Job {
   contactEmail: string;
   postedBy: string;
   createdAt: string;
+  isApproved: boolean;
+  moderationStatus?: 'pending' | 'approved' | 'rejected';
+  rejectionReason?: string;
+  moderatedBy?: string;
+  moderatedAt?: string;
+  postedDate?: string;
+  salary?: string;
+  applicationType?: 'email' | 'website' | 'inPerson';
+  applicationUrl?: string;
+  deadline?: string;
+  jobType?: 'fullTime' | 'partTime' | 'contract' | 'internship';
+  companyLogo?: string;
 }
 
 export interface Notification {

@@ -20,6 +20,10 @@ export interface Job {
   deadline?: string;
   jobType: 'fullTime' | 'partTime' | 'contract' | 'internship';
   companyLogo?: string; // Base64 encoded image or URL
+  moderationStatus?: 'pending' | 'approved' | 'rejected';
+  rejectionReason?: string;
+  moderatedBy?: string;
+  moderatedAt?: string;
 }
 
 const COLLECTION_NAME = 'jobs';
@@ -198,12 +202,34 @@ export const getJobsByType = async (jobType: Job['jobType']): Promise<Job[]> => 
 };
 
 // Approve or reject a job
-export const approveJob = async (id: string, approve: boolean): Promise<Job | null> => {
+export const approveJob = async (id: string, approve: boolean, moderatorName?: string, rejectionReason?: string): Promise<Job | null> => {
   // Get current job state before updating
   const currentJob = await getJobById(id);
   const wasApproved = currentJob?.isApproved || false;
   
-  const updatedJob = await updateJob(id, { isApproved: approve });
+  // Prepare update data based on approval status
+  const updateData: Partial<Job> = {
+    isApproved: approve,
+    moderationStatus: approve ? 'approved' : 'rejected',
+    moderatedAt: new Date().toISOString()
+  };
+  
+  // Add moderator name if provided
+  if (moderatorName) {
+    updateData.moderatedBy = moderatorName;
+  }
+  
+  // Add rejection reason if rejecting
+  if (!approve && rejectionReason) {
+    updateData.rejectionReason = rejectionReason;
+  }
+  
+  // Clear rejection reason if approving
+  if (approve) {
+    updateData.rejectionReason = undefined;
+  }
+  
+  const updatedJob = await updateJob(id, updateData);
   
   // Only create notification if job is being approved for the FIRST time
   // (transitioning from unapproved to approved)

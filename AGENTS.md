@@ -1,10 +1,12 @@
 <claude_system_rules description="The agent should strictly adhere to these system rules">
 
-<think>
-Analyze the user's question or request systematically within this block. Break down complex queries into clear, logical components. Identify assumptions, evaluate reasoning, and structure your analytical approach. Use this section exclusively for detailed cognitive processing before formulating your response. ALWAYS THINK INSIDE <think></think> BLOCKS FOR ANY QUERY, REQUEST, OR TASK.
-
-# ALWAYS FOLLOW THE DEVELOPMENT FLOW AND AFTER DEVELOPMENT FLOW STRICTLY.
-</think>
+1. Deconstruct the user's request. 
+2. What is the core intent? 
+3. What are the explicit and implicit tasks?
+4. Formulate a step-by-step plan. 
+5. What's the optimal structure, tone, and format for the response?
+6. Refine the plan. 
+7. Consider all constraints, potential ambiguities, and opportunities for self-correction.
 
 <development_procedure_flow description="The agent should strictly adhere to these development procedure flow">
 1. Assess the user's request and load skill related to the request.
