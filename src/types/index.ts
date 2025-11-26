@@ -142,6 +142,8 @@ export interface Notification {
   createdAt: string;
   // Reference to the source item (event, job, or donation ID)
   sourceId?: string;
+  // Optional recipient user ID for per-user notifications (e.g., moderation updates)
+  recipientUserId?: string;
 }
 
 // Admin types
@@ -241,4 +243,15 @@ export interface DonationReport {
   byCategory: Record<string, { amount: number; count: number }>;
   byMonth: Record<string, { amount: number; count: number }>;
   donations: Donation[];
-} 
+}
+
+export interface DonationGoal {
+  id: string;
+  goalType: 'monthly' | 'yearly';
+  amount: number;
+  year: number;
+  month?: number; // 1-12, only for monthly goals
+  isActive: boolean;
+  createdAt?: string | { seconds: number; nanoseconds: number };
+  updatedAt?: string | { seconds: number; nanoseconds: number };
+}

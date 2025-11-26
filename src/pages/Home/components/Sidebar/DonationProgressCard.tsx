@@ -4,16 +4,44 @@ import { Link } from 'react-router-dom';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../../firebase/config';
 import { Donation } from '../../../../types';
+import { getCurrentDisplayGoal } from '../../../../services/firebase/donationGoalService';
 import './DonationProgressCard.css';
+
+const DEFAULT_GOAL_AMOUNT = 1000000; // Default fallback: ₱1,000,000
 
 const DonationProgressCard = () => {
   const [totalRaised, setTotalRaised] = useState(0);
   const [loading, setLoading] = useState(true);
   const [donationCount, setDonationCount] = useState(0);
-  
-  // Configurable goal amount (in PHP)
-  const GOAL_AMOUNT = 1000000; // ₱1,000,000
+  const [goalAmount, setGoalAmount] = useState(DEFAULT_GOAL_AMOUNT);
+  const [goalLabel, setGoalLabel] = useState('goal');
 
+  // Fetch the active donation goal
+  useEffect(() => {
+    const fetchGoal = async () => {
+      try {
+        const activeGoal = await getCurrentDisplayGoal();
+        if (activeGoal) {
+          setGoalAmount(activeGoal.amount);
+          // Set label based on goal type
+          if (activeGoal.goalType === 'monthly') {
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthLabel = monthNames[(activeGoal.month || 1) - 1];
+            setGoalLabel(`${monthLabel} ${activeGoal.year} goal`);
+          } else {
+            setGoalLabel(`${activeGoal.year} goal`);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching donation goal:', error);
+        // Keep default values on error
+      }
+    };
+
+    fetchGoal();
+  }, []);
+
+  // Fetch donations
   useEffect(() => {
     setLoading(true);
     
@@ -54,7 +82,7 @@ const DonationProgressCard = () => {
   }, []);
 
   // Calculate progress percentage
-  const progressPercentage = Math.min((totalRaised / GOAL_AMOUNT) * 100, 100);
+  const progressPercentage = goalAmount > 0 ? Math.min((totalRaised / goalAmount) * 100, 100) : 0;
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -99,7 +127,7 @@ const DonationProgressCard = () => {
                 <span className="amount-label">raised</span>
               </div>
               <div className="amount-goal">
-                <span className="goal-text">of {formatLargeNumber(GOAL_AMOUNT)} goal</span>
+                <span className="goal-text">of {formatLargeNumber(goalAmount)} {goalLabel}</span>
               </div>
             </div>
 

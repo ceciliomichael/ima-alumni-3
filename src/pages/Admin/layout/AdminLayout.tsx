@@ -1,12 +1,13 @@
-import { ReactNode, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { ReactNode, useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Menu, X, LogOut, Settings,
   LayoutDashboard, Users, Award, Calendar,
   Image, Briefcase,
-  Info, Monitor, FileText, Shield
+  Info, Monitor, FileText, Shield, Bell
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
+import { subscribeToNotifications } from '../../../services/firebase/notificationService';
 import './AdminLayout.css';
 
 interface AdminLayoutProps {
@@ -17,8 +18,20 @@ interface AdminLayoutProps {
 const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const location = useLocation();
+  const navigate = useNavigate();
   const { adminUser, adminLogout } = useAdminAuth();
+
+  // Subscribe to notifications for unread count
+  useEffect(() => {
+    const unsubscribe = subscribeToNotifications((notifications) => {
+      const unread = notifications.filter(n => !n.isRead).length;
+      setUnreadCount(unread);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -176,20 +189,33 @@ const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
             <h1 className="admin-header-title">{title}</h1>
           </div>
           
-          <div className={`admin-user ${userDropdownOpen ? 'open' : ''}`}>
-            <div className="admin-user-info">
-              <div className="admin-user-name">{adminUser?.name}</div>
-              <div className="admin-user-role">{adminUser?.role === 'super_admin' ? 'Super Admin' : 'Admin'}</div>
+          <div className="admin-header-right">
+            <div 
+              className="admin-notification-bell" 
+              onClick={() => navigate('/notifications')}
+              title="View notifications"
+            >
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span className="admin-notification-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+              )}
             </div>
             
-            <div className="admin-avatar" onClick={toggleUserDropdown}>
-              {getInitial()}
-            </div>
-            
-            <div className="admin-dropdown">
-              <div className="admin-dropdown-menu">
-                <div className="admin-dropdown-item admin-logout" onClick={adminLogout}>
-                  <LogOut size={16} /> Sign Out
+            <div className={`admin-user ${userDropdownOpen ? 'open' : ''}`}>
+              <div className="admin-user-info">
+                <div className="admin-user-name">{adminUser?.name}</div>
+                <div className="admin-user-role">{adminUser?.role === 'super_admin' ? 'Super Admin' : 'Admin'}</div>
+              </div>
+              
+              <div className="admin-avatar" onClick={toggleUserDropdown}>
+                {getInitial()}
+              </div>
+              
+              <div className="admin-dropdown">
+                <div className="admin-dropdown-menu">
+                  <div className="admin-dropdown-item admin-logout" onClick={adminLogout}>
+                    <LogOut size={16} /> Sign Out
+                  </div>
                 </div>
               </div>
             </div>

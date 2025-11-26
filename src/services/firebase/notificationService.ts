@@ -27,18 +27,19 @@ export const getNotifications = async (): Promise<Notification[]> => {
     const snapshot = await getDocs(q);
 
     return snapshot.docs.map(d => {
-      const data: any = d.data();
+      const data = d.data();
+      const createdAt = data.createdAt as { toDate?: () => Date } | number | string | undefined;
 
       // Normalize createdAt to ISO string so UI can parse it reliably
       let createdAtIso = '';
-      if (data.createdAt) {
+      if (createdAt) {
         // Firestore Timestamp has toDate()
-        if (typeof data.createdAt.toDate === 'function') {
-          createdAtIso = data.createdAt.toDate().toISOString();
-        } else if (typeof data.createdAt === 'number') {
-          createdAtIso = new Date(data.createdAt).toISOString();
-        } else if (typeof data.createdAt === 'string') {
-          createdAtIso = data.createdAt;
+        if (typeof createdAt === 'object' && createdAt !== null && typeof createdAt.toDate === 'function') {
+          createdAtIso = createdAt.toDate().toISOString();
+        } else if (typeof createdAt === 'number') {
+          createdAtIso = new Date(createdAt).toISOString();
+        } else if (typeof createdAt === 'string') {
+          createdAtIso = createdAt;
         }
       }
 
@@ -63,16 +64,17 @@ export const subscribeToNotifications = (
 
   return onSnapshot(q, (snapshot) => {
     const notifications = snapshot.docs.map(d => {
-      const data: any = d.data();
+      const data = d.data();
+      const createdAt = data.createdAt as { toDate?: () => Date } | number | string | undefined;
 
       let createdAtIso = '';
-      if (data.createdAt) {
-        if (typeof data.createdAt.toDate === 'function') {
-          createdAtIso = data.createdAt.toDate().toISOString();
-        } else if (typeof data.createdAt === 'number') {
-          createdAtIso = new Date(data.createdAt).toISOString();
-        } else if (typeof data.createdAt === 'string') {
-          createdAtIso = data.createdAt;
+      if (createdAt) {
+        if (typeof createdAt === 'object' && createdAt !== null && typeof createdAt.toDate === 'function') {
+          createdAtIso = createdAt.toDate().toISOString();
+        } else if (typeof createdAt === 'number') {
+          createdAtIso = new Date(createdAt).toISOString();
+        } else if (typeof createdAt === 'string') {
+          createdAtIso = createdAt;
         }
       }
 
@@ -225,6 +227,42 @@ export const createEventNotification = async (
     message,
     isRead: false,
     sourceId: eventId
+  });
+};
+
+// Create moderation notification for user (when their content is approved/rejected)
+export const createModerationNotification = async (
+  contentType: 'post' | 'job' | 'gallery',
+  isApproved: boolean,
+  recipientUserId: string,
+  contentTitle?: string,
+  rejectionReason?: string,
+  sourceId?: string
+): Promise<string> => {
+  const contentTypeLabel = contentType === 'post' ? 'post' : contentType === 'job' ? 'job posting' : 'gallery item';
+  const title = isApproved ? 'Content Approved' : 'Content Rejected';
+  
+  let message: string;
+  if (isApproved) {
+    message = contentTitle 
+      ? `Your ${contentTypeLabel} "${contentTitle}" has been approved and is now visible to other alumni.`
+      : `Your ${contentTypeLabel} has been approved and is now visible to other alumni.`;
+  } else {
+    message = contentTitle
+      ? `Your ${contentTypeLabel} "${contentTitle}" has been rejected.`
+      : `Your ${contentTypeLabel} has been rejected.`;
+    if (rejectionReason) {
+      message += ` Reason: ${rejectionReason}`;
+    }
+  }
+
+  return addNotification({
+    type: 'system',
+    title,
+    message,
+    isRead: false,
+    sourceId,
+    recipientUserId
   });
 };
 

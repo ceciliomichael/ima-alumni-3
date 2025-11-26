@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { getAllDonations, deleteDonation, toggleDonationVisibility } from '../../../../services/firebase/donationService';
 import { Donation } from '../../../../types';
 import AdminLayout from '../../layout/AdminLayout';
+import DonationGoalSettings from './DonationGoalSettings';
 import './Donations.css';
 
 // Donation categories
@@ -259,6 +260,9 @@ const DonationsManagement = () => {
           Add Donation
         </button>
       </div>
+
+      {/* Donation Goal Settings */}
+      <DonationGoalSettings />
       
       <div className="admin-card">
         <div className="admin-card-header">

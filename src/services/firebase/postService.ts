@@ -1,21 +1,22 @@
-import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, arrayUnion, arrayRemove, UpdateData, DocumentData } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import type { Post, Comment, Reply, CommentReaction } from '../../types';
+import { createModerationNotification } from './notificationService';
 
 export type { Post, Comment, Reply, CommentReaction };
 
 const COLLECTION_NAME = 'posts';
 
 // Helper to remove undefined fields before sending to Firestore
-const removeUndefinedFields = <T extends Record<string, any>>(obj: T): T => {
-  const cleaned: any = {};
+const removeUndefinedFields = <T extends Record<string, unknown>>(obj: T): UpdateData<DocumentData> => {
+  const cleaned: Record<string, unknown> = {};
   Object.keys(obj).forEach((key) => {
-    const value = (obj as any)[key];
+    const value = obj[key];
     if (value !== undefined) {
       cleaned[key] = value;
     }
   });
-  return cleaned as T;
+  return cleaned as UpdateData<DocumentData>;
 };
 
 // Get all posts
@@ -69,15 +70,15 @@ export const getPendingPosts = async (): Promise<Post[]> => {
 // Add a new post
 export const addPost = async (post: Omit<Post, 'id' | 'createdAt' | 'likedBy' | 'comments'>): Promise<Post> => {
   try {
-    const sanitized = removeUndefinedFields(post as any);
+    const sanitized = removeUndefinedFields(post as Record<string, unknown>);
     const newPost = {
       ...sanitized,
       createdAt: new Date().toISOString(),
-      likedBy: [],
-      comments: [],
+      likedBy: [] as string[],
+      comments: [] as Comment[],
       isApproved: false, // Posts require approval by default
       moderationStatus: 'pending' as const
-    } as any;
+    };
     
     const docRef = await addDoc(collection(db, COLLECTION_NAME), newPost);
     
@@ -353,7 +354,15 @@ export const moderatePost = async (
 ): Promise<Post | null> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, postId);
-    const updateData: any = {
+    
+    // Get the post first to access userId for notification
+    const postSnap = await getDoc(docRef);
+    if (!postSnap.exists()) {
+      return null;
+    }
+    const postData = postSnap.data() as Post;
+    
+    const updateData: Partial<Post> = {
       isApproved: approve,
       moderationStatus: approve ? 'approved' : 'rejected',
       moderatedBy: moderatorName,
@@ -365,6 +374,20 @@ export const moderatePost = async (
     }
     
     await updateDoc(docRef, updateData);
+    
+    // Send notification to the post author
+    if (postData.userId) {
+      createModerationNotification(
+        'post',
+        approve,
+        postData.userId,
+        postData.content.substring(0, 50) + (postData.content.length > 50 ? '...' : ''),
+        rejectionReason,
+        postId
+      ).catch((error) => {
+        console.error('Failed to create post moderation notification:', error);
+      });
+    }
     
     // Get the updated document
     const updatedDoc = await getDoc(docRef);
@@ -385,7 +408,7 @@ export const moderatePost = async (
 export const updatePost = async (postId: string, updatedData: Partial<Post>): Promise<Post | null> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, postId);
-    const sanitized = removeUndefinedFields(updatedData as any);
+    const sanitized = removeUndefinedFields(updatedData as Record<string, unknown>);
     await updateDoc(docRef, sanitized);
     
     // Get the updated document

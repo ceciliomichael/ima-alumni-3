@@ -15,6 +15,16 @@ import './EventForm.css';
 
 type EventFormData = Omit<Event, 'id' | 'createdAt'>;
 
+// Helper to format date to local datetime string for datetime-local input
+const formatToLocalDatetime = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 const EventForm = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -24,7 +34,7 @@ const EventForm = () => {
     title: '',
     description: '',
     location: '',
-    date: new Date().toISOString(),
+    date: formatToLocalDatetime(new Date()),
     isApproved: false,
     createdBy: 'admin',
     coverImage: ''
@@ -190,8 +200,13 @@ const EventForm = () => {
   };
   
   const formatDateForInput = (dateString: string) => {
+    // If already in local datetime format (YYYY-MM-DDThh:mm), return as-is
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(dateString)) {
+      return dateString;
+    }
+    // Otherwise, parse and convert to local datetime string
     const date = new Date(dateString);
-    return date.toISOString().substring(0, 16); // Format as YYYY-MM-DDThh:mm
+    return formatToLocalDatetime(date);
   };
   
   return (

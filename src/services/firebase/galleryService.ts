@@ -1,6 +1,7 @@
 import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { GalleryPost } from '../../types';
+import { createModerationNotification } from './notificationService';
 
 const COLLECTION_NAME = 'gallery_items';
 
@@ -130,8 +131,27 @@ export const searchGalleryItems = async (query: string): Promise<GalleryPost[]> 
 };
 
 // Approve or reject a gallery item
-export const approveGalleryItem = async (id: string, approve: boolean): Promise<GalleryPost | null> => {
-  return updateGalleryItem(id, { isApproved: approve });
+export const approveGalleryItem = async (id: string, approve: boolean, rejectionReason?: string): Promise<GalleryPost | null> => {
+  // Get the gallery item first to access postedBy for notification
+  const galleryItem = await getGalleryItemById(id);
+  
+  const result = await updateGalleryItem(id, { isApproved: approve });
+  
+  // Send notification to the poster about moderation decision
+  if (galleryItem?.postedBy) {
+    createModerationNotification(
+      'gallery',
+      approve,
+      galleryItem.postedBy,
+      galleryItem.title || galleryItem.albumTitle,
+      rejectionReason,
+      id
+    ).catch((error) => {
+      console.error('Failed to create gallery moderation notification:', error);
+    });
+  }
+  
+  return result;
 };
 
 // Get gallery statistics

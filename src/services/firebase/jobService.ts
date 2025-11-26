@@ -1,6 +1,6 @@
 import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { db } from '../../firebase/config';
-import { createJobNotification, deleteNotificationsBySourceId } from './notificationService';
+import { createJobNotification, deleteNotificationsBySourceId, createModerationNotification } from './notificationService';
 
 // Define the Job interface
 export interface Job {
@@ -71,7 +71,7 @@ export const addJob = async (job: Omit<Job, 'id' | 'postedDate'>): Promise<Job> 
     
     // Remove undefined fields to prevent Firebase errors
     const cleanedJob = Object.fromEntries(
-      Object.entries(newJob).filter(([_, value]) => value !== undefined)
+      Object.entries(newJob).filter(([, value]) => value !== undefined)
     );
     
     const docRef = await addDoc(collection(db, COLLECTION_NAME), cleanedJob);
@@ -102,7 +102,7 @@ export const updateJob = async (id: string, updatedData: Partial<Job>): Promise<
     
     // Remove undefined fields to prevent Firebase errors
     const cleanedData = Object.fromEntries(
-      Object.entries(updatedData).filter(([_, value]) => value !== undefined)
+      Object.entries(updatedData).filter(([, value]) => value !== undefined)
     );
     
     await updateDoc(docRef, cleanedData);
@@ -231,12 +231,26 @@ export const approveJob = async (id: string, approve: boolean, moderatorName?: s
   
   const updatedJob = await updateJob(id, updateData);
   
-  // Only create notification if job is being approved for the FIRST time
+  // Only create public notification if job is being approved for the FIRST time
   // (transitioning from unapproved to approved)
   if (approve && updatedJob && !wasApproved) {
     // Fire and forget - don't wait for notification creation (including for test items)
     createJobNotification(updatedJob.title, updatedJob.company, updatedJob.id).catch((error) => {
       console.error('Failed to create job notification:', error);
+    });
+  }
+  
+  // Send notification to the job poster about moderation decision
+  if (currentJob?.postedBy) {
+    createModerationNotification(
+      'job',
+      approve,
+      currentJob.postedBy,
+      currentJob.title,
+      rejectionReason,
+      id
+    ).catch((error) => {
+      console.error('Failed to create job moderation notification:', error);
     });
   }
   

@@ -138,3 +138,7 @@ Use kebab-case for file and folder names, PascalCase for components, camelCase f
 </skills>
 
 </claude_system_rules>
+
+<language_response>
+Whatever the user asks or gives you a queestion any language, always respond in english.
+</language_response>
