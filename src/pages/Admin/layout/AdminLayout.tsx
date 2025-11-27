@@ -1,13 +1,15 @@
 import { ReactNode, useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   Menu, X, LogOut, Settings,
   LayoutDashboard, Users, Award, Calendar,
   Image, Briefcase,
-  Info, Monitor, FileText, Shield, Bell
+  Info, Monitor, FileText, Shield
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
-import { subscribeToNotifications } from '../../../services/firebase/notificationService';
+import { getAllJobs } from '../../../services/firebase/jobService';
+import { getAllGalleryItems } from '../../../services/firebase/galleryService';
+import { getPendingPosts } from '../../../services/firebase/postService';
 import './AdminLayout.css';
 
 interface AdminLayoutProps {
@@ -18,19 +20,40 @@ interface AdminLayoutProps {
 const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [pendingModerationCount, setPendingModerationCount] = useState(0);
+  const [pendingGalleryCount, setPendingGalleryCount] = useState(0);
   const location = useLocation();
-  const navigate = useNavigate();
   const { adminUser, adminLogout } = useAdminAuth();
 
-  // Subscribe to notifications for unread count
+  // Fetch pending counts for Content Moderation badge (posts + jobs)
   useEffect(() => {
-    const unsubscribe = subscribeToNotifications((notifications) => {
-      const unread = notifications.filter(n => !n.isRead).length;
-      setUnreadCount(unread);
-    });
+    const fetchPendingCounts = async () => {
+      try {
+        // Fetch pending jobs (not approved and not rejected)
+        const jobs = await getAllJobs();
+        const pendingJobs = jobs.filter(job => !job.isApproved && job.moderationStatus !== 'rejected');
 
-    return () => unsubscribe();
+        // Fetch pending posts (not approved and not rejected)
+        const pendingPosts = await getPendingPosts();
+        const trulyPendingPosts = pendingPosts.filter(post => !post.isApproved && post.moderationStatus !== 'rejected');
+
+        // Combined count for Content Moderation
+        setPendingModerationCount(pendingJobs.length + trulyPendingPosts.length);
+
+        // Fetch pending gallery items
+        const galleryItems = await getAllGalleryItems();
+        const pendingGallery = galleryItems.filter(item => !item.isApproved);
+        setPendingGalleryCount(pendingGallery.length);
+      } catch (error) {
+        console.error('Error fetching pending counts:', error);
+      }
+    };
+
+    fetchPendingCounts();
+
+    // Refresh counts every 30 seconds
+    const interval = setInterval(fetchPendingCounts, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const toggleSidebar = () => {
@@ -119,6 +142,9 @@ const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
           >
             <Image className="admin-menu-icon" />
             Gallery
+            {pendingGalleryCount > 0 && (
+              <span className="sidebar-badge">{pendingGalleryCount > 99 ? '99+' : pendingGalleryCount}</span>
+            )}
           </Link>
           
           <Link 
@@ -165,6 +191,9 @@ const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
           >
             <Shield className="admin-menu-icon" />
             Content Moderation
+            {pendingModerationCount > 0 && (
+              <span className="sidebar-badge">{pendingModerationCount > 99 ? '99+' : pendingModerationCount}</span>
+            )}
           </Link>
 
           <div className="admin-menu-title">System</div>
@@ -188,34 +217,20 @@ const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
             </button>
             <h1 className="admin-header-title">{title}</h1>
           </div>
-          
-          <div className="admin-header-right">
-            <div 
-              className="admin-notification-bell" 
-              onClick={() => navigate('/notifications')}
-              title="View notifications"
-            >
-              <Bell size={20} />
-              {unreadCount > 0 && (
-                <span className="admin-notification-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
-              )}
+          <div className={`admin-user ${userDropdownOpen ? 'open' : ''}`}>
+            <div className="admin-user-info">
+              <div className="admin-user-name">{adminUser?.name}</div>
+              <div className="admin-user-role">{adminUser?.role === 'super_admin' ? 'Super Admin' : 'Admin'}</div>
             </div>
             
-            <div className={`admin-user ${userDropdownOpen ? 'open' : ''}`}>
-              <div className="admin-user-info">
-                <div className="admin-user-name">{adminUser?.name}</div>
-                <div className="admin-user-role">{adminUser?.role === 'super_admin' ? 'Super Admin' : 'Admin'}</div>
-              </div>
-              
-              <div className="admin-avatar" onClick={toggleUserDropdown}>
-                {getInitial()}
-              </div>
-              
-              <div className="admin-dropdown">
-                <div className="admin-dropdown-menu">
-                  <div className="admin-dropdown-item admin-logout" onClick={adminLogout}>
-                    <LogOut size={16} /> Sign Out
-                  </div>
+            <div className="admin-avatar" onClick={toggleUserDropdown}>
+              {getInitial()}
+            </div>
+            
+            <div className="admin-dropdown">
+              <div className="admin-dropdown-menu">
+                <div className="admin-dropdown-item admin-logout" onClick={adminLogout}>
+                  <LogOut size={16} /> Sign Out
                 </div>
               </div>
             </div>

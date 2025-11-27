@@ -1060,47 +1060,18 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* Admin Header Right Section - Bell + User */
-.admin-header-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-right: 1rem;
-}
-
-.admin-notification-bell {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: var(--gray-100);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all var(--transition-normal);
-}
-
-.admin-notification-bell:hover {
-  background-color: var(--gray-200);
-  color: var(--primary-color);
-}
-
-.admin-notification-badge {
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
+/* Sidebar Badge for pending items */
+.sidebar-badge {
+  margin-left: auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
   background-color: #ef4444;
   color: white;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  border-radius: 9px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid white;
 }
