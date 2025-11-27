@@ -34,6 +34,7 @@ import { initializeLandingConfig } from './services/firebase/landingService';
 
 // Admin imports
 import AdminLoginPage from './pages/Admin/AdminLoginPage';
+import AdminPasswordSetupPage from './pages/Admin/AdminPasswordSetupPage';
 import Dashboard from './pages/Admin/components/Dashboard/Dashboard';
 import { AdminAuthProvider, useAdminAuth } from './pages/Admin/context/AdminAuthContext';
 import { AlumniRecords, AlumniListByBatch, AlumniForm, AlumniView, CSVImport } from './pages/Admin/components/AlumniRecords';
@@ -53,7 +54,7 @@ import { Settings } from './pages/Admin/components/Settings';
 
 // Helper component for admin protected routes
 const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAdminAuthenticated, isLoading } = useAdminAuth();
+  const { isAdminAuthenticated, isLoading, adminUser } = useAdminAuth();
   
   if (isLoading) {
     return <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', gap: '1rem' }}>
@@ -62,7 +63,16 @@ const ProtectedAdminRoute = ({ children }: { children: React.ReactNode }) => {
     </div>;
   }
   
-  return isAdminAuthenticated ? <>{children}</> : <Navigate to="/admin/login" />;
+  if (!isAdminAuthenticated) {
+    return <Navigate to="/admin/login" />;
+  }
+  
+  // Redirect to password setup if admin must change password
+  if (adminUser?.mustChangePassword) {
+    return <Navigate to="/admin/setup-password" />;
+  }
+  
+  return <>{children}</>;
 };
 
 // Helper component for user protected routes
@@ -367,6 +377,7 @@ function App() {
           
           {/* --- Admin Routes (Keep separate) --- */}
           <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/admin/setup-password" element={<AdminPasswordSetupPage />} />
           <Route path="/admin" element={
             <ProtectedAdminRoute><Dashboard /></ProtectedAdminRoute>
           } />

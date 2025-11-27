@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { createJobNotification, deleteNotificationsBySourceId, createModerationNotification } from './notificationService';
 
@@ -40,6 +40,26 @@ export const getAllJobs = async (): Promise<Job[]> => {
     console.error('Error getting jobs:', error);
     return [];
   }
+};
+
+export const subscribeToPendingJobs = (
+  callback: (jobs: Job[]) => void
+): Unsubscribe => {
+  const jobsRef = collection(db, COLLECTION_NAME);
+  const q = query(jobsRef);
+
+  return onSnapshot(q, (snapshot) => {
+    const allJobs = snapshot.docs.map(docSnap => ({
+      id: docSnap.id,
+      ...docSnap.data()
+    } as Job));
+
+    const pendingJobs = allJobs.filter(
+      job => !job.isApproved && job.moderationStatus !== 'rejected'
+    );
+
+    callback(pendingJobs);
+  });
 };
 
 // Get job by ID

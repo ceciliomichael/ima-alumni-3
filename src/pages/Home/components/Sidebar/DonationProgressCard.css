@@ -161,6 +161,66 @@
   color: var(--text-muted);
 }
 
+/* Goal section styles for monthly/yearly display */
+.donation-goal-section {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.donation-goal-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.goal-header {
+  margin-bottom: 0.5rem;
+}
+
+.goal-type-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.donation-goal-section .donation-amounts {
+  margin-bottom: 0.5rem;
+}
+
+.donation-goal-section .amount-value {
+  font-size: 1.25rem;
+}
+
+.donation-goal-section .progress-section {
+  margin-bottom: 0;
+}
+
+.donation-goal-section .progress-bar {
+  height: 6px;
+  margin-bottom: 0.25rem;
+}
+
+.donation-goal-section .progress-stats {
+  justify-content: flex-end;
+}
+
+.donation-goal-section .progress-percentage {
+  font-size: 0.8rem;
+}
+
+/* Different colors for monthly vs yearly progress bars */
+.progress-fill.yearly {
+  background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.donation-total-stats {
+  margin-bottom: 0.75rem;
+  justify-content: center;
+}
+
 .donation-description {
   margin-bottom: 0.5rem;
 }

@@ -169,13 +169,19 @@ export const updateGoal = async (
   }
 };
 
-// Set a goal as active (deactivates all other goals)
+// Set a goal as active (deactivates other goals of the same type only)
 export const setActiveGoal = async (id: string): Promise<void> => {
   try {
-    // First, deactivate all goals
     const allGoals = await getAllGoals();
+    const targetGoal = allGoals.find(g => g.id === id);
+    
+    if (!targetGoal) {
+      throw new Error('Goal not found');
+    }
+
+    // Only deactivate goals of the same type
     const deactivatePromises = allGoals
-      .filter(goal => goal.isActive && goal.id !== id)
+      .filter(goal => goal.isActive && goal.id !== id && goal.goalType === targetGoal.goalType)
       .map(goal => updateGoal(goal.id, { isActive: false }));
     
     await Promise.all(deactivatePromises);
@@ -184,6 +190,50 @@ export const setActiveGoal = async (id: string): Promise<void> => {
     await updateGoal(id, { isActive: true });
   } catch (error) {
     console.error('Error setting active goal:', error);
+    throw error;
+  }
+};
+
+// Toggle a goal's active state (for checkbox behavior)
+export const toggleGoalActive = async (id: string, isActive: boolean): Promise<void> => {
+  try {
+    if (isActive) {
+      // If activating, deactivate other goals of the same type first
+      await setActiveGoal(id);
+    } else {
+      // If deactivating, just set this goal to inactive
+      await updateGoal(id, { isActive: false });
+    }
+  } catch (error) {
+    console.error('Error toggling goal active state:', error);
+    throw error;
+  }
+};
+
+// Get active goals by type
+export const getActiveGoalByType = async (goalType: 'monthly' | 'yearly'): Promise<DonationGoal | null> => {
+  try {
+    const goalsRef = collection(db, DONATION_GOALS_COLLECTION);
+    const q = query(
+      goalsRef,
+      where('isActive', '==', true),
+      where('goalType', '==', goalType),
+      limit(1)
+    );
+    
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.empty) {
+      return null;
+    }
+    
+    const goalDoc = snapshot.docs[0];
+    return {
+      id: goalDoc.id,
+      ...goalDoc.data()
+    } as DonationGoal;
+  } catch (error) {
+    console.error('Error getting active goal by type:', error);
     throw error;
   }
 };

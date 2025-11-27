@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { GalleryPost } from '../../types';
 import { createModerationNotification } from './notificationService';
@@ -17,6 +17,23 @@ export const getAllGalleryItems = async (): Promise<GalleryPost[]> => {
     console.error('Error getting gallery items:', error);
     return [];
   }
+};
+
+export const subscribeToPendingGalleryItems = (
+  callback: (items: GalleryPost[]) => void
+): Unsubscribe => {
+  const galleryRef = collection(db, COLLECTION_NAME);
+  const q = query(galleryRef);
+
+  return onSnapshot(q, (snapshot) => {
+    const allItems = snapshot.docs.map(docSnap => ({
+      id: docSnap.id,
+      ...docSnap.data()
+    } as GalleryPost));
+
+    const pendingItems = allItems.filter(item => !item.isApproved);
+    callback(pendingItems);
+  });
 };
 
 // Get gallery item by ID

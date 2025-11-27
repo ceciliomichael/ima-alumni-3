@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, Filter, Check, User, X, AlertTriangle, Upload } from 'lucide-react';
+import { Search, Plus, Filter, User, X, AlertTriangle, Upload } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   getAllAlumni, 
@@ -218,11 +218,6 @@ const AlumniRecords = () => {
               <Link to="/admin/alumni-records/by-batch" className="filter-button">
                 <Filter size={18} />
                 <span>View By Batch</span>
-              </Link>
-              
-              <Link to="/admin/pending-registrations" className="filter-button pending-button">
-                <Check size={18} />
-                <span>Pending</span>
               </Link>
             </div>
           </div>

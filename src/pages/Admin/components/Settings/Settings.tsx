@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { 
-  Trash2, AlertTriangle
+  Trash2, AlertTriangle, Lock, Eye, EyeOff, CheckCircle
 } from 'lucide-react';
 import AdminLayout from '../../layout/AdminLayout';
 import ConfirmDialog from '../../../../components/ConfirmDialog';
+import { useAdminAuth } from '../../context/AdminAuthContext';
+import { updateAdminPassword, verifyAdminPassword } from '../../../../services/firebase/adminService';
 // Import Firebase services for data deletion
 import { getAllUsers, deleteUser } from '../../../../services/firebase/userService';
 import { getAllPosts, deletePost } from '../../../../services/firebase/postService';
@@ -19,6 +21,20 @@ import './Settings.css';
 const Settings = () => {
   const [showClearDataDialog, setShowClearDataDialog] = useState(false);
   const [isClearingData, setIsClearingData] = useState(false);
+  
+  // Password reset state
+  const { adminUser } = useAdminAuth();
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleClearAllData = async () => {
     setIsClearingData(true);
@@ -105,9 +121,289 @@ const Settings = () => {
     }
   };
 
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordForm(prev => ({ ...prev, [name]: value }));
+    
+    // Clear error for this field
+    if (passwordErrors[name]) {
+      setPasswordErrors(prev => ({ ...prev, [name]: '' }));
+    }
+    // Clear success message when typing
+    if (passwordSuccess) {
+      setPasswordSuccess('');
+    }
+  };
+
+  const validatePasswordForm = () => {
+    const errors: Record<string, string> = {};
+    
+    if (!passwordForm.currentPassword) {
+      errors.currentPassword = 'Current password is required';
+    }
+    
+    if (!passwordForm.newPassword) {
+      errors.newPassword = 'New password is required';
+    } else if (passwordForm.newPassword.length < 6) {
+      errors.newPassword = 'Password must be at least 6 characters';
+    }
+    
+    if (!passwordForm.confirmPassword) {
+      errors.confirmPassword = 'Please confirm your new password';
+    } else if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+    }
+    
+    setPasswordErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validatePasswordForm() || !adminUser) {
+      return;
+    }
+    
+    setIsChangingPassword(true);
+    setPasswordSuccess('');
+    
+    try {
+      // Verify current password
+      const isValid = await verifyAdminPassword(adminUser.id, passwordForm.currentPassword);
+      
+      if (!isValid) {
+        setPasswordErrors({ currentPassword: 'Current password is incorrect' });
+        setIsChangingPassword(false);
+        return;
+      }
+      
+      // Update password
+      const success = await updateAdminPassword(adminUser.id, passwordForm.newPassword);
+      
+      if (success) {
+        setPasswordSuccess('Password updated successfully!');
+        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      } else {
+        setPasswordErrors({ submit: 'Failed to update password. Please try again.' });
+      }
+    } catch (error) {
+      console.error('Error changing password:', error);
+      setPasswordErrors({ submit: 'An error occurred. Please try again.' });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   return (
     <AdminLayout title="Settings">
       <div className="settings-container">
+        {/* Password Management Section */}
+        <div className="settings-section">
+          <div className="settings-section-header">
+            <h2 className="settings-section-title">
+              <div className="settings-section-title-icon">
+                <Lock size={20} />
+              </div>
+              Change Password
+            </h2>
+          </div>
+          
+          <div className="settings-section-content">
+            {passwordSuccess && (
+              <div style={{ 
+                backgroundColor: 'oklch(0.7 0.15 145 / 0.1)', 
+                color: 'oklch(0.45 0.15 145)',
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                marginBottom: '1rem',
+                border: '1px solid oklch(0.7 0.15 145 / 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <CheckCircle size={18} />
+                {passwordSuccess}
+              </div>
+            )}
+            
+            {passwordErrors.submit && (
+              <div style={{ 
+                backgroundColor: 'oklch(0.6 0.25 0 / 0.1)', 
+                color: 'oklch(0.6 0.25 0)',
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                marginBottom: '1rem',
+                border: '1px solid oklch(0.6 0.25 0 / 0.2)'
+              }}>
+                {passwordErrors.submit}
+              </div>
+            )}
+            
+            <form onSubmit={handlePasswordSubmit} style={{ maxWidth: '400px' }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                  Current Password
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showCurrentPassword ? 'text' : 'password'}
+                    name="currentPassword"
+                    value={passwordForm.currentPassword}
+                    onChange={handlePasswordChange}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 2.5rem 0.75rem 0.75rem',
+                      border: `1px solid ${passwordErrors.currentPassword ? 'var(--error-color)' : 'var(--border-color)'}`,
+                      borderRadius: '8px',
+                      fontSize: '0.95rem',
+                      boxSizing: 'border-box'
+                    }}
+                    placeholder="Enter current password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#666',
+                      padding: '4px',
+                      display: 'flex'
+                    }}
+                  >
+                    {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {passwordErrors.currentPassword && (
+                  <div style={{ color: 'var(--error-color)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                    {passwordErrors.currentPassword}
+                  </div>
+                )}
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                  New Password
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    name="newPassword"
+                    value={passwordForm.newPassword}
+                    onChange={handlePasswordChange}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 2.5rem 0.75rem 0.75rem',
+                      border: `1px solid ${passwordErrors.newPassword ? 'var(--error-color)' : 'var(--border-color)'}`,
+                      borderRadius: '8px',
+                      fontSize: '0.95rem',
+                      boxSizing: 'border-box'
+                    }}
+                    placeholder="Enter new password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#666',
+                      padding: '4px',
+                      display: 'flex'
+                    }}
+                  >
+                    {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {passwordErrors.newPassword && (
+                  <div style={{ color: 'var(--error-color)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                    {passwordErrors.newPassword}
+                  </div>
+                )}
+              </div>
+              
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                  Confirm New Password
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    value={passwordForm.confirmPassword}
+                    onChange={handlePasswordChange}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem 2.5rem 0.75rem 0.75rem',
+                      border: `1px solid ${passwordErrors.confirmPassword ? 'var(--error-color)' : 'var(--border-color)'}`,
+                      borderRadius: '8px',
+                      fontSize: '0.95rem',
+                      boxSizing: 'border-box'
+                    }}
+                    placeholder="Confirm new password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#666',
+                      padding: '4px',
+                      display: 'flex'
+                    }}
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {passwordErrors.confirmPassword && (
+                  <div style={{ color: 'var(--error-color)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                    {passwordErrors.confirmPassword}
+                  </div>
+                )}
+              </div>
+              
+              <button
+                type="submit"
+                disabled={isChangingPassword}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: 'var(--primary-color)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '0.95rem',
+                  fontWeight: 500,
+                  cursor: isChangingPassword ? 'not-allowed' : 'pointer',
+                  opacity: isChangingPassword ? 0.7 : 1
+                }}
+              >
+                <Lock size={16} />
+                {isChangingPassword ? 'Updating Password...' : 'Update Password'}
+              </button>
+            </form>
+          </div>
+        </div>
+
         {/* System Management Section */}
         <div className="settings-section">
           <div className="settings-section-header">

@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, arrayUnion, arrayRemove, UpdateData, DocumentData } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, query, where, arrayUnion, arrayRemove, UpdateData, DocumentData, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import type { Post, Comment, Reply, CommentReaction } from '../../types';
 import { createModerationNotification } from './notificationService';
@@ -65,6 +65,26 @@ export const getPendingPosts = async (): Promise<Post[]> => {
     console.error('Error getting pending posts:', error);
     return [];
   }
+};
+
+export const subscribeToPendingPosts = (
+  callback: (posts: Post[]) => void
+): Unsubscribe => {
+  const postsRef = collection(db, COLLECTION_NAME);
+  const q = query(postsRef);
+
+  return onSnapshot(q, (snapshot) => {
+    const allPosts = snapshot.docs.map(docSnap => ({
+      id: docSnap.id,
+      ...docSnap.data()
+    } as Post));
+
+    const pendingPosts = allPosts.filter(
+      post => !post.isApproved && post.moderationStatus !== 'rejected'
+    );
+
+    callback(pendingPosts);
+  });
 };
 
 // Add a new post

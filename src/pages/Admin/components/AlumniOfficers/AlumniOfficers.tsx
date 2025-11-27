@@ -146,7 +146,6 @@ const AlumniOfficers = () => {
                       <th>Position</th>
                       <th>Officer Name</th>
                       <th>Alumni Batch</th>
-                      <th>Batch Year</th>
                       <th>Term</th>
                       <th>Actions</th>
                     </tr>
@@ -169,13 +168,6 @@ const AlumniOfficers = () => {
                         </td>
                         <td>
                           <span className="batch-info">Batch {getAlumniBatch(officer.alumniId)}</span>
-                        </td>
-                        <td>
-                          {officer.batchYear ? (
-                            <span className="batch-badge">{officer.batchYear}</span>
-                          ) : (
-                            <span className="general-badge">General</span>
-                          )}
                         </td>
                         <td>
                           <div className="term-dates">

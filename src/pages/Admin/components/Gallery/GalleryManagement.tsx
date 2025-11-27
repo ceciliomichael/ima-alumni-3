@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Search, Plus, Edit, Trash, Image, CheckCircle, XCircle, Filter, Calendar, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  getAllGalleryItems, 
   deleteGalleryItem, 
-  approveGalleryItem
+  approveGalleryItem,
+  subscribeToPendingGalleryItems
 } from '../../../../services/firebase/galleryService';
 import { GalleryPost } from '../../../../types';
 import { getAllEvents, Event } from '../../../../services/firebase/eventService';
@@ -23,6 +23,7 @@ const EVENT_CATEGORIES = [
 
 const GalleryManagement = () => {
   const [galleryItems, setGalleryItems] = useState<GalleryPost[]>([]);
+  const [allGalleryItems, setAllGalleryItems] = useState<GalleryPost[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [eventFilter, setEventFilter] = useState('all');
@@ -33,29 +34,32 @@ const GalleryManagement = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+    const fetchEvents = async () => {
       try {
-        // Load gallery data
-        await loadGalleryData();
-        
-        // Load events for filtering
         const eventsData = await getAllEvents();
         setEvents(eventsData);
       } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching events:', error);
       }
     };
-    
-    fetchData();
+
+    // Subscribe to gallery items in real time
+    const unsubscribe = subscribeToPendingGalleryItems((pendingItems) => {
+      // Use snapshot as base data; other filters/search will be applied below
+      setAllGalleryItems(pendingItems);
+    });
+
+    fetchEvents();
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
-  const loadGalleryData = async () => {
+  const applyFilters = useCallback(() => {
     try {
       setLoading(true);
-      let filteredItems = await getAllGalleryItems();
+      let filteredItems = [...allGalleryItems];
       
       // Apply specific event filter (uses item.event)
       if (eventFilter !== 'all') {
@@ -82,14 +86,11 @@ const GalleryManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [allGalleryItems, eventFilter, categoryFilter, approvalFilter]);
 
   useEffect(() => {
-    // Trigger reload when filters change
-    if (!loading) {
-      loadGalleryData();
-    }
-  }, [eventFilter, categoryFilter, approvalFilter]);
+    applyFilters();
+  }, [applyFilters]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -103,9 +104,8 @@ const GalleryManagement = () => {
       const fetchSearchResults = async () => {
         try {
           setLoading(true);
-          // In a real app, searchGalleryItems would ideally hit a search index (e.g., Algolia)
-          // For now, it fetches all and filters, which is inefficient at scale.
-          const allItems = await getAllGalleryItems();
+          // For now, we filter the in-memory list from the subscription
+          const allItems = allGalleryItems;
           const lowerCaseQuery = searchQuery.toLowerCase();
           const results = allItems.filter(item => 
             item.title.toLowerCase().includes(lowerCaseQuery) ||
@@ -123,16 +123,15 @@ const GalleryManagement = () => {
       fetchSearchResults();
     } else if (!loading) {
       // Reload data if search query is cleared
-      loadGalleryData();
+      applyFilters();
     }
-  }, [searchQuery]); // Rerun search when query changes
+  }, [searchQuery, allGalleryItems, applyFilters, loading]); // Rerun search when query changes or base data updates
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this gallery item?')) {
       try {
         setLoading(true);
         await deleteGalleryItem(id);
-        await loadGalleryData(); // Refresh list after delete
       } catch (error) {
         console.error('Error deleting gallery item:', error);
         alert('Failed to delete item. Please try again.'); // User feedback
@@ -146,7 +145,6 @@ const GalleryManagement = () => {
     try {
       setLoading(true);
       await approveGalleryItem(id, approve);
-      await loadGalleryData(); // Refresh list after approval change
     } catch (error) {
       console.error('Error updating gallery item approval status:', error);
       alert('Failed to update approval status. Please try again.'); // User feedback

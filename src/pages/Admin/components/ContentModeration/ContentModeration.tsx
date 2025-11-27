@@ -6,13 +6,13 @@ import {
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import AdminLayout from '../../layout/AdminLayout';
 import { 
-  getAllPosts, 
+  subscribeToPendingPosts,
   moderatePost,
   deletePost,
   type Post 
 } from '../../../../services/firebase/postService';
 import { 
-  getAllJobs, 
+  subscribeToPendingJobs,
   approveJob,
   deleteJob,
   Job 
@@ -46,39 +46,28 @@ const ContentModeration = () => {
     return items;
   }, [filter]);
 
-  const loadPosts = useCallback(async () => {
-    const allPosts = await getAllPosts();
-    const filtered = filterByStatus(allPosts);
-    setPosts(filtered);
-  }, [filterByStatus]);
-
-  const loadJobs = useCallback(async () => {
-    const allJobs = await getAllJobs();
-    const filtered = filterByStatus(allJobs);
-    setJobs(filtered);
-  }, [filterByStatus]);
-
-  const loadContent = useCallback(async () => {
-    setLoading(true);
-    try {
-      switch (activeTab) {
-        case 'posts':
-          await loadPosts();
-          break;
-        case 'jobs':
-          await loadJobs();
-          break;
-      }
-    } catch (error) {
-      console.error('Error loading content:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [activeTab, loadPosts, loadJobs]);
-
+  // Real-time subscriptions for posts and jobs
   useEffect(() => {
-    loadContent();
-  }, [loadContent]);
+    setLoading(true);
+
+    const unsubscribePosts = subscribeToPendingPosts((pendingPosts) => {
+      // Apply current filter to incoming posts
+      const filtered = filterByStatus(pendingPosts);
+      setPosts(filtered);
+      setLoading(false);
+    });
+
+    const unsubscribeJobs = subscribeToPendingJobs((pendingJobs) => {
+      const filtered = filterByStatus(pendingJobs);
+      setJobs(filtered);
+      setLoading(false);
+    });
+
+    return () => {
+      unsubscribePosts();
+      unsubscribeJobs();
+    };
+  }, [filterByStatus]);
 
   const handleApprove = async (id: string, type: ContentTab) => {
     if (!adminUser) return;
@@ -93,7 +82,6 @@ const ContentModeration = () => {
           await approveJob(id, true, adminUser.name);
           break;
       }
-      await loadContent();
     } catch (error) {
       console.error('Error approving content:', error);
       alert('Failed to approve content. Please try again.');
@@ -123,7 +111,6 @@ const confirmReject = async () => {
     setShowRejectModal(false);
     setRejectionReason('');
     setSelectedItem(null);
-    await loadContent();
   } catch (error) {
     console.error('Error rejecting content:', error);
     alert('Failed to reject content. Please try again.');
@@ -147,7 +134,6 @@ const confirmReject = async () => {
           await deleteJob(id);
           break;
       }
-      await loadContent();
     } catch (error) {
       console.error('Error deleting content:', error);
       alert('Failed to delete content. Please try again.');
@@ -259,12 +245,14 @@ const confirmReject = async () => {
             <XCircle size={16} /> Unapprove
           </button>
         )}
-        <button 
-          className="moderation-btn delete"
-          onClick={() => handleDelete(post.id, 'posts')}
-        >
-          <Trash size={16} /> Delete
-        </button>
+        {filter !== 'pending' && (
+          <button 
+            className="moderation-btn delete"
+            onClick={() => handleDelete(post.id, 'posts')}
+          >
+            <Trash size={16} /> Delete
+          </button>
+        )}
       </div>
     </div>
   );
@@ -329,12 +317,14 @@ const confirmReject = async () => {
             <XCircle size={16} /> Unapprove
           </button>
         )}
-        <button 
-          className="moderation-btn delete"
-          onClick={() => handleDelete(job.id, 'jobs')}
-        >
-          <Trash size={16} /> Delete
-        </button>
+        {filter !== 'pending' && (
+          <button 
+            className="moderation-btn delete"
+            onClick={() => handleDelete(job.id, 'jobs')}
+          >
+            <Trash size={16} /> Delete
+          </button>
+        )}
       </div>
     </div>
   );

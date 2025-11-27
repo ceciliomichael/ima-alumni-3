@@ -3,49 +3,48 @@ import { ArrowRight, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../../firebase/config';
-import { Donation } from '../../../../types';
-import { getCurrentDisplayGoal } from '../../../../services/firebase/donationGoalService';
+import { Donation, DonationGoal } from '../../../../types';
+import { getActiveGoalByType } from '../../../../services/firebase/donationGoalService';
 import './DonationProgressCard.css';
 
-const DEFAULT_GOAL_AMOUNT = 1000000; // Default fallback: ₱1,000,000
-
 const DonationProgressCard = () => {
-  const [totalRaised, setTotalRaised] = useState(0);
   const [loading, setLoading] = useState(true);
   const [donationCount, setDonationCount] = useState(0);
-  const [goalAmount, setGoalAmount] = useState(DEFAULT_GOAL_AMOUNT);
-  const [goalLabel, setGoalLabel] = useState('goal');
+  
+  // Monthly goal state
+  const [monthlyGoal, setMonthlyGoal] = useState<DonationGoal | null>(null);
+  const [monthlyRaised, setMonthlyRaised] = useState(0);
+  
+  // Yearly goal state
+  const [yearlyGoal, setYearlyGoal] = useState<DonationGoal | null>(null);
+  const [yearlyRaised, setYearlyRaised] = useState(0);
 
-  // Fetch the active donation goal
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
+
+  // Fetch active monthly and yearly goals
   useEffect(() => {
-    const fetchGoal = async () => {
+    const fetchGoals = async () => {
       try {
-        const activeGoal = await getCurrentDisplayGoal();
-        if (activeGoal) {
-          setGoalAmount(activeGoal.amount);
-          // Set label based on goal type
-          if (activeGoal.goalType === 'monthly') {
-            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const monthLabel = monthNames[(activeGoal.month || 1) - 1];
-            setGoalLabel(`${monthLabel} ${activeGoal.year} goal`);
-          } else {
-            setGoalLabel(`${activeGoal.year} goal`);
-          }
-        }
+        const [monthly, yearly] = await Promise.all([
+          getActiveGoalByType('monthly'),
+          getActiveGoalByType('yearly')
+        ]);
+        setMonthlyGoal(monthly);
+        setYearlyGoal(yearly);
       } catch (error) {
-        console.error('Error fetching donation goal:', error);
-        // Keep default values on error
+        console.error('Error fetching donation goals:', error);
       }
     };
 
-    fetchGoal();
+    fetchGoals();
   }, []);
 
-  // Fetch donations
+  // Fetch donations and calculate monthly/yearly totals
   useEffect(() => {
     setLoading(true);
     
-    // Set up real-time listener for public donations (no orderBy to avoid composite index)
     const donationsRef = collection(db, 'donations');
     const q = query(
       donationsRef,
@@ -59,16 +58,32 @@ const DonationProgressCard = () => {
           ...doc.data()
         })) as Donation[];
         
-        // Calculate total raised (assuming all donations are in PHP)
-        const total = donations.reduce((acc, donation) => {
-          return acc + donation.amount;
+        // Calculate monthly raised (donations in current month)
+        const monthlyTotal = donations.reduce((acc, donation) => {
+          const donationDate = new Date(donation.donationDate);
+          if (donationDate.getFullYear() === currentYear && 
+              donationDate.getMonth() + 1 === currentMonth) {
+            return acc + donation.amount;
+          }
+          return acc;
         }, 0);
         
-        setTotalRaised(total);
+        // Calculate yearly raised (donations in current year)
+        const yearlyTotal = donations.reduce((acc, donation) => {
+          const donationDate = new Date(donation.donationDate);
+          if (donationDate.getFullYear() === currentYear) {
+            return acc + donation.amount;
+          }
+          return acc;
+        }, 0);
+        
+        setMonthlyRaised(monthlyTotal);
+        setYearlyRaised(yearlyTotal);
         setDonationCount(donations.length);
       } catch (error) {
         console.error('Error processing donations:', error);
-        setTotalRaised(0);
+        setMonthlyRaised(0);
+        setYearlyRaised(0);
         setDonationCount(0);
       } finally {
         setLoading(false);
@@ -79,10 +94,17 @@ const DonationProgressCard = () => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [currentYear, currentMonth]);
 
-  // Calculate progress percentage
-  const progressPercentage = goalAmount > 0 ? Math.min((totalRaised / goalAmount) * 100, 100) : 0;
+  // Calculate progress percentages
+  const monthlyPercentage = monthlyGoal && monthlyGoal.amount > 0 
+    ? Math.min((monthlyRaised / monthlyGoal.amount) * 100, 100) 
+    : 0;
+  const yearlyPercentage = yearlyGoal && yearlyGoal.amount > 0 
+    ? Math.min((yearlyRaised / yearlyGoal.amount) * 100, 100) 
+    : 0;
+
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -121,27 +143,76 @@ const DonationProgressCard = () => {
           </div>
         ) : (
           <>
-            <div className="donation-amounts">
-              <div className="amount-raised">
-                <span className="amount-value">{formatLargeNumber(totalRaised)}</span>
-                <span className="amount-label">raised</span>
+            {/* Monthly Goal Section */}
+            {monthlyGoal && (
+              <div className="donation-goal-section">
+                <div className="goal-header">
+                  <span className="goal-type-label">{monthNames[(monthlyGoal.month || 1) - 1]} {monthlyGoal.year} Goal</span>
+                </div>
+                <div className="donation-amounts">
+                  <div className="amount-raised">
+                    <span className="amount-value">{formatLargeNumber(monthlyRaised)}</span>
+                    <span className="amount-label">raised</span>
+                  </div>
+                  <div className="amount-goal">
+                    <span className="goal-text">of {formatLargeNumber(monthlyGoal.amount)}</span>
+                  </div>
+                </div>
+                <div className="progress-section">
+                  <div className="progress-bar">
+                    <div 
+                      className="progress-fill monthly" 
+                      style={{ width: `${monthlyPercentage}%` }}
+                    ></div>
+                  </div>
+                  <div className="progress-stats">
+                    <span className="progress-percentage">{monthlyPercentage.toFixed(1)}%</span>
+                  </div>
+                </div>
               </div>
-              <div className="amount-goal">
-                <span className="goal-text">of {formatLargeNumber(goalAmount)} {goalLabel}</span>
-              </div>
-            </div>
+            )}
 
-            <div className="progress-section">
-              <div className="progress-bar">
-                <div 
-                  className="progress-fill" 
-                  style={{ width: `${progressPercentage}%` }}
-                ></div>
+            {/* Yearly Goal Section */}
+            {yearlyGoal && (
+              <div className="donation-goal-section">
+                <div className="goal-header">
+                  <span className="goal-type-label">{yearlyGoal.year} Yearly Goal</span>
+                </div>
+                <div className="donation-amounts">
+                  <div className="amount-raised">
+                    <span className="amount-value">{formatLargeNumber(yearlyRaised)}</span>
+                    <span className="amount-label">raised</span>
+                  </div>
+                  <div className="amount-goal">
+                    <span className="goal-text">of {formatLargeNumber(yearlyGoal.amount)}</span>
+                  </div>
+                </div>
+                <div className="progress-section">
+                  <div className="progress-bar">
+                    <div 
+                      className="progress-fill yearly" 
+                      style={{ width: `${yearlyPercentage}%` }}
+                    ></div>
+                  </div>
+                  <div className="progress-stats">
+                    <span className="progress-percentage">{yearlyPercentage.toFixed(1)}%</span>
+                  </div>
+                </div>
               </div>
-              <div className="progress-stats">
-                <span className="progress-percentage">{progressPercentage.toFixed(1)}%</span>
-                <span className="donation-count">{donationCount} donors</span>
+            )}
+
+            {/* Show message if no goals are set */}
+            {!monthlyGoal && !yearlyGoal && (
+              <div className="donation-amounts">
+                <div className="amount-raised">
+                  <span className="amount-value">{formatLargeNumber(yearlyRaised)}</span>
+                  <span className="amount-label">raised this year</span>
+                </div>
               </div>
+            )}
+
+            <div className="progress-stats donation-total-stats">
+              <span className="donation-count">{donationCount} total donors</span>
             </div>
 
             <div className="donation-description">

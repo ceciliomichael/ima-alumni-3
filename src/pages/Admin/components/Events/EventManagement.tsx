@@ -8,6 +8,7 @@ import {
   approveEvent,
   getUpcomingEvents,
   getPastEvents,
+  getCurrentEvents,
   Event
 } from '../../../../services/firebase/eventService';
 import AdminLayout from '../../layout/AdminLayout';
@@ -16,7 +17,7 @@ import './Events.css';
 const EventManagement = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');
+  const [filter, setFilter] = useState<'all' | 'current' | 'upcoming' | 'past'>('all');
   const [approvalFilter, setApprovalFilter] = useState<'all' | 'approved' | 'pending'>('all');
   const navigate = useNavigate();
 
@@ -37,6 +38,8 @@ const EventManagement = () => {
         filteredEvents = await getUpcomingEvents();
       } else if (filter === 'past') {
         filteredEvents = await getPastEvents();
+      } else if (filter === 'current') {
+        filteredEvents = await getCurrentEvents();
       } else {
         filteredEvents = await getAllEvents();
       }
@@ -152,9 +155,10 @@ const EventManagement = () => {
           <select 
             className="admin-filter-select"
             value={filter}
-            onChange={(e) => setFilter(e.target.value as 'all' | 'upcoming' | 'past')}
+            onChange={(e) => setFilter(e.target.value as 'all' | 'current' | 'upcoming' | 'past')}
           >
             <option value="all">All Events</option>
+            <option value="current">Current Events</option>
             <option value="upcoming">Upcoming Events</option>
             <option value="past">Past Events</option>
           </select>

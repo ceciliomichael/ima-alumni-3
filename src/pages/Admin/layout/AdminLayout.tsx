@@ -4,12 +4,13 @@ import {
   Menu, X, LogOut, Settings,
   LayoutDashboard, Users, Award, Calendar,
   Image, Briefcase,
-  Info, Monitor, FileText, Shield
+  Info, FileText, Shield
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
-import { getAllJobs } from '../../../services/firebase/jobService';
-import { getAllGalleryItems } from '../../../services/firebase/galleryService';
-import { getPendingPosts } from '../../../services/firebase/postService';
+import { subscribeToPendingJobs } from '../../../services/firebase/jobService';
+import { subscribeToPendingGalleryItems } from '../../../services/firebase/galleryService';
+import { subscribeToPendingPosts } from '../../../services/firebase/postService';
+
 import './AdminLayout.css';
 
 interface AdminLayoutProps {
@@ -22,38 +23,38 @@ const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [pendingModerationCount, setPendingModerationCount] = useState(0);
   const [pendingGalleryCount, setPendingGalleryCount] = useState(0);
+
   const location = useLocation();
   const { adminUser, adminLogout } = useAdminAuth();
 
-  // Fetch pending counts for Content Moderation badge (posts + jobs)
+  // Subscribe to pending counts for Content Moderation and Gallery badges
   useEffect(() => {
-    const fetchPendingCounts = async () => {
-      try {
-        // Fetch pending jobs (not approved and not rejected)
-        const jobs = await getAllJobs();
-        const pendingJobs = jobs.filter(job => !job.isApproved && job.moderationStatus !== 'rejected');
+    let pendingPostsCountLocal = 0;
+    let pendingJobsCountLocal = 0;
 
-        // Fetch pending posts (not approved and not rejected)
-        const pendingPosts = await getPendingPosts();
-        const trulyPendingPosts = pendingPosts.filter(post => !post.isApproved && post.moderationStatus !== 'rejected');
-
-        // Combined count for Content Moderation
-        setPendingModerationCount(pendingJobs.length + trulyPendingPosts.length);
-
-        // Fetch pending gallery items
-        const galleryItems = await getAllGalleryItems();
-        const pendingGallery = galleryItems.filter(item => !item.isApproved);
-        setPendingGalleryCount(pendingGallery.length);
-      } catch (error) {
-        console.error('Error fetching pending counts:', error);
-      }
+    const updateModerationCount = () => {
+      setPendingModerationCount(pendingPostsCountLocal + pendingJobsCountLocal);
     };
 
-    fetchPendingCounts();
+    const unsubscribePosts = subscribeToPendingPosts((posts) => {
+      pendingPostsCountLocal = posts.length;
+      updateModerationCount();
+    });
 
-    // Refresh counts every 30 seconds
-    const interval = setInterval(fetchPendingCounts, 30000);
-    return () => clearInterval(interval);
+    const unsubscribeJobs = subscribeToPendingJobs((jobs) => {
+      pendingJobsCountLocal = jobs.length;
+      updateModerationCount();
+    });
+
+    const unsubscribeGallery = subscribeToPendingGalleryItems((items) => {
+      setPendingGalleryCount(items.length);
+    });
+
+    return () => {
+      unsubscribePosts();
+      unsubscribeJobs();
+      unsubscribeGallery();
+    };
   }, []);
 
   const toggleSidebar = () => {
@@ -172,15 +173,6 @@ const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
           >
             <Info className="admin-menu-icon" />
             About Us
-          </Link>
-
-          <Link 
-            to="/admin/landing-settings" 
-            className={`admin-menu-item ${location.pathname.includes('/admin/landing-settings') ? 'active' : ''}`}
-            onClick={() => setSidebarOpen(false)}
-          >
-            <Monitor className="admin-menu-icon" />
-            Landing Page
           </Link>
 
           <div className="admin-menu-title">Moderation</div>

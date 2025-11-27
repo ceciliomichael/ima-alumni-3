@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, MapPin, Clock, Search, Zap } from 'lucide-react';
+import { Calendar, MapPin, Clock, Search, Zap, Play } from 'lucide-react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 // Use the Firestore service for Event type
@@ -21,7 +21,7 @@ interface EventType {
 */
 
 const EventsPage = () => {
-  const [activeTab, setActiveTab] = useState<'all' | 'upcoming' | 'past'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'current' | 'upcoming' | 'past'>('all');
   const [isLoading, setIsLoading] = useState(true); // Start loading initially
   const [searchTerm, setSearchTerm] = useState('');
   const [allApprovedEvents, setAllApprovedEvents] = useState<EventType[]>([]); // Store all *approved* events
@@ -62,16 +62,19 @@ const EventsPage = () => {
   // Filter events based on search term AND active tab
   const filteredEvents = allApprovedEvents.filter(event => {
     const now = new Date();
-    const eventDate = new Date(event.date);
+    const start = new Date(event.date);
+    const end = new Date(event.endDate || event.date);
 
     // Tab filtering
     let tabMatch = false;
     if (activeTab === 'all') {
       tabMatch = true;
+    } else if (activeTab === 'current') {
+      tabMatch = start <= now && end >= now;
     } else if (activeTab === 'upcoming') {
-      tabMatch = eventDate >= now;
+      tabMatch = start > now;
     } else if (activeTab === 'past') {
-      tabMatch = eventDate < now;
+      tabMatch = end < now;
     }
 
     // Search term filtering
@@ -82,12 +85,16 @@ const EventsPage = () => {
 
     return tabMatch && searchMatch;
   }).sort((a, b) => { // Sort results, upcoming first, then past descending
-    const dateA = new Date(a.date).getTime();
-    const dateB = new Date(b.date).getTime();
+    const startA = new Date(a.date).getTime();
+    const startB = new Date(b.date).getTime();
+    const endA = new Date(a.endDate || a.date).getTime();
+    const endB = new Date(b.endDate || b.date).getTime();
+
     if (activeTab === 'past') {
-      return dateB - dateA; // Most recent past first
+      return endB - endA; // Most recent past first
     }
-    return dateA - dateB; // Earliest upcoming first
+
+    return startA - startB; // Earliest upcoming/current first
   });
 
   // Helper function to format date/time if needed (example)
@@ -144,13 +151,19 @@ const EventsPage = () => {
             </div>
             
             <div className="events-tabs">
-              {/* Tabs remain the same */}
               <button 
                 className={`events-tab ${activeTab === 'all' ? 'active' : ''}`}
                 onClick={() => setActiveTab('all')}
               >
                 <Zap size={16} />
                 All Events
+              </button>
+              <button 
+                className={`events-tab ${activeTab === 'current' ? 'active' : ''}`}
+                onClick={() => setActiveTab('current')}
+              >
+                <Play size={16} />
+                Current
               </button>
               <button 
                 className={`events-tab ${activeTab === 'upcoming' ? 'active' : ''}`}
@@ -171,7 +184,8 @@ const EventsPage = () => {
 
           <div className="events-section">
             <h2>
-              {activeTab === 'upcoming' ? 'Upcoming Activities & Events' : 
+              {activeTab === 'current' ? 'Current Activities & Events' :
+               activeTab === 'upcoming' ? 'Upcoming Activities & Events' : 
                activeTab === 'past' ? 'Past Activities & Events' : 
                'All Activities & Events'}
             </h2>
@@ -239,6 +253,8 @@ const EventsPage = () => {
                 <p className="empty-state-message">
                   {searchTerm ? 
                     "No approved events match your search criteria. Try a different search term." : 
+                    activeTab === 'current' ?
+                      "There are no events happening today. Check back later!" :
                     activeTab === 'upcoming' ? 
                       "There are no approved upcoming events scheduled at this time. Check back later!" :
                       activeTab === 'past' ?

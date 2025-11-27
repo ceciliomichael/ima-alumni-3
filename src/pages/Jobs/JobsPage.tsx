@@ -360,6 +360,12 @@ const JobsPage = () => {
                           <span>Deadline: {formatDate(job.deadline)}</span>
                         </div>
                       )}
+                      {job.postedDate && (
+                        <div className="job-featured-detail">
+                          <Clock size={16} />
+                          <span>Posted: {formatDate(job.postedDate)}</span>
+                        </div>
+                      )}
                     </div>
                     
                     {job.description && (

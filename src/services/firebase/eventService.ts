@@ -10,7 +10,15 @@ export interface Event {
   title: string;
   description: string;
   location: string;
+  /**
+   * Start date/time of the event, stored as ISO string.
+   */
   date: string;
+  /**
+   * Optional end date/time of the event, stored as ISO string.
+   * When not provided, the event is treated as ending at its start time.
+   */
+  endDate?: string;
   isApproved: boolean;
   createdBy: string;
   coverImage?: string;
@@ -161,11 +169,15 @@ export const getUpcomingEvents = async (): Promise<Event[]> => {
   try {
     const events = await getAllEvents();
     const now = new Date();
-    
-    return events.filter(event => {
-      const eventDate = new Date(event.date);
-      return eventDate >= now;
-    }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    return events
+      .filter((event) => {
+        const start = new Date(event.date);
+        return start > now;
+      })
+      .sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
   } catch (error) {
     console.error('Error getting upcoming events:', error);
     return [];
@@ -177,13 +189,40 @@ export const getPastEvents = async (): Promise<Event[]> => {
   try {
     const events = await getAllEvents();
     const now = new Date();
-    
-    return events.filter(event => {
-      const eventDate = new Date(event.date);
-      return eventDate < now;
-    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    return events
+      .filter((event) => {
+        const end = new Date(event.endDate || event.date);
+        return end < now;
+      })
+      .sort((a, b) => {
+        const endA = new Date(a.endDate || a.date).getTime();
+        const endB = new Date(b.endDate || b.date).getTime();
+        return endB - endA;
+      });
   } catch (error) {
     console.error('Error getting past events:', error);
+    return [];
+  }
+};
+
+// Get current events (events happening today, based on local date)
+export const getCurrentEvents = async (): Promise<Event[]> => {
+  try {
+    const events = await getAllEvents();
+    const now = new Date();
+
+    return events
+      .filter((event) => {
+        const start = new Date(event.date);
+        const end = new Date(event.endDate || event.date);
+        return start <= now && end >= now;
+      })
+      .sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+  } catch (error) {
+    console.error('Error getting current events:', error);
     return [];
   }
 };
@@ -290,8 +329,21 @@ export const getEventsStatistics = async () => {
     
     // Get upcoming vs past
     const now = new Date();
-    const upcomingEvents = events.filter(event => new Date(event.date) >= now).length;
-    const pastEvents = totalEvents - upcomingEvents;
+    const upcomingEvents = events.filter((event) => {
+      const start = new Date(event.date);
+      const end = new Date(event.endDate || event.date);
+
+      if (end < now) {
+        return false;
+      }
+
+      return start > now || (start <= now && end >= now);
+    }).length;
+
+    const pastEvents = events.filter((event) => {
+      const end = new Date(event.endDate || event.date);
+      return end < now;
+    }).length;
     
     // Get approved vs pending
     const approvedEvents = events.filter(event => event.isApproved).length;

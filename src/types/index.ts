@@ -153,6 +153,7 @@ export interface AdminUser {
   password: string; // hashed in real implementation
   name: string;
   role: 'admin' | 'super_admin';
+  mustChangePassword?: boolean; // true when admin needs to set up a new password on first login
 }
 
 export interface AlumniRecord {

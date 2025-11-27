@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, ShieldAlert } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Mail, Lock, ShieldAlert, CheckCircle } from 'lucide-react';
 import { useAdminAuth } from './context/AdminAuthContext';
 import '../Auth/Auth.css';
 
@@ -13,8 +13,20 @@ const AdminLoginPage = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
   const { adminLogin, isAdminAuthenticated, isLoading } = useAdminAuth();
+
+  // Check for success message from password setup redirect
+  useEffect(() => {
+    const state = location.state as { message?: string } | null;
+    if (state?.message) {
+      setSuccessMessage(state.message);
+      // Clear the state to prevent showing message on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -53,9 +65,12 @@ const AdminLoginPage = () => {
       }));
     }
     
-    // Clear login error
+    // Clear login error and success message
     if (loginError) {
       setLoginError('');
+    }
+    if (successMessage) {
+      setSuccessMessage('');
     }
   };
 
@@ -87,7 +102,12 @@ const AdminLoginPage = () => {
       const user = await adminLogin(formData.username, formData.password, formData.rememberMe);
       
       if (user) {
-        navigate('/admin');
+        // Check if user needs to change password
+        if (user.mustChangePassword) {
+          navigate('/admin/setup-password');
+        } else {
+          navigate('/admin');
+        }
       } else {
         setLoginError('Invalid username or password. Please try again.');
       }
@@ -114,6 +134,23 @@ const AdminLoginPage = () => {
               </h1>
               <p className="auth-subtitle">Sign in to access the admin dashboard</p>
             </div>
+            
+            {successMessage && (
+              <div style={{ 
+                backgroundColor: 'oklch(0.7 0.15 145 / 0.1)', 
+                color: 'oklch(0.45 0.15 145)',
+                padding: '0.75rem 1rem',
+                borderRadius: '12px',
+                marginBottom: '1.5rem',
+                border: '2px solid oklch(0.7 0.15 145 / 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <CheckCircle size={18} />
+                {successMessage}
+              </div>
+            )}
             
             {loginError && (
               <div style={{ 
@@ -188,12 +225,7 @@ const AdminLoginPage = () => {
                 {isSubmitting ? 'Logging in...' : 'Login to Admin Panel'}
               </button>
               
-              <div className="auth-footer">
-                <p>
-                  <small>Default credentials: admin / admin123</small>
-                </p>
-              </div>
-            </form>
+              </form>
           </div>
         </div>
       </div>

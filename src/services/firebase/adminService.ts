@@ -108,6 +108,9 @@ export const deleteAdminUser = async (id: string): Promise<boolean> => {
   }
 };
 
+// Default password for legacy admin detection
+const DEFAULT_ADMIN_PASSWORD = 'admin123';
+
 // Admin login
 export const adminLogin = async (username: string, password: string): Promise<AdminUser | null> => {
   try {
@@ -120,10 +123,10 @@ export const adminLogin = async (username: string, password: string): Promise<Ad
       return null;
     }
     
-    const doc = querySnapshot.docs[0];
+    const docSnapshot = querySnapshot.docs[0];
     const adminUser = {
-      id: doc.id,
-      ...doc.data()
+      id: docSnapshot.id,
+      ...docSnapshot.data()
     } as AdminUser;
     
     // Check password
@@ -134,9 +137,23 @@ export const adminLogin = async (username: string, password: string): Promise<Ad
     
     console.log('AdminService: Login successful for username:', username);
     
-    // Return user without password (storage is handled in AdminAuthContext)
+    // Handle legacy admin users: if mustChangePassword is undefined and password is default, set flag
+    let mustChangePassword = adminUser.mustChangePassword;
+    if (mustChangePassword === undefined && adminUser.password === DEFAULT_ADMIN_PASSWORD) {
+      console.log('AdminService: Legacy admin detected with default password, setting mustChangePassword flag');
+      mustChangePassword = true;
+      // Update Firestore to persist this flag
+      const docRef = doc(db, COLLECTION_NAME, adminUser.id);
+      await updateDoc(docRef, { mustChangePassword: true });
+    }
+    
+    // Return user without actual password (storage is handled in AdminAuthContext)
     const { password: _password, ...userWithoutPassword } = adminUser;
-    const safeUser = { ...userWithoutPassword, password: '******' } as AdminUser;
+    const safeUser = { 
+      ...userWithoutPassword, 
+      password: '******',
+      mustChangePassword: mustChangePassword ?? false
+    } as AdminUser;
     
     return safeUser;
   } catch (error) {
@@ -240,17 +257,57 @@ export const initializeAdminUser = async (): Promise<void> => {
       console.log('AdminService: No admin users found, creating default admin');
       const defaultAdmin: Omit<AdminUser, 'id'> = {
         username: 'admin',
-        password: 'admin123', // In a real app, this would be hashed
+        password: DEFAULT_ADMIN_PASSWORD,
         name: 'Admin User',
-        role: 'admin'
+        role: 'admin',
+        mustChangePassword: true // Force password change on first login
       };
       
       await addAdminUser(defaultAdmin);
-      console.log('AdminService: Default admin user created successfully');
+      console.log('AdminService: Default admin user created successfully with mustChangePassword flag');
     } else {
       console.log('AdminService: Admin users already exist, no initialization needed');
     }
   } catch (error) {
     console.error('AdminService: Error initializing admin user:', error);
+  }
+};
+
+// Update admin password and clear mustChangePassword flag
+export const updateAdminPassword = async (adminId: string, newPassword: string): Promise<boolean> => {
+  try {
+    console.log('AdminService: Updating password for admin:', adminId);
+    const docRef = doc(db, COLLECTION_NAME, adminId);
+    await updateDoc(docRef, { 
+      password: newPassword,
+      mustChangePassword: false 
+    });
+    console.log('AdminService: Password updated successfully');
+    return true;
+  } catch (error) {
+    console.error('AdminService: Error updating admin password:', error);
+    return false;
+  }
+};
+
+// Verify current password for an admin user
+export const verifyAdminPassword = async (adminId: string, currentPassword: string): Promise<boolean> => {
+  try {
+    console.log('AdminService: Verifying password for admin:', adminId);
+    const docRef = doc(db, COLLECTION_NAME, adminId);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) {
+      console.log('AdminService: Admin user not found');
+      return false;
+    }
+    
+    const adminUser = docSnap.data() as AdminUser;
+    const isValid = adminUser.password === currentPassword;
+    console.log('AdminService: Password verification result:', isValid);
+    return isValid;
+  } catch (error) {
+    console.error('AdminService: Error verifying admin password:', error);
+    return false;
   }
 };

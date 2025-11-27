@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Target, Calendar, Save, Check, Trash2, TrendingUp, Award } from 'lucide-react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../../../../firebase/config';
+import { Target, Calendar, Save, Trash2, TrendingUp, Check } from 'lucide-react';
 import { 
   getAllGoals, 
   saveGoal, 
-  setActiveGoal, 
+  toggleGoalActive, 
   deleteGoal 
 } from '../../../../services/firebase/donationGoalService';
 import { DonationGoal } from '../../../../types';
@@ -29,7 +27,6 @@ const DonationGoalSettings = () => {
   const [goals, setGoals] = useState<DonationGoal[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [totalRaised, setTotalRaised] = useState(0);
   
   // Form state
   const [goalType, setGoalType] = useState<'monthly' | 'yearly'>('monthly');
@@ -43,23 +40,7 @@ const DonationGoalSettings = () => {
 
   useEffect(() => {
     loadGoals();
-    loadTotalRaised();
   }, []);
-
-  const loadTotalRaised = async () => {
-    try {
-      const donationsRef = collection(db, 'donations');
-      const q = query(donationsRef, where('isPublic', '==', true));
-      const snapshot = await getDocs(q);
-      const total = snapshot.docs.reduce((acc, doc) => {
-        const data = doc.data();
-        return acc + (data.amount || 0);
-      }, 0);
-      setTotalRaised(total);
-    } catch (error) {
-      console.error('Error loading total raised:', error);
-    }
-  };
 
   const loadGoals = async () => {
     try {
@@ -101,14 +82,14 @@ const DonationGoalSettings = () => {
     }
   };
 
-  const handleSetActive = async (goalId: string) => {
+  const handleToggleActive = async (goalId: string, currentlyActive: boolean) => {
     try {
       setSaving(true);
-      await setActiveGoal(goalId);
+      await toggleGoalActive(goalId, !currentlyActive);
       await loadGoals();
     } catch (error) {
-      console.error('Error setting active goal:', error);
-      alert('Failed to set active goal. Please try again.');
+      console.error('Error toggling goal active state:', error);
+      alert('Failed to update goal. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -151,16 +132,16 @@ const DonationGoalSettings = () => {
     return `Year ${goal.year}`;
   };
 
-  const getGoalProgress = (goal: DonationGoal) => {
-    if (!goal.isActive) return null;
-    const percentage = goal.amount > 0 ? Math.min((totalRaised / goal.amount) * 100, 100) : 0;
-    const isCompleted = totalRaised >= goal.amount;
-    return { percentage, isCompleted, raised: totalRaised };
-  };
-
-  // Find active goal for header display
-  const activeGoal = goals.find(g => g.isActive);
-  const activeProgress = activeGoal ? getGoalProgress(activeGoal) : null;
+  // Separate goals by type
+  const monthlyGoals = goals.filter(g => g.goalType === 'monthly').sort((a, b) => {
+    if (a.year !== b.year) return b.year - a.year;
+    return (b.month || 0) - (a.month || 0);
+  });
+  const yearlyGoals = goals.filter(g => g.goalType === 'yearly').sort((a, b) => b.year - a.year);
+  
+  // Find active goals by type
+  const activeMonthlyGoal = monthlyGoals.find(g => g.isActive);
+  const activeYearlyGoal = yearlyGoals.find(g => g.isActive);
 
   return (
     <div className="donation-goal-settings">
@@ -174,26 +155,28 @@ const DonationGoalSettings = () => {
             <p className="goal-settings-subtitle">Set monthly or yearly fundraising targets</p>
           </div>
         </div>
-        {activeGoal && activeProgress && (
-          <div className="goal-header-stats">
-            <div className="goal-stat">
+        <div className="goal-header-stats">
+          {activeMonthlyGoal && (
+            <div className="goal-stat goal-stat-monthly">
+              <Calendar size={16} />
+              <span className="goal-stat-value">{formatCurrency(activeMonthlyGoal.amount)}</span>
+              <span className="goal-stat-label">monthly</span>
+            </div>
+          )}
+          {activeYearlyGoal && (
+            <div className="goal-stat goal-stat-yearly">
               <TrendingUp size={16} />
-              <span className="goal-stat-value">{formatCurrency(activeProgress.raised)}</span>
-              <span className="goal-stat-label">raised</span>
+              <span className="goal-stat-value">{formatCurrency(activeYearlyGoal.amount)}</span>
+              <span className="goal-stat-label">yearly</span>
             </div>
-            <div className="goal-stat">
+          )}
+          {!activeMonthlyGoal && !activeYearlyGoal && (
+            <div className="goal-stat goal-stat-none">
               <Target size={16} />
-              <span className="goal-stat-value">{formatCurrency(activeGoal.amount)}</span>
-              <span className="goal-stat-label">target</span>
+              <span className="goal-stat-label">No active goals</span>
             </div>
-            {activeProgress.isCompleted && (
-              <div className="goal-completed-badge">
-                <Award size={14} />
-                Goal Reached!
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <div className="goal-settings-content">
@@ -279,69 +262,114 @@ const DonationGoalSettings = () => {
           </button>
         </div>
 
-        {/* Existing Goals List */}
+        {/* Existing Goals List - Separated by Type */}
         <div className="goal-list-section">
-          <h4 className="goal-form-subtitle">Existing Goals</h4>
+          <h4 className="goal-form-subtitle">Manage Goals</h4>
+          <p className="goal-list-description">
+            Check the box to set a goal as active. You can have one active monthly goal and one active yearly goal at the same time.
+          </p>
           
           {loading ? (
             <div className="goal-loading">Loading goals...</div>
           ) : goals.length === 0 ? (
             <div className="goal-empty">No donation goals set yet.</div>
           ) : (
-            <div className="goal-list">
-              {goals.map(goal => (
-                <div 
-                  key={goal.id} 
-                  className={`goal-item ${goal.isActive ? 'goal-item-active' : ''}`}
-                >
-                  <div className="goal-item-info">
-                    <span className={`goal-badge ${goal.goalType === 'monthly' ? 'goal-badge-monthly' : 'goal-badge-yearly'}`}>
-                      {goal.goalType === 'monthly' ? 'Monthly' : 'Yearly'}
-                    </span>
-                    <span className="goal-period">{formatGoalPeriod(goal)}</span>
-                    <span className="goal-amount">{formatCurrency(goal.amount)}</span>
-                    {goal.isActive && (
-                      <span className="goal-active-badge">
-                        <Check size={12} />
-                        Active
-                      </span>
-                    )}
-                    {goal.isActive && getGoalProgress(goal) && (
-                      <>
-                        <span className="goal-progress-text">
-                          {getGoalProgress(goal)?.percentage.toFixed(0)}% complete
-                        </span>
-                        {getGoalProgress(goal)?.isCompleted && (
-                          <span className="goal-done-badge">
-                            <Award size={12} />
-                            Done
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </div>
-                  <div className="goal-item-actions">
-                    {!goal.isActive && (
-                      <button
-                        className="goal-action-btn goal-action-activate"
-                        onClick={() => handleSetActive(goal.id)}
-                        disabled={saving}
-                        title="Set as Active"
-                      >
-                        <Check size={14} />
-                      </button>
-                    )}
-                    <button
-                      className="goal-action-btn goal-action-delete"
-                      onClick={() => handleDeleteGoal(goal.id)}
-                      disabled={saving}
-                      title="Delete"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+            <div className="goal-sections">
+              {/* Monthly Goals Section */}
+              <div className="goal-type-section">
+                <div className="goal-type-header">
+                  <Calendar size={18} />
+                  <span>Monthly Goals</span>
+                  {activeMonthlyGoal && (
+                    <span className="goal-type-active-indicator">1 Active</span>
+                  )}
                 </div>
-              ))}
+                {monthlyGoals.length === 0 ? (
+                  <div className="goal-type-empty">No monthly goals set</div>
+                ) : (
+                  <div className="goal-list">
+                    {monthlyGoals.map(goal => (
+                      <div 
+                        key={goal.id} 
+                        className={`goal-item ${goal.isActive ? 'goal-item-active' : ''}`}
+                      >
+                        <label className="goal-checkbox-wrapper">
+                          <input
+                            type="checkbox"
+                            checked={goal.isActive}
+                            onChange={() => handleToggleActive(goal.id, goal.isActive)}
+                            disabled={saving}
+                            className="goal-checkbox"
+                          />
+                          <span className="goal-checkbox-custom">
+                            {goal.isActive && <Check size={12} />}
+                          </span>
+                        </label>
+                        <div className="goal-item-info">
+                          <span className="goal-period">{formatGoalPeriod(goal)}</span>
+                          <span className="goal-amount">{formatCurrency(goal.amount)}</span>
+                        </div>
+                        <button
+                          className="goal-action-btn goal-action-delete"
+                          onClick={() => handleDeleteGoal(goal.id)}
+                          disabled={saving}
+                          title="Delete"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Yearly Goals Section */}
+              <div className="goal-type-section">
+                <div className="goal-type-header">
+                  <TrendingUp size={18} />
+                  <span>Yearly Goals</span>
+                  {activeYearlyGoal && (
+                    <span className="goal-type-active-indicator yearly">1 Active</span>
+                  )}
+                </div>
+                {yearlyGoals.length === 0 ? (
+                  <div className="goal-type-empty">No yearly goals set</div>
+                ) : (
+                  <div className="goal-list">
+                    {yearlyGoals.map(goal => (
+                      <div 
+                        key={goal.id} 
+                        className={`goal-item ${goal.isActive ? 'goal-item-active' : ''}`}
+                      >
+                        <label className="goal-checkbox-wrapper">
+                          <input
+                            type="checkbox"
+                            checked={goal.isActive}
+                            onChange={() => handleToggleActive(goal.id, goal.isActive)}
+                            disabled={saving}
+                            className="goal-checkbox"
+                          />
+                          <span className="goal-checkbox-custom yearly">
+                            {goal.isActive && <Check size={12} />}
+                          </span>
+                        </label>
+                        <div className="goal-item-info">
+                          <span className="goal-period">{formatGoalPeriod(goal)}</span>
+                          <span className="goal-amount">{formatCurrency(goal.amount)}</span>
+                        </div>
+                        <button
+                          className="goal-action-btn goal-action-delete"
+                          onClick={() => handleDeleteGoal(goal.id)}
+                          disabled={saving}
+                          title="Delete"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

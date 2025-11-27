@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, addDoc, updateDoc, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, addDoc, updateDoc, query, where, UpdateData, DocumentData } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { addAlumni, getAlumniByUserId, updateAlumni, getAllAlumni } from './alumniService';
 import { cleanAlumniId } from '../../utils/alumniIdUtils';
@@ -212,6 +212,43 @@ export const logoutUser = () => {
   localStorage.removeItem(CURRENT_USER_KEY);
 };
 
+// Change user password
+export const changePassword = async (
+  userId: string, 
+  oldPassword: string, 
+  newPassword: string
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, userId);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) {
+      return { success: false, error: 'User not found' };
+    }
+    
+    const userData = docSnap.data() as Omit<User, 'id'>;
+    
+    // Verify old password
+    if (userData.password !== oldPassword) {
+      return { success: false, error: 'Current password is incorrect' };
+    }
+    
+    // Update password
+    await updateDoc(docRef, { password: newPassword });
+    
+    // Update current user in localStorage if this is the logged-in user
+    const currentUser = getCurrentUser();
+    if (currentUser && currentUser.id === userId) {
+      setCurrentUser({ ...currentUser, password: newPassword } as User);
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error changing password:', error);
+    return { success: false, error: 'Failed to change password. Please try again.' };
+  }
+};
+
 // Get current logged in user
 export const getCurrentUser = (): User | null => {
   const currentUser = localStorage.getItem(CURRENT_USER_KEY);
@@ -249,7 +286,7 @@ export const updateUser = async (id: string, updatedData: Partial<User>): Promis
     }
     
     // For profileImage and coverPhoto, only include them if they have values
-    const finalUpdateData = { ...cleanedUpdatedData } as any;
+    const finalUpdateData: Record<string, unknown> = { ...cleanedUpdatedData };
     
     // Only include profileImage if it's being explicitly updated with a value
     if (updatedData.profileImage !== undefined) {
@@ -263,7 +300,7 @@ export const updateUser = async (id: string, updatedData: Partial<User>): Promis
     
     console.log('Final update data to be sent to Firestore:', finalUpdateData);
     
-    await updateDoc(docRef, finalUpdateData);
+    await updateDoc(docRef, finalUpdateData as UpdateData<DocumentData>);
     
     // Get the updated document
     const updatedDocSnap = await getDoc(docRef);

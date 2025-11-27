@@ -35,6 +35,7 @@ const EventForm = () => {
     description: '',
     location: '',
     date: formatToLocalDatetime(new Date()),
+    endDate: '',
     isApproved: false,
     createdBy: 'admin',
     coverImage: ''
@@ -67,7 +68,13 @@ const EventForm = () => {
             // Exclude id and createdAt from the form
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { id, createdAt, ...restData } = eventData;
-            setFormData(restData);
+
+            setFormData({
+              ...restData,
+              // Normalize date and endDate into local datetime strings for inputs
+              date: formatDateForInput(restData.date),
+              endDate: restData.endDate ? formatDateForInput(restData.endDate) : ''
+            });
             
             // If there's a cover image, set it as the preview
             if (restData.coverImage) {
@@ -158,9 +165,20 @@ const EventForm = () => {
       newErrors.location = locationValidation.error || 'Event location is required';
     }
     
-    // Validate date
+    // Validate start date/time
     if (!formData.date) {
-      newErrors.date = 'Event date and time is required';
+      newErrors.date = 'Event start date and time is required';
+    }
+
+    // Validate end date/time
+    if (!formData.endDate) {
+      newErrors.endDate = 'Event end date and time is required';
+    } else if (formData.date) {
+      const start = new Date(formData.date);
+      const end = new Date(formData.endDate);
+      if (end <= start) {
+        newErrors.endDate = 'End date and time must be after the start date and time';
+      }
     }
     
     setErrors(newErrors);
@@ -178,7 +196,12 @@ const EventForm = () => {
     
     try {
       // Process the uploaded image if any
-      const eventData = { ...formData };
+      const eventData: EventFormData = {
+        ...formData,
+        // Ensure date and endDate are stored as ISO strings
+        date: new Date(formData.date).toISOString(),
+        endDate: formData.endDate ? new Date(formData.endDate).toISOString() : undefined
+      };
       
       if (uploadFile) {
         // Resize and convert to base64 with more aggressive compression
@@ -276,7 +299,7 @@ const EventForm = () => {
               <div className="admin-form-group">
                 <label htmlFor="date" className="admin-form-label">
                   <Calendar size={16} className="admin-form-icon" />
-                  Date and Time *
+                  Start Date and Time *
                 </label>
                 <input
                   type="datetime-local"
@@ -287,6 +310,24 @@ const EventForm = () => {
                   onChange={handleChange}
                 />
                 {errors.date && <div className="admin-form-error">{errors.date}</div>}
+              </div>
+            </div>
+
+            <div className="admin-form-row admin-form-row-2">
+              <div className="admin-form-group">
+                <label htmlFor="endDate" className="admin-form-label">
+                  <Clock size={16} className="admin-form-icon" />
+                  End Date and Time *
+                </label>
+                <input
+                  type="datetime-local"
+                  id="endDate"
+                  name="endDate"
+                  className={`admin-datetime-local ${errors.endDate ? 'admin-input-error' : ''}`}
+                  value={formData.endDate ? formatDateForInput(formData.endDate) : ''}
+                  onChange={handleChange}
+                />
+                {errors.endDate && <div className="admin-form-error">{errors.endDate}</div>}
               </div>
             </div>
             
