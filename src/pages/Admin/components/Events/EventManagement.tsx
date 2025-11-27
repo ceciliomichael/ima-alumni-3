@@ -131,9 +131,20 @@ const EventManagement = () => {
     });
   };
 
-  const isUpcoming = (dateString: string) => {
-    const eventDate = new Date(dateString);
-    return eventDate >= new Date();
+  const getEventTimeStatus = (event: Event) => {
+    const now = new Date();
+    const start = new Date(event.date);
+    const end = new Date(event.endDate || event.date);
+
+    if (end < now) {
+      return 'past';
+    }
+
+    if (start <= now && end >= now) {
+      return 'current';
+    }
+
+    return 'upcoming';
   };
 
 
@@ -204,9 +215,27 @@ const EventManagement = () => {
                       <Calendar size={40} />
                     </div>
                   )}
-                  <div className={`admin-event-badge ${isUpcoming(event.date) ? 'admin-badge-success' : 'admin-badge-secondary'}`}>
-                    {isUpcoming(event.date) ? 'Upcoming' : 'Past'}
-                  </div>
+                  {(() => {
+                    const status = getEventTimeStatus(event);
+                    const label =
+                      status === 'current'
+                        ? 'Current'
+                        : status === 'upcoming'
+                        ? 'Upcoming'
+                        : 'Past';
+                    const badgeClass =
+                      status === 'current'
+                        ? 'admin-badge-current'
+                        : status === 'upcoming'
+                        ? 'admin-badge-success'
+                        : 'admin-badge-secondary';
+
+                    return (
+                      <div className={`admin-event-badge ${badgeClass}`}>
+                        {label}
+                      </div>
+                    );
+                  })()}
                   <div className={`admin-event-badge admin-event-approval-badge ${event.isApproved ? 'admin-badge-success' : 'admin-badge-warning'}`}>
                     {event.isApproved ? 'Approved' : 'Pending'}
                   </div>
