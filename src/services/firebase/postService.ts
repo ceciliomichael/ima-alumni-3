@@ -334,7 +334,7 @@ export const editPostContent = async (
       updateData.rejectionReason = null;
     }
     
-    await updateDoc(docRef, updateData);
+    await updateDoc(docRef, removeUndefinedFields(updateData));
     
     // Get the updated document
     const updatedDocSnap = await getDoc(docRef);

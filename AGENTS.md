@@ -42,29 +42,6 @@ You are not limited to coding tasks. You are a versatile AI assistant capable of
 
 </forbidden_to_use>
 
-<metadata_management>
-# AI Coding Agent System Guide
-
-## Purpose
-Guide for AI agents working on this project. Use project-metadata.md as your single source of truth for file context.
-
-## Core Rules
-1. Always read project-metadata.md before starting any task
-2. Do not update metadata during file creation or modification
-3. At the end of your session, update project-metadata.md with all new/modified files
-4. Each entry must include: Description, Purpose, Key Elements
-5. Never guess file purpose — if uncertain, pause and verify
-
-## Metadata Format
-### filename.ext
-- **Description**: One-sentence summary
-- **Purpose**: Role in the project
-- **Key Elements**: 3-5 critical components or functions
-
-## Important
-Metadata is your memory. Keep it accurate, complete, and updated only once per session.
-</metadata_management>
-
 <design_rules description="The agent should strictly adhere to these design system">
 
 # CHECK WHETHER ITS CSS OR TAILWIND CSS OR ANY LANGUAGE APPLY AS NECCESSARY
