@@ -161,6 +161,22 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .settings-container {
+    padding: 0.75rem;
+  }
+
+  .settings-section {
+    margin-bottom: 1rem;
+  }
+
+  .settings-section-header {
+    padding: 1rem;
+  }
+
+  .settings-section-title {
+    font-size: 1.1rem;
+  }
+
+  .settings-section-content {
     padding: 1rem;
   }
   
@@ -168,12 +184,60 @@
     flex-direction: column;
     align-items: stretch;
   }
+
+  .settings-clear-data-info {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .settings-clear-data-text h3 {
+    font-size: 1rem;
+  }
+
+  .settings-clear-data-text p {
+    font-size: 0.875rem;
+  }
   
   .settings-clear-data-button {
-    align-self: flex-start;
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
   }
   
   .settings-info-grid {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .settings-info-item {
+    padding: 0.75rem;
+  }
+
+  .settings-info-label {
+    font-size: 0.8125rem;
+  }
+
+  .settings-info-value {
+    font-size: 0.9375rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-container {
+    padding: 0.5rem;
+  }
+
+  .settings-section-header {
+    padding: 0.75rem;
+  }
+
+  .settings-section-content {
+    padding: 0.75rem;
+  }
+
+  .settings-clear-data-icon {
+    width: 40px;
+    height: 40px;
   }
 }

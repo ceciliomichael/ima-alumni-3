@@ -1,10 +1,11 @@
-import { Post, Comment, Reply, User } from '../../../../types';
-import { MessageCircle, MoreHorizontal, Heart, Send, CornerDownRight, Trash2 } from 'lucide-react';
+import { Post, Comment, Reply, User, CommentReaction } from '../../../../types';
+import { MessageCircle, MoreHorizontal, Heart, Send, CornerDownRight, Trash2, Clock, XCircle, Pencil } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ImagePlaceholder from '../../../../components/ImagePlaceholder/ImagePlaceholder';
 import PostModal from '../PostModal/PostModal';
 import ConfirmDialog from '../../../../components/ConfirmDialog';
+import PostForm from '../PostForm/PostForm';
 import { deletePost } from '../../../../services/firebase/postService';
 import './PostList.css';
 
@@ -17,7 +18,9 @@ interface PostListProps {
   onAddReply: (postId: string, commentId: string, reply: Reply) => void;
   onToggleCommentReaction: (postId: string, commentId: string) => void;
   onDeletePost?: (postId: string) => void;
+  onEditPost?: (postId: string, updatedPost: Post) => void;
   dateFormat?: 'relative' | 'full';
+  showModerationStatus?: boolean;
 }
 
 const PostList = ({ 
@@ -29,7 +32,9 @@ const PostList = ({
   onAddReply,
   onToggleCommentReaction,
   onDeletePost,
-  dateFormat = 'relative'
+  onEditPost,
+  dateFormat = 'relative',
+  showModerationStatus = false
 }: PostListProps) => {
   const navigate = useNavigate();
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({});
@@ -42,6 +47,9 @@ const PostList = ({
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const [selectedPostForDeletion, setSelectedPostForDeletion] = useState<string | null>(null);
+  
+  // State for editing posts
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -174,7 +182,7 @@ const PostList = ({
   };
 
   // Helper to check if a user has reacted to a comment
-  const hasUserReactedToComment = (reactions: any[], userId: string | null) => {
+  const hasUserReactedToComment = (reactions: CommentReaction[], userId: string | null) => {
     if (!userId || !reactions) return false;
     return reactions.some(reaction => reaction.userId === userId);
   };
@@ -229,6 +237,23 @@ const PostList = ({
     setSelectedPostForDeletion(null);
   };
 
+  // Post editing handlers
+  const handleEditPost = (post: Post) => {
+    setEditingPostId(post.id);
+    setActiveMenu(null);
+  };
+
+  const handleCancelEditPost = () => {
+    setEditingPostId(null);
+  };
+
+  const handleEditComplete = (updatedPost: Post) => {
+    if (onEditPost) {
+      onEditPost(updatedPost.id, updatedPost);
+    }
+    setEditingPostId(null);
+  };
+
   return (
     <div className="post-list">
       {posts.length === 0 ? (
@@ -263,7 +288,22 @@ const PostList = ({
                   >
                     {post.userName}
                   </h3>
-                  <p className="post-time">{formatDate(post.createdAt)}</p>
+                  <div className="post-meta">
+                    <p className="post-time">{formatDate(post.createdAt)}</p>
+                    {showModerationStatus && userId === post.userId && post.moderationStatus && post.moderationStatus !== 'approved' && (
+                      <span className={`moderation-badge moderation-${post.moderationStatus}`}>
+                        {post.moderationStatus === 'pending' && (
+                          <><Clock size={12} /> Pending Approval</>
+                        )}
+                        {post.moderationStatus === 'rejected' && (
+                          <><XCircle size={12} /> Rejected</>
+                        )}
+                      </span>
+                    )}
+                  </div>
+                  {showModerationStatus && userId === post.userId && post.moderationStatus === 'rejected' && post.rejectionReason && (
+                    <p className="rejection-reason">Reason: {post.rejectionReason}</p>
+                  )}
                 </div>
               </div>
               <div className="post-menu-container" ref={activeMenu === post.id ? menuRef : null}>
@@ -275,6 +315,13 @@ const PostList = ({
                 </button>
                 {activeMenu === post.id && userId === post.userId && (
                   <div className="post-menu">
+                    <button 
+                      className="post-menu-item"
+                      onClick={() => handleEditPost(post)}
+                    >
+                      <Pencil size={16} />
+                      <span>Edit</span>
+                    </button>
                     <button 
                       className="post-menu-item delete"
                       onClick={() => handleDeletePost(post.id)}
@@ -288,34 +335,47 @@ const PostList = ({
             </div>
             
             <div className="post-content">
-              <p>{post.content}</p>
-              
-              {post.feeling && (
-                <div className="post-feeling">
-                  <span className="feeling-emoji">{post.feeling.emoji}</span>
-                  <span className="feeling-text">feeling {post.feeling.text}</span>
-                </div>
-              )}
-              
-              {post.images && post.images.length > 0 ? (
-                <div className="post-images">
-                  {post.images.map((image, index) => (
-                    <img 
-                      key={index} 
-                      src={image} 
-                      alt={`${post.userName}'s post image ${index + 1}`} 
-                      onClick={() => openPostModal(post, index)}
-                      style={{ cursor: 'pointer' }}
-                    />
-                  ))}
-                </div>
-              ) : post.content.includes('image') && (
-                <ImagePlaceholder
-                  shape="rectangle"
-                  height="200px"
-                  color="#2ecc71"
-                  recommendedSize="1200x630px"
+              {editingPostId === post.id ? (
+                <PostForm
+                  user={currentUser}
+                  onPostCreated={() => {}}
+                  editMode={true}
+                  postToEdit={post}
+                  onEditComplete={handleEditComplete}
+                  onEditCancel={handleCancelEditPost}
                 />
+              ) : (
+                <>
+                  <p>{post.content}</p>
+                  
+                  {post.feeling && (
+                    <div className="post-feeling">
+                      <span className="feeling-emoji">{post.feeling.emoji}</span>
+                      <span className="feeling-text">feeling {post.feeling.text}</span>
+                    </div>
+                  )}
+                  
+                  {post.images && post.images.length > 0 ? (
+                    <div className="post-images">
+                      {post.images.map((image, index) => (
+                        <img 
+                          key={index} 
+                          src={image} 
+                          alt={`${post.userName}'s post image ${index + 1}`} 
+                          onClick={() => openPostModal(post, index)}
+                          style={{ cursor: 'pointer' }}
+                        />
+                      ))}
+                    </div>
+                  ) : post.content.includes('image') && (
+                    <ImagePlaceholder
+                      shape="rectangle"
+                      height="200px"
+                      color="#2ecc71"
+                      recommendedSize="1200x630px"
+                    />
+                  )}
+                </>
               )}
             </div>
             

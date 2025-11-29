@@ -91,6 +91,19 @@ export const exportReportSummaryToCSV = (report: DonationReport, filename: strin
           breakdown.amount.toFixed(2),
           breakdown.count.toString()
         ];
+      }),
+    [''],
+    ['Yearly Breakdown', ''],
+    ['Year', 'Amount', 'Count'],
+    ...Object.entries(report.byYear)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([year, data]) => {
+        const breakdown = data as { amount: number; count: number };
+        return [
+          year,
+          breakdown.amount.toFixed(2),
+          breakdown.count.toString()
+        ];
       })
   ];
 
@@ -140,13 +153,14 @@ export const exportReportToPDF = (report: DonationReport): void => {
         .report-header {
           width: 100%;
           border-bottom: 3px solid #0f172a;
-          padding-bottom: 16px;
-          margin-bottom: 24px;
+          padding-bottom: 12px;
+          margin-bottom: 20px;
         }
         .header-banner {
-          width: 100%;
+          max-width: 400px;
           height: auto;
           display: block;
+          margin: 0 auto;
         }
         h1 {
           color: #1e40af;
@@ -274,6 +288,31 @@ export const exportReportToPDF = (report: DonationReport): void => {
               return `
               <tr>
                 <td>${month}</td>
+                <td class="amount">₱${breakdown.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td style="text-align: center;">${breakdown.count}</td>
+              </tr>
+            `;
+            }).join('')}
+        </tbody>
+      </table>
+
+      <h2>Yearly Breakdown</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th style="text-align: right;">Amount</th>
+            <th style="text-align: center;">Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${Object.entries(report.byYear)
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .map(([year, data]) => {
+              const breakdown = data as { amount: number; count: number };
+              return `
+              <tr>
+                <td>${year}</td>
                 <td class="amount">₱${breakdown.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                 <td style="text-align: center;">${breakdown.count}</td>
               </tr>

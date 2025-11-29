@@ -148,7 +148,8 @@ export const adminLogin = async (username: string, password: string): Promise<Ad
     }
     
     // Return user without actual password (storage is handled in AdminAuthContext)
-    const { password: _password, ...userWithoutPassword } = adminUser;
+    const { password: _, ...userWithoutPassword } = adminUser;
+    void _;
     const safeUser = { 
       ...userWithoutPassword, 
       password: '******',

@@ -102,10 +102,10 @@ const HistoryManagement = ({ historyItems, onRefresh }: HistoryManagementProps) 
   return (
     <div className="history-management">
       <div className="section-header">
-        <h3>History Timeline</h3>
+        <h3>Achievements Timeline</h3>
         <button className="add-btn" onClick={handleAddHistory}>
           <Plus size={16} />
-          Add History Item
+          Add Achievement
         </button>
       </div>
 

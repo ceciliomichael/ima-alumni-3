@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { User } from '../../types';
+import { User, Post } from '../../types';
 import ProfileHeader from './components/ProfileHeader';
 import ProfileGallery from './components/ProfileGallery';
 import ProfileActivity from './components/ProfileActivity';
@@ -20,6 +20,7 @@ import {
   getCurrentUser
 } from '../../services/firebase/userService';
 import { getPostsByUserId } from '../../services/firebase/postService';
+import { getAlumniByUserId, updateAlumni } from '../../services/firebase/alumniService';
 import './styles.css';
 
 interface ProfilePageProps {
@@ -36,7 +37,7 @@ const ProfilePage = ({
   const { userId } = useParams();
   const navigate = useNavigate();
   const [profileUser, setProfileUser] = useState<User | null>(null);
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [isEditing, setIsEditing] = useState(initialEditMode);
   const [isLoading, setIsLoading] = useState(true);
   const [isFollowingUser, setIsFollowingUser] = useState(false);
@@ -140,6 +141,14 @@ const ProfilePage = ({
         if (updatedUser) {
           console.log('Profile updated successfully');
           
+          // Sync profile image to alumni record for officer carousel display
+          if (formData.profileImage) {
+            const alumniRecord = await getAlumniByUserId(profileUser.id);
+            if (alumniRecord) {
+              await updateAlumni(alumniRecord.id, { profileImage: formData.profileImage });
+            }
+          }
+          
           // Trigger localStorage event to update user data across tabs
           window.dispatchEvent(new Event('storage'));
           
@@ -181,6 +190,14 @@ const ProfilePage = ({
         
         if (updatedUser) {
           setProfileUser(updatedUser as unknown as User);
+          
+          // Sync profile image to alumni record for officer carousel display
+          if (type === 'profile') {
+            const alumniRecord = await getAlumniByUserId(profileUser.id);
+            if (alumniRecord) {
+              await updateAlumni(alumniRecord.id, { profileImage: imageData });
+            }
+          }
         }
       } catch (error) {
         console.error('Error updating image:', error);

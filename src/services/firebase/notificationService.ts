@@ -89,6 +89,47 @@ export const subscribeToNotifications = (
   });
 };
 
+// Real-time listener for user-specific notifications
+// Returns global notifications (no recipientUserId) + notifications targeted to this user
+export const subscribeToUserNotifications = (
+  userId: string,
+  callback: (notifications: Notification[]) => void
+): Unsubscribe => {
+  const notificationsRef = collection(db, NOTIFICATIONS_COLLECTION);
+  const q = query(notificationsRef, orderBy('createdAt', 'desc'));
+
+  return onSnapshot(q, (snapshot) => {
+    const allNotifications = snapshot.docs.map(d => {
+      const data = d.data();
+      const createdAt = data.createdAt as { toDate?: () => Date } | number | string | undefined;
+
+      let createdAtIso = '';
+      if (createdAt) {
+        if (typeof createdAt === 'object' && createdAt !== null && typeof createdAt.toDate === 'function') {
+          createdAtIso = createdAt.toDate().toISOString();
+        } else if (typeof createdAt === 'number') {
+          createdAtIso = new Date(createdAt).toISOString();
+        } else if (typeof createdAt === 'string') {
+          createdAtIso = createdAt;
+        }
+      }
+
+      return {
+        id: d.id,
+        ...data,
+        createdAt: createdAtIso
+      } as Notification;
+    });
+
+    // Filter: include global notifications (no recipientUserId) OR notifications for this user
+    const userNotifications = allNotifications.filter(n => 
+      !n.recipientUserId || n.recipientUserId === userId
+    );
+
+    callback(userNotifications);
+  });
+};
+
 // Add new notification
 export const addNotification = async (
   notification: Omit<Notification, 'id' | 'createdAt'>
@@ -291,7 +332,7 @@ export const deleteNotificationsBySourceId = async (sourceId: string): Promise<v
   }
 };
 
-// Mark all notifications as read
+// Mark all notifications as read (global - use markAllUserNotificationsAsRead for per-user)
 export const markAllNotificationsAsRead = async (): Promise<void> => {
   try {
     const notificationsRef = collection(db, NOTIFICATIONS_COLLECTION);
@@ -316,7 +357,43 @@ export const markAllNotificationsAsRead = async (): Promise<void> => {
   }
 };
 
-// Clear all notifications
+// Mark all notifications as read for a specific user
+// Only marks global notifications (no recipientUserId) and notifications targeted to this user
+export const markAllUserNotificationsAsRead = async (userId: string): Promise<void> => {
+  try {
+    const notificationsRef = collection(db, NOTIFICATIONS_COLLECTION);
+    const q = query(notificationsRef, where('isRead', '==', false));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      console.log('No unread notifications to mark as read');
+      return;
+    }
+
+    const batch = writeBatch(db);
+    let count = 0;
+    snapshot.docs.forEach((docSnap) => {
+      const data = docSnap.data();
+      // Only mark if global (no recipientUserId) or targeted to this user
+      if (!data.recipientUserId || data.recipientUserId === userId) {
+        batch.update(docSnap.ref, { isRead: true });
+        count++;
+      }
+    });
+
+    if (count > 0) {
+      await batch.commit();
+      console.log(`Marked ${count} notification(s) as read for user ${userId}`);
+    } else {
+      console.log('No notifications to mark as read for this user');
+    }
+  } catch (error) {
+    console.error('Error marking user notifications as read:', error);
+    throw error;
+  }
+};
+
+// Clear all notifications (global - use clearAllUserNotifications for per-user)
 export const clearAllNotifications = async (): Promise<void> => {
   try {
     const notificationsRef = collection(db, NOTIFICATIONS_COLLECTION);
@@ -336,6 +413,41 @@ export const clearAllNotifications = async (): Promise<void> => {
     console.log(`Cleared ${snapshot.size} notification(s)`);
   } catch (error) {
     console.error('Error clearing all notifications:', error);
+    throw error;
+  }
+};
+
+// Clear all notifications for a specific user
+// Only clears global notifications (no recipientUserId) and notifications targeted to this user
+export const clearAllUserNotifications = async (userId: string): Promise<void> => {
+  try {
+    const notificationsRef = collection(db, NOTIFICATIONS_COLLECTION);
+    const snapshot = await getDocs(notificationsRef);
+
+    if (snapshot.empty) {
+      console.log('No notifications to clear');
+      return;
+    }
+
+    const batch = writeBatch(db);
+    let count = 0;
+    snapshot.docs.forEach((docSnap) => {
+      const data = docSnap.data();
+      // Only clear if global (no recipientUserId) or targeted to this user
+      if (!data.recipientUserId || data.recipientUserId === userId) {
+        batch.delete(docSnap.ref);
+        count++;
+      }
+    });
+
+    if (count > 0) {
+      await batch.commit();
+      console.log(`Cleared ${count} notification(s) for user ${userId}`);
+    } else {
+      console.log('No notifications to clear for this user');
+    }
+  } catch (error) {
+    console.error('Error clearing user notifications:', error);
     throw error;
   }
 };
@@ -361,6 +473,10 @@ export const validateAndCleanupNotifications = async (): Promise<void> => {
       // Skip notifications without sourceId (system notifications, etc.)
       if (!sourceId) continue;
 
+      // Skip system/moderation notifications - these are per-user and should persist
+      // until the user reads/clears them, regardless of source item existence
+      if (type === 'system') continue;
+
       // Check if the source item still exists
       let sourceExists = false;
       try {
@@ -373,9 +489,14 @@ export const validateAndCleanupNotifications = async (): Promise<void> => {
         } else if (type === 'donation') {
           const donationDoc = await getDoc(doc(db, 'donations', sourceId));
           sourceExists = donationDoc.exists();
+        } else {
+          // For unknown types, assume source exists to avoid accidental deletion
+          sourceExists = true;
         }
       } catch (error) {
         console.error(`Error checking source for notification ${notificationDoc.id}:`, error);
+        // On error, assume source exists to avoid accidental deletion
+        sourceExists = true;
       }
 
       if (!sourceExists) {

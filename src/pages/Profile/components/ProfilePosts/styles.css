@@ -14,11 +14,23 @@
   justify-content: space-between;
 }
 
+@media (max-width: 767px) {
+  .posts-header {
+    padding: 12px 16px;
+  }
+}
+
 .posts-header h2 {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
   color: #333;
+}
+
+@media (max-width: 767px) {
+  .posts-header h2 {
+    font-size: 16px;
+  }
 }
 
 .posts-content {
@@ -91,6 +103,13 @@
   gap: 1.25rem;
 }
 
+@media (max-width: 767px) {
+  .posts-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
 .post-card {
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-md);
@@ -112,6 +131,12 @@
   flex-grow: 1;
 }
 
+@media (max-width: 767px) {
+  .post-content {
+    padding: 1rem;
+  }
+}
+
 .post-content p {
   margin: 0;
   color: var(--text-primary);
@@ -122,6 +147,14 @@
   -webkit-box-orient: vertical;
 }
 
+@media (max-width: 767px) {
+  .post-content p {
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-line-clamp: 4;
+  }
+}
+
 .post-footer {
   border-top: 1px solid var(--gray-100);
   padding: 0.75rem 1.25rem;
@@ -129,6 +162,12 @@
   align-items: center;
   justify-content: space-between;
   background-color: var(--gray-50);
+}
+
+@media (max-width: 767px) {
+  .post-footer {
+    padding: 0.625rem 1rem;
+  }
 }
 
 .post-date {
@@ -191,12 +230,20 @@
   color: var(--primary-color);
 }
 
-@media (max-width: 768px) {
-  .posts-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 767px) {
+  .profile-posts {
+    margin-bottom: 16px;
   }
   
   .post-card {
     max-width: none;
   }
-} 
+  
+  .post-date {
+    font-size: 0.75rem;
+  }
+  
+  .post-metric {
+    font-size: 0.75rem;
+  }
+}

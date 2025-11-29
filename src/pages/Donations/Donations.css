@@ -341,8 +341,8 @@
 .donation-featured-card {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-  padding: 2.5rem;
+  background-color: #f8fafc;
+  padding: 2rem 4rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -499,6 +499,10 @@
   
   .donations-skeleton-grid {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+  
+  .donation-featured-card {
+    padding: 1.5rem 3rem; /* Reduced but still safe from arrows on mobile */
   }
 }
 

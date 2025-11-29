@@ -42,6 +42,22 @@ export const getAllJobs = async (): Promise<Job[]> => {
   }
 };
 
+export const subscribeToJobs = (
+  callback: (jobs: Job[]) => void
+): Unsubscribe => {
+  const jobsRef = collection(db, COLLECTION_NAME);
+  const q = query(jobsRef);
+
+  return onSnapshot(q, (snapshot) => {
+    const allJobs = snapshot.docs.map(docSnap => ({
+      id: docSnap.id,
+      ...docSnap.data()
+    } as Job));
+
+    callback(allJobs);
+  });
+};
+
 export const subscribeToPendingJobs = (
   callback: (jobs: Job[]) => void
 ): Unsubscribe => {
@@ -282,7 +298,7 @@ export const getJobStatistics = async () => {
   try {
     const jobs = await getAllJobs();
     
-    // Get total count
+    // Get total count (all jobs regardless of moderation)
     const totalJobs = jobs.length;
     
     // Get count by type
@@ -291,9 +307,9 @@ export const getJobStatistics = async () => {
     const contractJobs = jobs.filter(job => job.jobType === 'contract').length;
     const internshipJobs = jobs.filter(job => job.jobType === 'internship').length;
     
-    // Get approved vs pending
-    const approvedJobs = jobs.filter(job => job.isApproved).length;
-    const pendingJobs = totalJobs - approvedJobs;
+    // Get approved vs pending (using explicit moderationStatus where available)
+    const approvedJobs = jobs.filter(job => job.isApproved || job.moderationStatus === 'approved').length;
+    const pendingJobs = jobs.filter(job => !job.isApproved && job.moderationStatus !== 'rejected').length;
     
     // Get active vs expired jobs
     const now = new Date();

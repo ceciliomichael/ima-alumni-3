@@ -83,6 +83,13 @@
   .upload-drop-area {
     padding: 1.5rem 1rem;
   }
+  
+  /* Gallery actions are now styled in gallery-mobile.css */
+  
+  /* Hide thumbnails on mobile */
+  .gallery-content .thumbnails-container {
+    display: none;
+  }
 }
 
 /* Form styles for upload dialog */

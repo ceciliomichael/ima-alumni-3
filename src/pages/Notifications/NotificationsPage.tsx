@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Bell, Calendar, Briefcase, AtSign, Check, Trash2, Heart, X } from 'lucide-react';
+import { Bell, Calendar, Briefcase, AtSign, Check, Trash2, Heart, X, ChevronDown } from 'lucide-react';
 import './Notifications.css';
-import { subscribeToNotifications, markNotificationAsRead, deleteNotification as deleteNotificationFromDB, markAllNotificationsAsRead, clearAllNotifications, validateAndCleanupNotifications } from '../../services/firebase/notificationService';
+import { subscribeToUserNotifications, markNotificationAsRead, deleteNotification as deleteNotificationFromDB, markAllUserNotificationsAsRead, clearAllUserNotifications, validateAndCleanupNotifications } from '../../services/firebase/notificationService';
+import { getCurrentUser } from '../../services/firebase/userService';
 
 interface Notification {
   id: string;
@@ -16,6 +17,8 @@ const NotificationsPage = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [activeFilter, setActiveFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Format date helper
   const formatDate = (dateStr: string) => {
@@ -44,7 +47,7 @@ const NotificationsPage = () => {
     }
   };
 
-  // Set up real-time listener for notifications
+  // Fetch current user and set up real-time listener for notifications
   useEffect(() => {
     setLoading(true);
     
@@ -53,12 +56,30 @@ const NotificationsPage = () => {
       console.error('Error cleaning up notifications:', error);
     });
     
-    const unsubscribe = subscribeToNotifications((fetchedNotifications) => {
-      setNotifications(fetchedNotifications);
-      setLoading(false);
+    // Get current user and subscribe to their notifications
+    const setupSubscription = async () => {
+      const user = await getCurrentUser();
+      if (user) {
+        setCurrentUserId(user.id);
+        const unsubscribe = subscribeToUserNotifications(user.id, (fetchedNotifications) => {
+          setNotifications(fetchedNotifications);
+          setLoading(false);
+        });
+        return unsubscribe;
+      } else {
+        setLoading(false);
+        return () => {};
+      }
+    };
+    
+    let unsubscribe: (() => void) | undefined;
+    setupSubscription().then(unsub => {
+      unsubscribe = unsub;
     });
 
-    return () => unsubscribe();
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   // Filter notifications based on active filter
@@ -105,8 +126,9 @@ const NotificationsPage = () => {
 
   // Mark all as read
   const markAllAsRead = async () => {
+    if (!currentUserId) return;
     try {
-      await markAllNotificationsAsRead();
+      await markAllUserNotificationsAsRead(currentUserId);
       // The real-time listener will automatically update the UI
       console.log('All notifications marked as read');
     } catch (error) {
@@ -116,8 +138,9 @@ const NotificationsPage = () => {
 
   // Clear all notifications
   const clearAllNotifs = async () => {
+    if (!currentUserId) return;
     try {
-      await clearAllNotifications();
+      await clearAllUserNotifications(currentUserId);
       // The real-time listener will automatically update the UI
       console.log('All notifications cleared');
     } catch (error) {
@@ -141,6 +164,24 @@ const NotificationsPage = () => {
     }
   };
 
+  // Get filter label
+  const getFilterLabel = (filter: string) => {
+    switch(filter) {
+      case 'all': return 'All';
+      case 'unread': return 'Unread';
+      case 'event': return 'Events';
+      case 'job': return 'Jobs';
+      case 'donation': return 'Donations';
+      default: return 'All';
+    }
+  };
+
+  // Handle filter change
+  const handleFilterChange = (filter: string) => {
+    setActiveFilter(filter);
+    setIsDropdownOpen(false);
+  };
+
   return (
     <div className="notifications-page">
       <div className="notifications-header">
@@ -160,37 +201,84 @@ const NotificationsPage = () => {
         )}
       </div>
 
-      <div className="notifications-filters">
-        <button 
+      {/* Desktop Filters */}
+      <div className="notifications-filters desktop-filters">
+        <button
           className={`filter-button ${activeFilter === 'all' ? 'active' : ''}`}
           onClick={() => setActiveFilter('all')}
         >
           All
         </button>
-        <button 
+        <button
           className={`filter-button ${activeFilter === 'unread' ? 'active' : ''}`}
           onClick={() => setActiveFilter('unread')}
         >
           Unread
         </button>
-        <button 
+        <button
           className={`filter-button ${activeFilter === 'event' ? 'active' : ''}`}
           onClick={() => setActiveFilter('event')}
         >
           Events
         </button>
-        <button 
+        <button
           className={`filter-button ${activeFilter === 'job' ? 'active' : ''}`}
           onClick={() => setActiveFilter('job')}
         >
           Jobs
         </button>
-        <button 
+        <button
           className={`filter-button ${activeFilter === 'donation' ? 'active' : ''}`}
           onClick={() => setActiveFilter('donation')}
         >
           Donations
         </button>
+      </div>
+
+      {/* Mobile Dropdown */}
+      <div className="notifications-filters-mobile">
+        <button
+          className="mobile-filter-dropdown"
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        >
+          <span>{getFilterLabel(activeFilter)}</span>
+          <ChevronDown size={18} className={isDropdownOpen ? 'rotate' : ''} />
+        </button>
+        
+        {isDropdownOpen && (
+          <div className="mobile-filter-menu">
+            <button
+              className={`mobile-filter-option ${activeFilter === 'all' ? 'active' : ''}`}
+              onClick={() => handleFilterChange('all')}
+            >
+              All
+            </button>
+            <button
+              className={`mobile-filter-option ${activeFilter === 'unread' ? 'active' : ''}`}
+              onClick={() => handleFilterChange('unread')}
+            >
+              Unread
+            </button>
+            <button
+              className={`mobile-filter-option ${activeFilter === 'event' ? 'active' : ''}`}
+              onClick={() => handleFilterChange('event')}
+            >
+              Events
+            </button>
+            <button
+              className={`mobile-filter-option ${activeFilter === 'job' ? 'active' : ''}`}
+              onClick={() => handleFilterChange('job')}
+            >
+              Jobs
+            </button>
+            <button
+              className={`mobile-filter-option ${activeFilter === 'donation' ? 'active' : ''}`}
+              onClick={() => handleFilterChange('donation')}
+            >
+              Donations
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="notifications-list">

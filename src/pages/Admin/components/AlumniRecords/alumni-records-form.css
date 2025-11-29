@@ -45,7 +45,7 @@
 }
 
 .admin-form-label {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
@@ -372,18 +372,58 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .admin-form {
+    padding: 1rem;
+  }
+
+  .admin-form-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .admin-form-section-title {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+
   .admin-form-row-2 {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .admin-form-row {
+    margin-bottom: 1rem;
+  }
+  
+  .admin-form-input,
+  .admin-form-textarea,
+  .admin-form-select {
+    padding: 0.65rem 0.875rem;
+    font-size: 1rem;
+    min-height: 44px;
+  }
+
+  .admin-form-textarea {
+    min-height: 100px;
+  }
+
+  .admin-form-label {
+    font-size: 0.875rem;
+    margin-bottom: 0.375rem;
   }
   
   .admin-form-actions {
     flex-direction: column-reverse;
     gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
   }
   
   .admin-form-submit, .admin-form-cancel {
     width: 100%;
     justify-content: center;
+    min-height: 44px;
+    font-size: 1rem;
   }
   
   .profile-image-section {
@@ -395,14 +435,65 @@
   .profile-image-actions {
     align-items: center;
     text-align: center;
+    width: 100%;
   }
   
   .profile-action-buttons {
     justify-content: center;
+    width: 100%;
+  }
+
+  .profile-action-btn {
+    flex: 1;
+    justify-content: center;
+    min-height: 44px;
   }
   
   .form-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  /* Alumni ID input group */
+  .alumni-id-input-group {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .generate-id-btn {
+    width: 100%;
+    min-height: 44px;
+    padding: 0.65rem 1rem;
+  }
+
+  .admin-form-checkbox-container {
+    min-height: 44px;
+  }
+
+  .admin-form-checkbox-container input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-form {
+    padding: 0.75rem;
+  }
+
+  .profile-preview-image,
+  .profile-placeholder {
+    width: 64px;
+    height: 64px;
+  }
+
+  .profile-action-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .profile-action-btn {
+    width: 100%;
   }
 }
 

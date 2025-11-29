@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { 
-  Info, Building, Mail, Target, History
+  Info, Building, Mail, Target, Award
 } from 'lucide-react';
 import AdminLayout from '../../layout/AdminLayout';
 import {
@@ -87,8 +87,8 @@ const AboutUsManagement = () => {
             className={`about-management-tab ${activeTab === 'history' ? 'active' : ''}`}
             onClick={() => setActiveTab('history')}
           >
-            <History size={18} />
-            <span>History</span>
+            <Award size={18} />
+            <span>Achievements</span>
           </button>
           <button 
             className={`about-management-tab ${activeTab === 'vision' ? 'active' : ''}`}

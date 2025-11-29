@@ -25,7 +25,7 @@ export const fileToBase64 = (file: File): Promise<string> => {
 export const uploadBase64Image = async (
   base64: string,
   collectionName: string,
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
 ): Promise<string> => {
   try {
     // Create a new document reference with an auto-generated ID

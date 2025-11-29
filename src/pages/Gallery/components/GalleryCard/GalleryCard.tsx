@@ -138,8 +138,9 @@ const GalleryCard = ({ image, galleryItem, onImageClick }: GalleryCardProps) => 
     }
   };
 
-  const isAlbum = galleryItem?.isAlbum && galleryItem?.images && galleryItem.images.length > 1;
-  const albumImageCount = galleryItem?.images?.length || 0;
+  // Show album indicator for any album (including single-photo albums)
+  const isAlbum = galleryItem?.isAlbum && galleryItem?.albumId;
+  const albumImageCount = galleryItem?.images?.length || 1;
 
   return (
     <div 

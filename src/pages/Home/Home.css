@@ -3,7 +3,7 @@
   min-height: calc(100vh - 72px);
   background-color: var(--background);
   position: relative;
-  padding: var(--spacing-6) 0;
+  padding: calc(var(--spacing-6) + 72px) 0 var(--spacing-6);
   display: flex;
   justify-content: center;
 }
@@ -402,7 +402,7 @@
 
 @media (max-width: 576px) {
   .home-page {
-    padding: var(--spacing-4) 0;
+    padding: calc(var(--spacing-4) + 72px) 0 var(--spacing-4);
   }
   
   .home-layout {

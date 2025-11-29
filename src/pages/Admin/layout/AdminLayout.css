@@ -8,8 +8,8 @@
 /* Admin sidebar */
 .admin-sidebar {
   width: 280px;
-  background-color: var(--background-card);
-  border-right: 1px solid var(--border-color);
+  background-color: #1e40af;
+  border-right: none;
   height: 100vh;
   position: fixed;
   overflow-y: auto;
@@ -17,12 +17,19 @@
   transition: all var(--transition-normal);
 }
 
+.admin-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.35);
+  z-index: 90;
+}
+
 .admin-logo {
   padding: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   height: 72px;
 }
 
@@ -48,10 +55,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   text-decoration: none;
-  background-image: linear-gradient(135deg, #6366f1, #8b5cf6);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  color: #ffffff;
   transition: transform 0.2s ease;
   display: inline-block;
 }
@@ -68,14 +72,14 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .admin-menu-item {
   display: flex;
   align-items: center;
   padding: 0.75rem 1.5rem;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
   font-weight: 500;
   border-left: 3px solid transparent;
@@ -83,14 +87,14 @@
 }
 
 .admin-menu-item:hover {
-  background-color: rgba(var(--primary-rgb), 0.04);
-  color: var(--primary-color);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 
 .admin-menu-item.active {
-  color: var(--primary-color);
-  background-color: rgba(var(--primary-rgb), 0.08);
-  border-left-color: var(--primary-color);
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-left-color: #fbbf24;
 }
 
 .admin-menu-icon {
@@ -128,8 +132,9 @@
 .admin-header {
   height: 72px;
   padding: 0 1.5rem;
-  background-color: white;
-  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -141,7 +146,7 @@
 .admin-header-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .admin-content {
@@ -161,12 +166,12 @@
 
 .admin-user-name {
   font-weight: 600;
-  color: var(--text-primary);
+  color: #ffffff;
   font-size: 0.9375rem;
 }
 
 .admin-user-role {
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.8);
   font-size: 0.8125rem;
 }
 
@@ -259,7 +264,7 @@
   display: none;
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: #ffffff;
   cursor: pointer;
   padding: 0.5rem;
   margin-right: 1rem;
@@ -267,17 +272,107 @@
 
 /* Responsive styles */
 @media (max-width: 992px) {
+  .admin-header {
+    padding: 0 1rem;
+  }
+
+  .admin-header-title {
+    font-size: 1.1rem;
+  }
+  
   .admin-menu-toggle {
     display: block;
   }
   
+  /* Mobile sidebar - slides from left with blue gradient */
   .admin-sidebar {
+    position: fixed;
+    top: 0;
     left: -280px;
+    width: 280px;
+    height: 100vh;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    border-right: none;
+    transition: left 0.3s ease;
+    z-index: 999;
+    padding: 0;
   }
   
   .admin-sidebar.open {
     left: 0;
-    box-shadow: var(--shadow-lg);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  .admin-sidebar-overlay {
+    z-index: 998;
+  }
+  
+  /* Logo styling for mobile - white background pill */
+  .admin-logo {
+    display: flex;
+    padding: 1.25rem;
+    height: 72px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Mobile menu styling */
+  .admin-menu {
+    padding: 1rem 0;
+  }
+  
+  .admin-menu-title {
+    padding: 0.75rem 1.5rem 0.5rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.6);
+    background: none;
+  }
+  
+  .admin-menu-title:first-child {
+    margin-top: 0;
+  }
+  
+  /* Menu items - light text on blue background */
+  .admin-menu-item {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    border-radius: 0;
+    border: none;
+    border-left: 3px solid transparent;
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .admin-menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: transparent;
+    color: #ffffff;
+  }
+  
+  .admin-menu-item.active {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-left-color: var(--secondary-color);
+    color: #ffffff;
+  }
+  
+  .admin-menu-item.active .admin-menu-icon {
+    color: #ffffff;
+  }
+  
+  .admin-menu-item.active .sidebar-badge {
+    background-color: var(--secondary-color);
+    color: var(--text-primary);
+  }
+  
+  .admin-menu-icon {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .admin-menu-item:hover .admin-menu-icon {
+    color: #ffffff;
+    transform: none;
   }
   
   .admin-main {
@@ -801,7 +896,8 @@
   gap: 0.75rem;
 }
 
-.alumni-avatar {
+.alumni-avatar,
+.alumni-avatar-img {
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -828,6 +924,9 @@
 .alumni-name {
   font-weight: 500;
   margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .alumni-position {
@@ -1074,4 +1173,580 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+
+/* Tablet breakpoint (768px - 991px) */
+@media (max-width: 991px) {
+  .admin-content {
+    padding: 1rem;
+  }
+
+  .admin-card {
+    padding: 1rem;
+  }
+
+  .admin-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .admin-card-title {
+    font-size: 1.1rem;
+  }
+
+  /* Toolbar stacks on tablet */
+  .admin-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .admin-search {
+    width: 100%;
+    max-width: none;
+  }
+
+  .admin-filters {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .admin-filter-select {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .admin-add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Header adjustments */
+  .alumni-records-header,
+  .pending-header,
+  .officers-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .search-filter-container {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .search-container {
+    max-width: none;
+    width: 100%;
+  }
+
+  .filter-container {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .alumni-actions-group {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .add-alumni-button,
+  .add-officer-button,
+  .csv-import-button {
+    flex: 1;
+    justify-content: center;
+  }
+
+  /* Stats grid */
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .admin-stat-card {
+    padding: 1rem;
+  }
+
+  .admin-stat-value {
+    font-size: 1.5rem;
+  }
+}
+
+/* Mobile breakpoint (max-width: 767px) */
+@media (max-width: 767px) {
+  /* Header */
+  .admin-header {
+    padding: 0 0.75rem;
+    height: 60px;
+  }
+
+  .admin-header > div {
+    display: flex;
+    align-items: center;
+  }
+
+  .admin-header-title {
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+  }
+
+  .admin-menu-toggle {
+    padding: 0.5rem;
+    margin-right: 0.5rem;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Hide user info text on mobile, keep avatar */
+  .admin-user-info {
+    display: none;
+  }
+
+  .admin-avatar {
+    width: 36px;
+    height: 36px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Content area */
+  .admin-content {
+    padding: 0.75rem;
+  }
+
+  .admin-container {
+    padding: 0;
+  }
+
+  /* Card */
+  .admin-card {
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+  }
+
+  .admin-card-header {
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .admin-card-title {
+    font-size: 1rem;
+  }
+
+  /* Toolbar */
+  .admin-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .admin-search {
+    width: 100%;
+  }
+
+  .admin-search-input {
+    padding: 0.65rem 1rem 0.65rem 2.5rem;
+    font-size: 1rem;
+    min-height: 44px;
+  }
+
+  .admin-filters {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .admin-filter-select {
+    width: 100%;
+    min-width: auto;
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  .admin-add-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  /* Section headers */
+  .alumni-records-header,
+  .pending-header,
+  .officers-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .search-filter-container {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .filter-container {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .filter-select {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .filter-button {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .alumni-actions-group {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .add-alumni-button,
+  .add-officer-button,
+  .csv-import-button {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  /* Stats grid - single column on small mobile */
+  .admin-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .admin-stat-card {
+    padding: 1rem;
+  }
+
+  .admin-stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .admin-stat-value {
+    font-size: 1.25rem;
+  }
+
+  .admin-stat-label {
+    font-size: 0.875rem;
+  }
+
+  /* Table styles for mobile */
+  .admin-table-container,
+  .alumni-table-container,
+  .pending-table-container,
+  .officers-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -0.75rem;
+    padding: 0 0.75rem;
+  }
+
+  .admin-table,
+  .alumni-table {
+    min-width: 750px;
+  }
+
+  .admin-table th,
+  .admin-table td,
+  .alumni-table th,
+  .alumni-table td {
+    padding: 0.65rem 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .admin-table th:first-child,
+  .admin-table td:first-child,
+  .alumni-table th:first-child,
+  .alumni-table td:first-child {
+    padding-left: 0.75rem;
+  }
+
+  .admin-table th:last-child,
+  .admin-table td:last-child,
+  .alumni-table th:last-child,
+  .alumni-table td:last-child {
+    padding-right: 0.75rem;
+  }
+
+  /* Action buttons in tables */
+  .action-buttons,
+  .admin-actions,
+  .alumni-actions {
+    gap: 0.25rem;
+  }
+
+  .action-btn,
+  .admin-action-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .alumni-action-btn {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.75rem;
+    min-height: 32px;
+  }
+
+  /* Alumni name cell */
+  .alumni-name-cell {
+    gap: 0.5rem;
+  }
+
+  .alumni-avatar,
+  .alumni-avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    font-size: 0.75rem;
+  }
+
+  .alumni-name {
+    font-size: 0.875rem;
+  }
+
+  .alumni-position {
+    font-size: 0.75rem;
+  }
+
+  /* Badges */
+  .status-badge,
+  .batch-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .alumni-id-badge {
+    font-size: 0.75rem;
+  }
+
+  /* Empty state */
+  .empty-state {
+    padding: 2rem 1rem;
+  }
+
+  .empty-icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .empty-state h3 {
+    font-size: 1rem;
+  }
+
+  .empty-state p {
+    font-size: 0.875rem;
+  }
+
+  /* Section headers */
+  .alumni-list-header,
+  .pending-list-header,
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .alumni-list-header h2,
+  .pending-list-header h2,
+  .section-header h2 {
+    font-size: 1rem;
+  }
+
+  .section-description {
+    font-size: 0.875rem;
+  }
+
+  .records-count,
+  .pending-count {
+    font-size: 0.875rem;
+  }
+
+  /* Back button */
+  .back-button,
+  .admin-back-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+    margin-bottom: 1rem;
+  }
+
+  /* Buttons */
+  .primary-btn,
+  .admin-btn-primary,
+  .admin-btn-secondary {
+    min-height: 44px;
+    font-size: 0.9375rem;
+  }
+
+  /* Loading state */
+  .loading-state,
+  .admin-loading {
+    padding: 1.5rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Extra small mobile (max-width: 374px) */
+@media (max-width: 374px) {
+  .admin-header-title {
+    max-width: 100px;
+    font-size: 0.9rem;
+  }
+
+  .admin-content {
+    padding: 0.5rem;
+  }
+
+  .admin-card {
+    padding: 0.5rem;
+  }
+
+  .admin-table,
+  .alumni-table {
+    min-width: 750px;
+  }
+
+  .admin-stats-grid {
+    gap: 0.5rem;
+  }
+
+  .admin-stat-card {
+    padding: 0.75rem;
+  }
+
+  .admin-stat-value {
+    font-size: 1.125rem;
+  }
+}
+
+/* ============================================
+   FIX HORIZONTAL OVERFLOW ON ALL ADMIN PAGES
+   ============================================ */
+
+/* Prevent horizontal overflow on admin layout */
+.admin-layout {
+  overflow-x: hidden;
+}
+
+.admin-main {
+  overflow-x: hidden;
+}
+
+.admin-content {
+  overflow-x: hidden;
+}
+
+.admin-container {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* Alumni Records specific fixes */
+@media (max-width: 767px) {
+  .alumni-records-header {
+    overflow: hidden;
+  }
+
+  .search-filter-container {
+    overflow: hidden;
+  }
+
+  .filter-container {
+    overflow: hidden;
+  }
+
+  /* Hide text on filter button, show only icon */
+  .filter-button span {
+    display: none;
+  }
+
+  .filter-button {
+    min-width: 44px;
+    padding: 0.65rem;
+    justify-content: center;
+  }
+
+  /* CSV import button - icon only on mobile */
+  .csv-import-button span {
+    display: none;
+  }
+
+  .csv-import-button {
+    min-width: 44px;
+    padding: 0.65rem;
+    justify-content: center;
+  }
+
+  /* Officers header */
+  .officers-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    overflow: hidden;
+  }
+
+  .officers-header .search-container {
+    max-width: 100%;
+  }
+
+  .officers-content {
+    overflow: hidden;
+  }
+
+  .officers-section {
+    overflow: hidden;
+  }
+
+  /* Table containers - ensure proper scrolling */
+  .admin-table-container,
+  .officers-table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Section headers in officers */
+  .officers-section .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .officers-section .section-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .section-description {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
 }

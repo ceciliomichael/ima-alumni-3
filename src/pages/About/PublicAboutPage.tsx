@@ -237,13 +237,9 @@ const PublicAboutPage = () => {
                     </div>
                     <div className="contact-info">
                       <h3>Email</h3>
-                      <p>
-                        <a href={`mailto:${contactInfo.email}`}>{contactInfo.email}</a>
-                      </p>
+                      <p>{contactInfo.email}</p>
                       {contactInfo.supportEmail && (
-                        <p>
-                          <a href={`mailto:${contactInfo.supportEmail}`}>{contactInfo.supportEmail}</a>
-                        </p>
+                        <p>{contactInfo.supportEmail}</p>
                       )}
                     </div>
                   </div>
@@ -254,13 +250,9 @@ const PublicAboutPage = () => {
                     </div>
                     <div className="contact-info">
                       <h3>Phone</h3>
-                      <p>
-                        <a href={`tel:${contactInfo.phone}`}>{contactInfo.phone}</a>
-                      </p>
+                      <p>{contactInfo.phone}</p>
                       {contactInfo.supportPhone && (
-                        <p>
-                          <a href={`tel:${contactInfo.supportPhone}`}>{contactInfo.supportPhone}</a>
-                        </p>
+                        <p>{contactInfo.supportPhone}</p>
                       )}
                     </div>
                   </div>

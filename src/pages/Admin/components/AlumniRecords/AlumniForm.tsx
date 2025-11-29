@@ -47,7 +47,8 @@ const AlumniForm = () => {
           
           if (alumniData) {
             // Exclude id and dateRegistered from the form
-            const { id: _id, dateRegistered: _dateRegistered, ...restData } = alumniData;
+            const { id: _, dateRegistered: __, ...restData } = alumniData;
+            void _; void __;
             
             // Format Alumni ID for display
             if (restData.alumniId) {

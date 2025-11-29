@@ -19,6 +19,23 @@ export const getAllGalleryItems = async (): Promise<GalleryPost[]> => {
   }
 };
 
+// Subscribe to all gallery items (real-time)
+export const subscribeToGalleryItems = (
+  callback: (items: GalleryPost[]) => void
+): Unsubscribe => {
+  const galleryRef = collection(db, COLLECTION_NAME);
+  const q = query(galleryRef);
+
+  return onSnapshot(q, (snapshot) => {
+    const allItems = snapshot.docs.map(docSnap => ({
+      id: docSnap.id,
+      ...docSnap.data()
+    } as GalleryPost));
+
+    callback(allItems);
+  });
+};
+
 export const subscribeToPendingGalleryItems = (
   callback: (items: GalleryPost[]) => void
 ): Unsubscribe => {
@@ -269,6 +286,39 @@ export const getAlbumImages = async (albumId: string): Promise<GalleryPost[]> =>
     console.error('Error getting album images:', error);
     return [];
   }
+};
+
+// Subscribe to unique albums (real-time) - groups by albumId
+export const subscribeToUniqueAlbums = (
+  callback: (items: GalleryPost[]) => void
+): Unsubscribe => {
+  const galleryRef = collection(db, COLLECTION_NAME);
+  const q = query(galleryRef);
+
+  return onSnapshot(q, (snapshot) => {
+    const allItems = snapshot.docs.map(docSnap => ({
+      id: docSnap.id,
+      ...docSnap.data()
+    } as GalleryPost));
+
+    // Group by albumId and get the first image of each album for preview
+    const albumMap = new Map<string, GalleryPost>();
+    const singleImages: GalleryPost[] = [];
+
+    allItems.forEach(item => {
+      if (item.isAlbum && item.albumId) {
+        // For albums, keep only the first image (order 0) for preview
+        if (!albumMap.has(item.albumId) || (item.imageOrder || 0) === 0) {
+          albumMap.set(item.albumId, item);
+        }
+      } else {
+        // Single images
+        singleImages.push(item);
+      }
+    });
+
+    callback([...Array.from(albumMap.values()), ...singleImages]);
+  });
 };
 
 // Get unique albums (grouped by albumId)

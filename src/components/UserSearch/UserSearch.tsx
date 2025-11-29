@@ -83,17 +83,35 @@ const UserSearch = () => {
   };
 
   return (
-    <div className={`user-search ${isSearchOpen ? 'open' : ''}`} ref={searchRef}>
-      <button className="user-search-toggle" onClick={toggleSearch}>
+    <div className="relative flex items-center" ref={searchRef}>
+      {/* Mobile toggle button - visible on small screens */}
+      <button 
+        className="flex lg:hidden items-center justify-center w-10 h-10 rounded-full text-white/90 hover:text-white hover:bg-white/10 transition-all duration-200"
+        onClick={toggleSearch}
+      >
         {isSearchOpen ? <X size={20} /> : <Search size={20} />}
       </button>
       
-      <div className="user-search-container">
-        <div className="user-search-input-wrapper">
-          <Search size={16} className="user-search-icon" />
+      {/* Search container - always visible on desktop, toggleable on mobile */}
+      <div className={`
+        ${isSearchOpen ? 'flex' : 'hidden'} lg:flex
+        fixed lg:relative
+        top-[70px] lg:top-auto
+        left-4 right-4 lg:left-auto lg:right-auto
+        w-auto lg:w-60
+        max-w-none
+        p-2 lg:p-0
+        bg-white lg:bg-transparent
+        rounded-lg lg:rounded-none
+        shadow-lg lg:shadow-none
+        border border-gray-200 lg:border-0
+        z-50
+      `}>
+        <div className="relative flex items-center w-full">
+          <Search size={16} className="absolute left-3 text-gray-400 pointer-events-none" />
           <input
             type="text"
-            className="user-search-input"
+            className="w-full h-10 pl-9 pr-9 rounded-full border border-gray-300 bg-white text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
             placeholder={isLoading ? "Searching..." : "Search alumni..."}
             value={query}
             onChange={handleSearchChange}
@@ -105,7 +123,7 @@ const UserSearch = () => {
           />
           {query && (
             <button
-              className="user-search-clear"
+              className="absolute right-3 text-gray-400 hover:text-gray-600 transition-colors"
               onClick={() => {
                 setQuery('');
                 setResults([]);
@@ -118,22 +136,23 @@ const UserSearch = () => {
           )}
         </div>
         
+        {/* Search results dropdown */}
         {isResultsVisible && (
-          <div className="user-search-results">
+          <div className="absolute top-full left-0 right-0 mt-1 lg:mt-2 bg-white rounded-lg shadow-lg border border-gray-200 max-h-80 overflow-y-auto z-50">
             {isLoading ? (
-              <div className="user-search-no-results">
+              <div className="p-4 text-center text-gray-500">
                 <p>Searching...</p>
               </div>
             ) : results.length > 0 ? (
               results.map(alumni => (
                 <div
                   key={alumni.id}
-                  className="user-search-result"
+                  className="flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-50 transition-colors"
                   onClick={() => navigateToProfile(alumni)}
                 >
-                  <div className="user-search-avatar">
+                  <div className="w-9 h-9 rounded-full overflow-hidden bg-primary flex-shrink-0">
                     {alumni.profileImage ? (
-                      <img src={alumni.profileImage} alt={alumni.name} />
+                      <img src={alumni.profileImage} alt={alumni.name} className="w-full h-full object-cover" />
                     ) : (
                       <ImagePlaceholder
                         isAvatar
@@ -142,14 +161,14 @@ const UserSearch = () => {
                       />
                     )}
                   </div>
-                  <div className="user-search-info">
-                    <h4 className="user-search-name">{alumni.name}</h4>
-                    <p className="user-search-batch">{alumni.batch}</p>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-semibold text-gray-900 truncate">{alumni.name}</h4>
+                    <p className="text-xs text-gray-500">{alumni.batch}</p>
                   </div>
                 </div>
               ))
             ) : query.trim() ? (
-              <div className="user-search-no-results">
+              <div className="p-4 text-center text-gray-500">
                 <p>No alumni found</p>
               </div>
             ) : null}
@@ -160,4 +179,4 @@ const UserSearch = () => {
   );
 };
 
-export default UserSearch; 
+export default UserSearch;

@@ -482,13 +482,172 @@
 }
 
 @media (max-width: 768px) {
+  .moderation-tabs {
+    padding: 0.75rem 1rem 0;
+    gap: 0.5rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .moderation-tab {
+    padding: 0.65rem 1rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    min-height: 44px;
+  }
+
   .moderation-toolbar {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .moderation-search {
+    width: 100%;
+  }
+
+  .moderation-search input {
+    min-height: 44px;
+  }
+
+  .moderation-filters {
+    width: 100%;
+  }
+
+  .moderation-filters select {
+    width: 100%;
+    min-height: 44px;
   }
 
   .moderation-grid {
     grid-template-columns: 1fr;
     padding: 1rem;
+    gap: 1rem;
+  }
+
+  .moderation-card {
+    min-width: auto;
+    padding: 1rem;
+  }
+
+  .moderation-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .moderation-user-info,
+  .moderation-event-info,
+  .moderation-job-info {
+    width: 100%;
+  }
+
+  .moderation-status {
+    align-self: flex-start;
+  }
+
+  .moderation-event-image,
+  .moderation-company-logo {
+    width: 60px;
+    height: 60px;
+  }
+
+  .moderation-images {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .moderation-images img {
+    height: 120px;
+  }
+
+  .moderation-actions {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .moderation-btn {
+    flex: 1;
+    min-width: calc(50% - 0.25rem);
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .moderation-btn.delete {
+    margin-left: 0;
+    min-width: 100%;
+    order: 3;
+  }
+
+  /* Empty state */
+  .moderation-empty {
+    padding: 2rem 1rem;
+  }
+
+  .moderation-empty h3 {
+    font-size: 1rem;
+  }
+
+  /* Modal */
+  .moderation-modal {
+    width: 95%;
+    margin: 1rem;
+  }
+
+  .moderation-modal-header {
+    padding: 1rem;
+  }
+
+  .moderation-modal-body {
+    padding: 1rem;
+  }
+
+  .moderation-modal-body textarea {
+    min-height: 100px;
+  }
+
+  .moderation-modal-actions {
+    flex-direction: column-reverse;
+    padding: 1rem;
+    gap: 0.5rem;
+  }
+
+  .moderation-btn-cancel,
+  .moderation-btn-confirm {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .moderation-tabs {
+    gap: 0.25rem;
+  }
+
+  .moderation-tab {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .moderation-badge {
+    min-width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+  }
+
+  .moderation-card {
+    padding: 0.75rem;
+  }
+
+  .moderation-user-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .moderation-card-header h4 {
+    font-size: 1rem;
+  }
+
+  .moderation-images {
+    grid-template-columns: 1fr;
   }
 }

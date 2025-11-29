@@ -96,36 +96,56 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   };
 
   return (
-    <div className="auth-container single-column">
-      <div className="auth-wrapper single-column">
-        <div className="auth-card single-column">
-          <div className="auth-logo">
-            <img src="/images/alumni-conlogo.png" alt="IMA Alumni Logo" />
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4 sm:p-6 relative overflow-hidden">
+      {/* Background image overlay */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50 z-0"
+        style={{ backgroundImage: "url('/login-bg.jpg')" }}
+      />
+      
+      <div className="relative z-10 w-full max-w-md">
+        <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-gray-200 overflow-hidden">
+          {/* Logo */}
+          <div className="flex justify-center pt-6 pb-4 px-4">
+            <img 
+              src="/images/alumni-conlogo.png" 
+              alt="IMA Alumni Logo" 
+              className="h-16 sm:h-20 w-auto object-contain"
+            />
           </div>
           
-          <div className="auth-form-container">
-            <div className="auth-header">
-              <h1 className="auth-title">
-                <LogIn className="auth-icon" />
-                Access IMA Alumni Portal
+          {/* Form Container */}
+          <div className="px-4 sm:px-8 pb-6 sm:pb-8">
+            {/* Header */}
+            <div className="text-center mb-6">
+              <h1 className="flex items-center justify-center gap-2 text-lg sm:text-xl font-bold text-gray-900 mb-2">
+                <LogIn size={20} className="text-primary flex-shrink-0" />
+                <span className="break-words">Access IMA Alumni Portal</span>
               </h1>
-              <p className="auth-subtitle">Enter your Alumni ID to access the alumni portal.</p>
+              <p className="text-sm text-gray-600">Enter your Alumni ID to access the alumni portal.</p>
             </div>
             
-            <form className="auth-form" onSubmit={handleSubmit}>
-              {errors.general && <div className="form-error" style={{ marginBottom: '1rem', textAlign: 'center' }}>{errors.general}</div>}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {errors.general && (
+                <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm text-center">
+                  {errors.general}
+                </div>
+              )}
               
-              <div className="form-group">
-                <label htmlFor="alumniId" className="form-label">Alumni ID</label>
-                <div className="input-group">
-                  <div className="input-icon">
+              {/* Alumni ID Field */}
+              <div>
+                <label htmlFor="alumniId" className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Alumni ID
+                </label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                     <CreditCard size={18} />
                   </div>
                   <input
                     type="text"
                     id="alumniId"
                     name="alumniId"
-                    className={`form-control ${errors.alumniId ? 'error' : ''}`}
+                    className={`w-full h-11 pl-10 pr-4 rounded-lg border ${errors.alumniId ? 'border-red-500' : 'border-gray-300'} bg-white text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all`}
                     placeholder="123456-A"
                     value={formData.alumniId}
                     onChange={handleChange}
@@ -133,56 +153,44 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                     maxLength={8}
                   />
                 </div>
-                {errors.alumniId && <div className="form-error">{errors.alumniId}</div>}
-                <div className="form-hint">
-                  Enter your Alumni ID (6 digits, dash, 1 letter)
-                </div>
+                {errors.alumniId && <p className="mt-1.5 text-xs text-red-500">{errors.alumniId}</p>}
+                <p className="mt-1.5 text-xs text-gray-500">Enter your Alumni ID (6 digits, dash, 1 letter)</p>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="password" className="form-label">Password</label>
-                <div className="input-group">
-                  <div className="input-icon">
+              {/* Password Field */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                     <Lock size={18} />
                   </div>
                   <input
                     type={showPassword ? 'text' : 'password'}
                     id="password"
                     name="password"
-                    className={`form-control ${errors.password ? 'error' : ''}`}
+                    className={`w-full h-11 pl-10 pr-12 rounded-lg border ${errors.password ? 'border-red-500' : 'border-gray-300'} bg-white text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all`}
                     placeholder="Enter your password"
                     value={formData.password}
                     onChange={handleChange}
                     autoComplete="current-password"
-                    style={{ paddingRight: '3rem' }}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="password-toggle"
-                    style={{
-                      position: 'absolute',
-                      right: '0.75rem',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      padding: '0.25rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      color: 'var(--text-muted)'
-                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {errors.password && <div className="form-error">{errors.password}</div>}
+                {errors.password && <p className="mt-1.5 text-xs text-red-500">{errors.password}</p>}
               </div>
               
+              {/* Submit Button */}
               <button 
                 type="submit" 
-                className="btn btn-primary login-btn"
+                className="w-full h-11 mt-2 rounded-lg bg-secondary text-gray-900 font-semibold hover:bg-secondary-dark transition-colors disabled:opacity-50"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Verifying...' : 'Enter Portal'}

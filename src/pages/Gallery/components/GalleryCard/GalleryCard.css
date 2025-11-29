@@ -165,27 +165,74 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
+  .gallery-card {
+    border-radius: 0.75rem;
+  }
+
+  .gallery-card:hover {
+    transform: none;
+  }
+
+  .gallery-card-image {
+    aspect-ratio: 4/3;
+  }
+
   .gallery-card-info {
-    padding: 0.75rem;
+    padding: 0.875rem;
   }
   
   .gallery-card-info h3 {
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
+  }
+
+  /* Always show overlay on mobile for touch access */
+  .image-overlay {
+    opacity: 1;
+    background: linear-gradient(to top, oklch(0 0 0 / 0.6) 0%, oklch(0 0 0 / 0) 70%);
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding: 0.75rem;
   }
   
   .overlay-btn {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .overlay-btn:hover {
+    transform: none;
+  }
+
+  .overlay-btn:active {
+    transform: scale(0.95);
   }
   
   .album-indicator {
     top: 0.5rem;
     right: 0.5rem;
-    padding: 0.2rem 0.4rem;
-    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.6875rem;
   }
   
   .overlay-actions {
     gap: 0.5rem;
   }
-} 
+}
+
+/* Touch device specific */
+@media (hover: none) and (pointer: coarse) {
+  .gallery-card:hover .gallery-card-image img {
+    transform: none;
+  }
+
+  .image-overlay {
+    opacity: 1;
+  }
+
+  .overlay-btn:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}

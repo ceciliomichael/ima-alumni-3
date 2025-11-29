@@ -5,4 +5,5 @@
 @import './gallery-controls.css';
 @import './gallery-grid.css';
 @import './upload-modal.css';
-@import './gallery-responsive.css'; 
+@import './gallery-responsive.css';
+@import './gallery-mobile.css';

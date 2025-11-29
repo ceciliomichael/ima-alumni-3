@@ -50,7 +50,7 @@ const DonationNotification = ({ notification, onClose }: DonationNotificationPro
     }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currency || 'USD',
+      currency: currency || 'PHP',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(amount);

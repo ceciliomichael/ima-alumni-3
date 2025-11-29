@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Heart, CornerDownRight, Send } from 'lucide-react';
-import { Post, Comment, Reply, User } from '../../../../types';
+import { Post, Comment, Reply, User, CommentReaction } from '../../../../types';
 import ImagePlaceholder from '../../../../components/ImagePlaceholder';
 import './ImageModal.css';
 
@@ -126,7 +126,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
   };
 
   // Helper to check if a user has reacted to a comment
-  const hasUserReactedToComment = (reactions: any[], userId: string | null) => {
+  const hasUserReactedToComment = (reactions: CommentReaction[], userId: string | null) => {
     if (!userId || !reactions) return false;
     return reactions.some(reaction => reaction.userId === userId);
   };

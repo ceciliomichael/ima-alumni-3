@@ -208,10 +208,32 @@
   border-bottom: 2px solid #e5e7eb;
 }
 
+.breakdown-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 992px) {
+  .breakdown-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.breakdown-section {
+  flex: 1;
+  min-width: 0;
+}
+
 .breakdown-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px;
+}
+
+.breakdown-grid-compact {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
 }
 
 .breakdown-item {
@@ -219,6 +241,10 @@
   background: #f9fafb;
   border-radius: 6px;
   border-left: 4px solid #1e40af;
+}
+
+.breakdown-item-year {
+  border-left-color: #059669;
 }
 
 .breakdown-category {
@@ -297,6 +323,10 @@
 }
 
 .report-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   padding: 60px 20px;
   color: #6b7280;

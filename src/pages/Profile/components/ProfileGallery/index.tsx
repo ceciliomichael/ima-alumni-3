@@ -6,6 +6,7 @@ import './styles.css';
 interface Post {
   id: string;
   images?: string[];
+  imageUrl?: string; // Backward compatibility for single image posts
   createdAt: string;
 }
 
@@ -17,16 +18,28 @@ const ProfileGallery = ({ posts }: ProfileGalleryProps) => {
   const [showViewer, setShowViewer] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Extract all images from posts that have images
+  // Extract all images from posts that have images (support both images array and single imageUrl)
   const allImages = posts
-    .filter(post => post.images && post.images.length > 0)
-    .flatMap(post => 
-      post.images!.map((imageUrl, index) => ({
-        postId: post.id,
-        imageUrl,
-        key: `${post.id}-${index}`
-      }))
-    );
+    .filter(post => (post.images && post.images.length > 0) || post.imageUrl)
+    .flatMap(post => {
+      // Handle posts with images array
+      if (post.images && post.images.length > 0) {
+        return post.images.map((imageUrl, index) => ({
+          postId: post.id,
+          imageUrl,
+          key: `${post.id}-${index}`
+        }));
+      }
+      // Handle posts with single imageUrl (backward compatibility)
+      if (post.imageUrl) {
+        return [{
+          postId: post.id,
+          imageUrl: post.imageUrl,
+          key: `${post.id}-0`
+        }];
+      }
+      return [];
+    });
   
   // Get the first 6 images for display
   const galleryImages = allImages.slice(0, 6);

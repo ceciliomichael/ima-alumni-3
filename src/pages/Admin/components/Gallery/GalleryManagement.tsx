@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { 
   deleteGalleryItem, 
   approveGalleryItem,
-  subscribeToPendingGalleryItems
+  subscribeToGalleryItems
 } from '../../../../services/firebase/galleryService';
 import { GalleryPost } from '../../../../types';
 import { getAllEvents, Event } from '../../../../services/firebase/eventService';
 import AdminLayout from '../../layout/AdminLayout';
+import AlbumViewerModal from '../../../Gallery/components/AlbumViewerModal';
 import './Gallery.css';
 
 // Define album categories to match the user-facing gallery
@@ -32,6 +33,10 @@ const GalleryManagement = () => {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
+  
+  // Album viewer modal state
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<GalleryPost | null>(null);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -44,9 +49,9 @@ const GalleryManagement = () => {
     };
 
     // Subscribe to gallery items in real time
-    const unsubscribe = subscribeToPendingGalleryItems((pendingItems) => {
+    const unsubscribe = subscribeToGalleryItems((allItems) => {
       // Use snapshot as base data; other filters/search will be applied below
-      setAllGalleryItems(pendingItems);
+      setAllGalleryItems(allItems);
     });
 
     fetchEvents();
@@ -186,9 +191,13 @@ const GalleryManagement = () => {
 
   // Methods to handle gallery items
   const handleViewGalleryItem = (item: GalleryPost) => {
-    // Open a view modal or navigate to a view page
-    // For now, we'll just alert
-    alert(`Viewing: ${item.title}`);
+    setSelectedItem(item);
+    setIsViewerOpen(true);
+  };
+  
+  const closeViewer = () => {
+    setIsViewerOpen(false);
+    setSelectedItem(null);
   };
   
   const handleEditGalleryItem = (id: string) => {
@@ -373,6 +382,16 @@ const GalleryManagement = () => {
         </div>
         )}
       </div>
+      
+      {/* Album Viewer Modal */}
+      {isViewerOpen && selectedItem && (
+        <AlbumViewerModal
+          isOpen={isViewerOpen}
+          onClose={closeViewer}
+          albumItem={selectedItem}
+          currentImageIndex={0}
+        />
+      )}
     </AdminLayout>
   );
 };

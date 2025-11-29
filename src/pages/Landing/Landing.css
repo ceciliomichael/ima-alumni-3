@@ -354,6 +354,20 @@ body:has(.landing-container) {
   .landing-center {
     max-width: 95vw;
     padding: clamp(0.75rem, 2vw, 1rem);
+    padding-top: clamp(100px, 18vh, 140px);
+  }
+  
+  .welcome-title {
+    font-size: clamp(1.75rem, 7vw, 2.5rem);
+  }
+  
+  .welcome-subtitle {
+    font-size: clamp(1.25rem, 5vw, 1.75rem);
+  }
+  
+  .logo-circle {
+    width: clamp(60px, 15vw, 80px);
+    height: clamp(60px, 15vw, 80px);
   }
 }
 

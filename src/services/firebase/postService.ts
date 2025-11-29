@@ -33,6 +33,64 @@ export const getAllPosts = async (): Promise<Post[]> => {
   }
 };
 
+// Delete all posts and authored comments/replies for a specific user
+export const deleteUserContent = async (userId: string): Promise<boolean> => {
+  try {
+    const allPosts = await getAllPosts();
+
+    const ops = allPosts.map(async (post) => {
+      // If the post is authored by this user, delete the entire post
+      if (post.userId === userId) {
+        await deleteDoc(doc(db, COLLECTION_NAME, post.id));
+        return;
+      }
+
+      // Otherwise, remove this user's comments and replies from the post
+      if (!post.comments || post.comments.length === 0) {
+        return;
+      }
+
+      let commentsChanged = false;
+
+      const filteredComments = post.comments
+        // Remove comments authored by this user entirely
+        .filter((comment) => {
+          if (comment.userId === userId) {
+            commentsChanged = true;
+            return false;
+          }
+          return true;
+        })
+        // For remaining comments, strip out replies authored by this user
+        .map((comment) => {
+          if (!comment.replies || comment.replies.length === 0) {
+            return comment;
+          }
+
+          const filteredReplies = comment.replies.filter((reply) => reply.userId !== userId);
+          if (filteredReplies.length !== comment.replies.length) {
+            commentsChanged = true;
+            return { ...comment, replies: filteredReplies };
+          }
+
+          return comment;
+        });
+
+      if (commentsChanged) {
+        await updateDoc(doc(db, COLLECTION_NAME, post.id), {
+          comments: filteredComments,
+        });
+      }
+    });
+
+    await Promise.all(ops);
+    return true;
+  } catch (error) {
+    console.error('Error deleting user content:', error);
+    return false;
+  }
+};
+
 // Get all approved posts (for regular users)
 export const getApprovedPosts = async (): Promise<Post[]> => {
   try {
@@ -65,6 +123,22 @@ export const getPendingPosts = async (): Promise<Post[]> => {
     console.error('Error getting pending posts:', error);
     return [];
   }
+};
+
+export const subscribeToPosts = (
+  callback: (posts: Post[]) => void
+): Unsubscribe => {
+  const postsRef = collection(db, COLLECTION_NAME);
+  const q = query(postsRef);
+
+  return onSnapshot(q, (snapshot) => {
+    const allPosts = snapshot.docs.map(docSnap => ({
+      id: docSnap.id,
+      ...docSnap.data()
+    } as Post));
+
+    callback(allPosts);
+  });
 };
 
 export const subscribeToPendingPosts = (
@@ -218,6 +292,108 @@ export const deletePost = async (postId: string): Promise<boolean> => {
   } catch (error) {
     console.error('Error deleting post:', error);
     return false;
+  }
+};
+
+// Edit post content (with re-moderation for approved/rejected posts)
+export const editPostContent = async (
+  postId: string, 
+  updates: { content?: string; images?: string[]; feeling?: { emoji: string; text: string } | null }
+): Promise<Post | null> => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, postId);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) {
+      return null;
+    }
+    
+    const post = docSnap.data() as Omit<Post, 'id'>;
+    
+    // Prepare update data
+    const updateData: Record<string, unknown> = {
+      updatedAt: new Date().toISOString()
+    };
+    
+    if (updates.content !== undefined) {
+      updateData.content = updates.content;
+    }
+    
+    if (updates.images !== undefined) {
+      updateData.images = updates.images;
+    }
+    
+    if (updates.feeling !== undefined) {
+      updateData.feeling = updates.feeling;
+    }
+    
+    // If post was approved or rejected, reset to pending for re-moderation
+    if (post.moderationStatus === 'approved' || post.moderationStatus === 'rejected') {
+      updateData.isApproved = false;
+      updateData.moderationStatus = 'pending';
+      updateData.rejectionReason = null;
+    }
+    
+    await updateDoc(docRef, updateData);
+    
+    // Get the updated document
+    const updatedDocSnap = await getDoc(docRef);
+    return {
+      id: updatedDocSnap.id,
+      ...updatedDocSnap.data()
+    } as Post;
+  } catch (error) {
+    console.error('Error updating post:', error);
+    return null;
+  }
+};
+
+// Edit a comment
+export const editComment = async (
+  postId: string, 
+  commentId: string, 
+  newContent: string
+): Promise<Post | null> => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, postId);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) {
+      return null;
+    }
+    
+    const post = {
+      id: docSnap.id,
+      ...docSnap.data()
+    } as Post;
+    
+    const commentIndex = post.comments.findIndex(comment => comment.id === commentId);
+    
+    if (commentIndex === -1) {
+      return null;
+    }
+    
+    // Create a new comments array with the updated comment
+    const updatedComments = [...post.comments];
+    updatedComments[commentIndex] = {
+      ...updatedComments[commentIndex],
+      content: newContent,
+      updatedAt: new Date().toISOString()
+    };
+    
+    await updateDoc(docRef, {
+      comments: updatedComments
+    });
+    
+    // Get the updated document
+    const updatedDocSnap = await getDoc(docRef);
+    return {
+      id: updatedDocSnap.id,
+      ...updatedDocSnap.data()
+    } as Post;
+  } catch (error) {
+    console.error('Error editing comment:', error);
+    return null;
   }
 };
 

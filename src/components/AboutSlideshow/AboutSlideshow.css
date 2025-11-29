@@ -385,7 +385,7 @@
   }
   
   .slideshow-dots {
-    bottom: 1.5rem;
+    display: none;
   }
   
   .slideshow-counter {

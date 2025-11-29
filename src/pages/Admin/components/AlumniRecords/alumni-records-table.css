@@ -1,5 +1,33 @@
 /* Table and List Styles */
 
+/* Column widths to prevent word wrapping */
+.admin-table th:nth-child(2),
+.admin-table td:nth-child(2),
+.alumni-table th:nth-child(2),
+.alumni-table td:nth-child(2) {
+  /* Alumni ID column */
+  min-width: 140px;
+  white-space: nowrap;
+}
+
+.admin-table th:nth-child(4),
+.admin-table td:nth-child(4),
+.alumni-table th:nth-child(4),
+.alumni-table td:nth-child(4) {
+  /* Batch column */
+  min-width: 100px;
+  white-space: nowrap;
+}
+
+.admin-table th:nth-child(7),
+.admin-table td:nth-child(7),
+.alumni-table th:nth-child(7),
+.alumni-table td:nth-child(7) {
+  /* Options/Actions column */
+  min-width: 200px;
+  white-space: nowrap;
+}
+
 .alumni-name-cell {
   display: flex;
   align-items: center;
@@ -134,15 +162,49 @@
 @media (max-width: 768px) {
   .alumni-actions {
     flex-wrap: wrap;
+    gap: 0.35rem;
   }
   
   .alumni-action-btn {
     flex: 1;
     text-align: center;
+    min-height: 36px;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.75rem;
   }
   
   .alumni-action-btn.delete {
     flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Pagination */
+  .admin-pagination {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 1rem;
+  }
+
+  .admin-pagination-btn {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .alumni-actions {
+    flex-direction: row;
+    gap: 0.25rem;
+  }
+  
+  .alumni-action-btn.view,
+  .alumni-action-btn.edit {
+    padding: 0.5rem;
+    min-width: 36px;
+    min-height: 36px;
   }
 }
 

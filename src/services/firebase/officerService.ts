@@ -245,7 +245,7 @@ export const removeOfficerInfoFromUser = async (alumniId: string): Promise<boole
     // Note: Firestore doesn't support deleting specific fields with updateDoc
     // So we set them to null or undefined
     await updateUser(user.id, {
-      officerPosition: null as any, // Type assertion to avoid TypeScript error
+      officerPosition: undefined, // Set to undefined to remove the field
       showOfficerInfo: false
     });
     

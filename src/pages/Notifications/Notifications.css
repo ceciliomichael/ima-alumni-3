@@ -90,6 +90,111 @@
   padding-bottom: 0.5rem;
 }
 
+.desktop-filters {
+  display: flex;
+}
+
+.notifications-filters-mobile {
+  display: none;
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.mobile-filter-dropdown {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  min-height: 44px;
+}
+
+.mobile-filter-dropdown:hover {
+  border-color: var(--primary-color);
+  background: #f8f9fa;
+}
+
+.mobile-filter-dropdown:active {
+  transform: scale(0.98);
+}
+
+.mobile-filter-dropdown .rotate {
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
+}
+
+.mobile-filter-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.5rem;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 10;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-filter-option {
+  width: 100%;
+  display: block;
+  padding: 0.875rem 1rem;
+  background: white;
+  border: none;
+  border-bottom: 1px solid #f1f3f5;
+  text-align: left;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  outline: none;
+}
+
+.mobile-filter-option:last-child {
+  border-bottom: none;
+}
+
+.mobile-filter-option:hover {
+  background: #f8f9fa;
+}
+
+.mobile-filter-option:active {
+  background: #e9ecef;
+}
+
+.mobile-filter-option.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+.mobile-filter-option.active:hover {
+  background: var(--primary-color);
+}
+
 .filter-button {
   padding: 0.6rem 1.2rem;
   border: 1px solid transparent;
@@ -316,6 +421,15 @@
   .clear-all-notifications {
     width: 100%;
     justify-content: center;
+  }
+
+  /* Hide desktop filters, show mobile dropdown */
+  .desktop-filters {
+    display: none !important;
+  }
+
+  .notifications-filters-mobile {
+    display: block;
   }
   
   .notification-item {

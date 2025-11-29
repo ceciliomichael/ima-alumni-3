@@ -1,5 +1,12 @@
 /* Job Form Specific Styles */
 
+/* Ensure label icons and text are side by side */
+.admin-form-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .admin-job-type-options {
   display: flex;
   flex-wrap: wrap;
@@ -110,6 +117,21 @@
   border: 1px solid var(--gray-200);
 }
 
+/* Desktop: Hint text below checkbox */
+.admin-form-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.admin-form-checkbox-group .admin-form-hint {
+  text-align: right;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
 .admin-job-status-badge {
   display: inline-flex;
   align-items: center;
@@ -147,19 +169,292 @@
 }
 
 @media (max-width: 768px) {
-  .admin-job-type-options {
-    flex-direction: column;
+  /* Card & Form Container */
+  .admin-card {
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
   }
-  
+
+  .admin-card-header {
+    padding: 1rem;
+    background-color: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .admin-card-title {
+    font-size: 1.125rem;
+  }
+
+  /* Form Layout */
+  .admin-form {
+    padding: 1rem;
+  }
+
+  .admin-form-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .admin-form-section-title {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    padding-left: 0.625rem;
+    border-left-width: 3px;
+  }
+
+  .admin-form-row {
+    margin-bottom: 1rem;
+  }
+
+  .admin-form-row-2 {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  /* Labels - Icon & Text Side by Side */
+  .admin-form-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .admin-form-icon {
+    flex-shrink: 0;
+  }
+
+  /* Inputs - Touch Friendly */
+  .admin-form-input,
+  .admin-form-textarea,
+  .admin-form-select {
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+    min-height: 48px;
+    border-radius: 8px;
+  }
+
+  .admin-form-textarea {
+    min-height: 120px;
+  }
+
+  .admin-form-hint {
+    font-size: 0.8125rem;
+    margin-top: 0.5rem;
+    line-height: 1.4;
+  }
+
+  .admin-form-error {
+    font-size: 0.8125rem;
+    margin-top: 0.5rem;
+  }
+
+  /* Job Type Options - 2x2 Grid */
+  .admin-job-type-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
   .admin-job-type-option {
     width: 100%;
   }
-  
+
+  .admin-job-type-label {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.875rem 0.5rem;
+    min-height: 70px;
+    text-align: center;
+    font-size: 0.8125rem;
+    border-radius: 8px;
+  }
+
+  .admin-job-type-label svg {
+    margin-bottom: 0.25rem;
+  }
+
+  /* Application Method Options - Full Width Stack */
   .admin-job-application-options {
     flex-direction: column;
+    gap: 0.5rem;
   }
-  
+
   .admin-job-application-option {
     width: 100%;
   }
-} 
+
+  .admin-job-application-label {
+    padding: 0.875rem 1rem;
+    min-height: 48px;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+  }
+
+  /* Upload Button */
+  .admin-upload-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .admin-upload-btn {
+    width: 100%;
+    min-height: 48px;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+  }
+
+  .admin-selected-file {
+    font-size: 0.8125rem;
+    text-align: center;
+    padding: 0.5rem;
+    background-color: var(--gray-50);
+    border-radius: 6px;
+  }
+
+  .admin-logo-preview {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  .admin-logo-preview-image {
+    max-width: 120px;
+    max-height: 120px;
+    border-radius: 8px;
+  }
+
+  /* Status Section - 1 Column Layout */
+  .admin-job-status-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 12px;
+    text-align: center;
+  }
+
+  .admin-job-status-container > div:first-child {
+    display: flex;
+    justify-content: center;
+  }
+
+  .admin-job-status-badge {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .admin-form-checkbox-group {
+    width: 100%;
+    text-align: center;
+  }
+
+  .admin-form-checkbox-container {
+    justify-content: center;
+    min-height: 48px;
+    padding: 0.75rem 1rem;
+    background-color: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    width: 100%;
+  }
+
+  .admin-form-checkbox-container input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .admin-form-checkbox-label {
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+
+  /* Hint text below checkbox - centered */
+  .admin-job-status-container .admin-form-checkbox-group .admin-form-hint {
+    text-align: center;
+    margin-top: 0.75rem;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    padding: 0 0.5rem;
+  }
+
+  /* Form Actions - Sticky Bottom */
+  .admin-form-actions {
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+  }
+
+  .admin-form-submit,
+  .admin-form-cancel {
+    width: 100%;
+    min-height: 48px;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .admin-form-submit {
+    order: 1;
+  }
+
+  .admin-form-cancel {
+    order: 2;
+  }
+
+  /* Back Button */
+  .admin-toolbar {
+    padding: 0.75rem 1rem;
+    background-color: white;
+    border-bottom: 1px solid var(--gray-100);
+  }
+
+  .admin-back-btn {
+    min-height: 44px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9375rem;
+    border-radius: 8px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .admin-form {
+    padding: 0.875rem;
+  }
+
+  .admin-form-section {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem;
+  }
+
+  /* Job Type - Single Column on very small screens */
+  .admin-job-type-options {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-job-type-label {
+    flex-direction: row;
+    min-height: 48px;
+    padding: 0.75rem 1rem;
+  }
+
+  .admin-job-type-label svg {
+    margin-bottom: 0;
+  }
+
+  .admin-job-status-container {
+    padding: 1rem;
+  }
+
+  .admin-form-checkbox-group .admin-form-hint {
+    font-size: 0.75rem;
+  }
+}

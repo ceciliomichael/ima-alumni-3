@@ -4,7 +4,6 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { Donation } from '../../types';
 import { User } from '../../types';
-import FeaturedCarousel from '../../components/FeaturedCarousel';
 import './Donations.css';
 
 // Define donation categories
@@ -97,7 +96,7 @@ const DonationsPage = ({ user }: DonationsPageProps) => {
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currency || 'USD',
+      currency: currency || 'PHP',
       minimumFractionDigits: 2
     }).format(amount);
   };
@@ -190,12 +189,16 @@ const DonationsPage = ({ user }: DonationsPageProps) => {
             </div>
           </div>
           
-          <div className="donations-controls">
-            <div className="donations-filters">
+          {/* Swipeable category filters */}
+          <div className="mb-6">
+            <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
               {DONATION_CATEGORIES.map((category, index) => (
                 <button 
                   key={index} 
-                  className={`donation-filter ${activeCategory === category ? 'active' : ''}`}
+                  className={`flex-shrink-0 snap-start px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap
+                    ${activeCategory === category 
+                      ? 'bg-primary text-white' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                   onClick={() => setActiveCategory(category)}
                 >
                   {category}
@@ -213,46 +216,56 @@ const DonationsPage = ({ user }: DonationsPageProps) => {
               </div>
             </div>
           ) : filteredDonations.length > 0 ? (
-            <FeaturedCarousel
-              items={filteredDonations}
-              getKey={(donation) => donation.id}
-              renderFeatured={(donation) => (
-                <div className="donation-featured-card">
-                  <div className="donation-featured-header">
-                    <div className="donation-featured-category">{donation.category}</div>
-                    <div className="donation-featured-amount">{formatCurrency(donation.amount, donation.currency)}</div>
+            <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
+              {filteredDonations.map((donation) => (
+                <div 
+                  key={donation.id}
+                  className="flex-shrink-0 snap-start w-[calc(100vw-3rem)] sm:w-80 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
+                >
+                  {/* Donation Title (Category) */}
+                  <div className="bg-primary/5 px-4 py-3 border-b border-gray-100">
+                    <span className="text-sm font-semibold text-primary">{donation.category}</span>
                   </div>
                   
-                  <div className="donation-featured-content">
-                    <h3 className="donation-featured-title">{donation.purpose}</h3>
-                    {donation.description && (
-                      <p className="donation-featured-description">{donation.description}</p>
-                    )}
-                  </div>
-                  
-                  <div className="donation-featured-footer">
-                    <div className="donation-featured-donor">
-                      <Heart size={20} className="donation-featured-heart" />
-                      <div className="donation-featured-donor-name">
-                        {donation.isAnonymous ? 'Anonymous Donor' : donation.donorName}
-                      </div>
+                  {/* Donation Amount */}
+                  <div className="px-4 pt-4">
+                    <div className="text-2xl font-bold text-success">
+                      {formatCurrency(donation.amount, donation.currency)}
                     </div>
-                    
-                    <div className="donation-featured-date">
-                      <Calendar size={16} />
+                  </div>
+                  
+                  {/* Purpose Title */}
+                  <div className="px-4 pt-3">
+                    <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+                      {donation.purpose}
+                    </h3>
+                  </div>
+                  
+                  {/* Purpose Description */}
+                  {donation.description && (
+                    <div className="px-4 pt-2">
+                      <p className="text-sm text-gray-600 line-clamp-3">
+                        {donation.description}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Bottom Row: Donator name (left) | Date (right) */}
+                  <div className="flex items-center justify-between px-4 py-4 mt-3 border-t border-gray-100 bg-gray-50">
+                    <div className="flex items-center gap-2">
+                      <Heart size={16} className="text-warning" />
+                      <span className="text-sm font-medium text-gray-700 truncate max-w-[120px]">
+                        {donation.isAnonymous ? 'Anonymous' : donation.donorName}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                      <Calendar size={14} />
                       <span>{formatDate(donation.donationDate)}</span>
                     </div>
                   </div>
                 </div>
-              )}
-              renderThumb={(donation) => (
-                <div className="donation-thumb">
-                  <div className="donation-thumb-amount">{formatCurrency(donation.amount, donation.currency)}</div>
-                  <div className="donation-thumb-category">{donation.category}</div>
-                </div>
-              )}
-              loop={true}
-            />
+              ))}
+            </div>
           ) : (
             <div className="empty-donations">
               <div className="empty-state-icon">

@@ -11,7 +11,7 @@
 .featured-panel {
   position: relative;
   width: 100%;
-  height: 360px;
+  height: 420px;
   background-color: var(--background-card);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -236,10 +236,19 @@
     padding: 0.25rem 0.625rem;
     font-size: 0.6875rem;
   }
+  
+  /* Hide thumbnails on mobile for cleaner look */
+  .thumbnails-container {
+    display: none;
+  }
 }
 
 /* Mobile-specific responsive overlay styles */
 @media (max-width: 768px) {
+  .featured-panel {
+    height: 480px; /* Taller on mobile to accommodate stacked content */
+  }
+
   .gallery-featured-overlay h3 {
     font-size: 1.25rem;
   }
@@ -272,7 +281,7 @@
   }
 
   .job-featured-card {
-    padding: 1.5rem;
+    padding: 1.25rem 2.5rem;
   }
 
   .job-featured-title {

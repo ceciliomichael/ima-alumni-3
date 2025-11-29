@@ -122,7 +122,8 @@ const OfficersCarousel = () => {
         <div className="officers-grid">
           {displayedOfficers.map((officer) => {
             const alumni = getAlumniInfo(officer.alumniId);
-            const photoSrc = officer.photo || alumni?.profileImage;
+            // Prefer alumni profile image (syncs with user profile updates), fallback to officer-specific photo
+            const photoSrc = alumni?.profileImage || officer.photo;
 
             return (
               <div key={officer.id} className="officer-card-grid">

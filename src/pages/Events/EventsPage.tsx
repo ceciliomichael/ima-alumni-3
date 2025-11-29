@@ -112,6 +112,20 @@ const EventsPage = () => {
     });
   };
 
+  // Format time range (start - end) if endDate exists
+  const formatEventTimeRange = (startDateString: string, endDateString?: string) => {
+    const startTime = formatEventTime(startDateString);
+    if (!endDateString) {
+      return startTime;
+    }
+    const endTime = formatEventTime(endDateString);
+    // Only show range if times are different
+    if (startTime === endTime) {
+      return startTime;
+    }
+    return `${startTime} - ${endTime}`;
+  };
+
   return (
     <div className="events-page">
       <div className="events-layout">
@@ -222,7 +236,7 @@ const EventsPage = () => {
                         </div>
                         <div className="event-featured-detail">
                           <Clock size={16} />
-                          <span>{formatEventTime(event.date)}</span>
+                          <span>{formatEventTimeRange(event.date, event.endDate)}</span>
                         </div>
                         <div className="event-featured-detail">
                           <MapPin size={16} />

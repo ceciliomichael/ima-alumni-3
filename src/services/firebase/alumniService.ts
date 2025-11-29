@@ -12,6 +12,7 @@ import {
 import { AlumniRecord } from '../../types';
 import { cleanAlumniId, validateAndFormatAlumniId } from '../../utils/alumniIdUtils';
 import { approveUser } from './userService';
+import { deleteUserContent } from './postService';
 
 const COLLECTION_NAME = 'alumni_records';
 
@@ -116,6 +117,32 @@ export const updateAlumni = async (id: string, updatedData: Partial<AlumniRecord
 export const deleteAlumni = async (id: string): Promise<boolean> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
+    
+    // Check for linked user and delete them too
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data() as AlumniRecord;
+      if (data.userId) {
+        try {
+          const userDocRef = doc(db, 'users', data.userId);
+          await updateDoc(userDocRef, {
+            deletedAt: new Date().toISOString(),
+            isActive: false
+          });
+
+          // Fully remove posts, comments, and replies for this user
+          try {
+            await deleteUserContent(data.userId);
+          } catch (postError) {
+            console.error('Error deleting posts for deleted alumni user:', postError);
+          }
+        } catch (userError) {
+          console.error('Error deleting linked user account:', userError);
+          // Continue with alumni deletion even if user deletion fails
+        }
+      }
+    }
+
     await updateDoc(docRef, {
       deletedAt: new Date().toISOString(),
       isActive: false // Also mark as inactive

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Eye, Target, CheckSquare } from 'lucide-react';
+import { Eye, Target, CheckSquare } from 'lucide-react';
 import { HistoryItem, VisionMissionContent } from '../../services/firebase/aboutService';
 import './AboutSlideshow.css';
 
@@ -34,6 +34,8 @@ const AboutSlideshow = ({
 }: AboutSlideshowProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   // Get slides based on type
   const getSlides = (): (HistorySlide | VisionSlide)[] => {
@@ -76,28 +78,51 @@ const AboutSlideshow = ({
 
   const slides = getSlides();
 
-  useEffect(() => {
-    if (!isPaused && slides.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentIndex((prevIndex) => 
-          prevIndex === slides.length - 1 ? 0 : prevIndex + 1
-        );
-      }, autoPlayMs);
-
-      return () => clearInterval(interval);
-    }
-  }, [isPaused, slides.length, autoPlayMs]);
-
   const goToPrevious = () => {
-    setCurrentIndex(currentIndex === 0 ? slides.length - 1 : currentIndex - 1);
+    setCurrentIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
   };
 
   const goToNext = () => {
-    setCurrentIndex(currentIndex === slides.length - 1 ? 0 : currentIndex + 1);
+    setCurrentIndex((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
   };
 
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
+  };
+
+  // Auto-play logic
+  useEffect(() => {
+    if (!isPaused && slides.length > 1) {
+      const interval = setInterval(goToNext, autoPlayMs);
+      return () => clearInterval(interval);
+    }
+  }, [isPaused, slides.length, autoPlayMs]);
+
+  // Touch handlers for swipe support
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+    setIsPaused(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const minSwipeDistance = 50;
+
+    if (distance > minSwipeDistance) {
+      goToNext();
+    } else if (distance < -minSwipeDistance) {
+      goToPrevious();
+    }
+
+    setTouchStart(null);
+    setTouchEnd(null);
+    setIsPaused(false);
   };
 
   if (slides.length === 0) {
@@ -127,6 +152,10 @@ const AboutSlideshow = ({
       className="about-slideshow"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      style={{ touchAction: 'pan-y' }}
     >
       {/* Main Slideshow Container */}
       <div className="slideshow-container">
@@ -169,42 +198,18 @@ const AboutSlideshow = ({
         ))}
       </div>
 
-      {/* Navigation Controls */}
+      {/* Navigation Controls (Arrows removed as requested, Dots kept) */}
       {slides.length > 1 && (
-        <>
-          {/* Previous/Next Buttons */}
-          <button 
-            className="slideshow-nav-btn prev-btn"
-            onClick={goToPrevious}
-            aria-label="Previous slide"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <button 
-            className="slideshow-nav-btn next-btn"
-            onClick={goToNext}
-            aria-label="Next slide"
-          >
-            <ChevronRight size={24} />
-          </button>
-
-          {/* Dots Indicator */}
-          <div className="slideshow-dots">
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                className={`slideshow-dot ${index === currentIndex ? 'active' : ''}`}
-                onClick={() => goToSlide(index)}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
-
-          {/* Slide Counter */}
-          <div className="slideshow-counter">
-            {currentIndex + 1} / {slides.length}
-          </div>
-        </>
+        <div className="slideshow-dots">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              className={`slideshow-dot ${index === currentIndex ? 'active' : ''}`}
+              onClick={() => goToSlide(index)}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
       )}
     </div>
   );

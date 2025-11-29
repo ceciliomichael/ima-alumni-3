@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
-  Trash2, AlertTriangle, Lock, Eye, EyeOff, CheckCircle
+  Trash2, AlertTriangle, Lock, Eye, EyeOff, CheckCircle, Home, Save
 } from 'lucide-react';
 import AdminLayout from '../../layout/AdminLayout';
 import ConfirmDialog from '../../../../components/ConfirmDialog';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import { updateAdminPassword, verifyAdminPassword } from '../../../../services/firebase/adminService';
+import { getHomepageHero, updateHomepageHero, DEFAULT_HERO_CONTENT } from '../../../../services/firebase/homepageService';
+import { HomepageHeroContent } from '../../../../types';
 // Import Firebase services for data deletion
 import { getAllUsers, deleteUser } from '../../../../services/firebase/userService';
 import { getAllPosts, deletePost } from '../../../../services/firebase/postService';
@@ -35,6 +37,52 @@ const Settings = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Homepage Hero state
+  const [heroContent, setHeroContent] = useState<HomepageHeroContent>(DEFAULT_HERO_CONTENT);
+  const [isLoadingHero, setIsLoadingHero] = useState(true);
+  const [isSavingHero, setIsSavingHero] = useState(false);
+  const [heroSuccess, setHeroSuccess] = useState('');
+  const [heroError, setHeroError] = useState('');
+
+  // Load hero content on mount
+  useEffect(() => {
+    const loadHeroContent = async () => {
+      try {
+        const content = await getHomepageHero();
+        setHeroContent(content);
+      } catch (error) {
+        console.error('Error loading hero content:', error);
+      } finally {
+        setIsLoadingHero(false);
+      }
+    };
+    loadHeroContent();
+  }, []);
+
+  const handleHeroChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setHeroContent(prev => ({ ...prev, [name]: value }));
+    if (heroSuccess) setHeroSuccess('');
+    if (heroError) setHeroError('');
+  };
+
+  const handleHeroSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingHero(true);
+    setHeroSuccess('');
+    setHeroError('');
+
+    try {
+      await updateHomepageHero(heroContent, adminUser?.name);
+      setHeroSuccess('Homepage hero content updated successfully!');
+    } catch (error) {
+      console.error('Error updating hero content:', error);
+      setHeroError('Failed to update hero content. Please try again.');
+    } finally {
+      setIsSavingHero(false);
+    }
+  };
 
   const handleClearAllData = async () => {
     setIsClearingData(true);
@@ -401,6 +449,184 @@ const Settings = () => {
                 {isChangingPassword ? 'Updating Password...' : 'Update Password'}
               </button>
             </form>
+          </div>
+        </div>
+
+        {/* Homepage Hero Section */}
+        <div className="settings-section">
+          <div className="settings-section-header">
+            <h2 className="settings-section-title">
+              <div className="settings-section-title-icon">
+                <Home size={20} />
+              </div>
+              Homepage Hero Content
+            </h2>
+          </div>
+          
+          <div className="settings-section-content">
+            {heroSuccess && (
+              <div style={{ 
+                backgroundColor: 'oklch(0.7 0.15 145 / 0.1)', 
+                color: 'oklch(0.45 0.15 145)',
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                marginBottom: '1rem',
+                border: '1px solid oklch(0.7 0.15 145 / 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <CheckCircle size={18} />
+                {heroSuccess}
+              </div>
+            )}
+            
+            {heroError && (
+              <div style={{ 
+                backgroundColor: 'oklch(0.6 0.25 0 / 0.1)', 
+                color: 'oklch(0.6 0.25 0)',
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                marginBottom: '1rem',
+                border: '1px solid oklch(0.6 0.25 0 / 0.2)'
+              }}>
+                {heroError}
+              </div>
+            )}
+            
+            {isLoadingHero ? (
+              <p>Loading hero content...</p>
+            ) : (
+              <form onSubmit={handleHeroSubmit} style={{ maxWidth: '600px' }}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={heroContent.title}
+                    onChange={handleHeroChange}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      fontSize: '0.95rem',
+                      boxSizing: 'border-box'
+                    }}
+                    placeholder="e.g., Immaculate Mary Academy"
+                  />
+                </div>
+                
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                    Subtitle
+                  </label>
+                  <input
+                    type="text"
+                    name="subtitle"
+                    value={heroContent.subtitle}
+                    onChange={handleHeroChange}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      fontSize: '0.95rem',
+                      boxSizing: 'border-box'
+                    }}
+                    placeholder="e.g., Alumni Community"
+                  />
+                </div>
+                
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    value={heroContent.description}
+                    onChange={handleHeroChange}
+                    rows={4}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      fontSize: '0.95rem',
+                      boxSizing: 'border-box',
+                      resize: 'vertical'
+                    }}
+                    placeholder="Welcome message for the homepage..."
+                  />
+                </div>
+                
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                    Button Label
+                  </label>
+                  <input
+                    type="text"
+                    name="ctaLabel"
+                    value={heroContent.ctaLabel}
+                    onChange={handleHeroChange}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      fontSize: '0.95rem',
+                      boxSizing: 'border-box'
+                    }}
+                    placeholder="e.g., Learn More About IMA"
+                  />
+                </div>
+                
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                    Button Link
+                  </label>
+                  <input
+                    type="text"
+                    name="ctaUrl"
+                    value={heroContent.ctaUrl}
+                    onChange={handleHeroChange}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      fontSize: '0.95rem',
+                      boxSizing: 'border-box'
+                    }}
+                    placeholder="e.g., /about"
+                  />
+                </div>
+                
+                <button
+                  type="submit"
+                  disabled={isSavingHero}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.75rem 1.5rem',
+                    backgroundColor: 'var(--primary-color)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '0.95rem',
+                    fontWeight: 500,
+                    cursor: isSavingHero ? 'not-allowed' : 'pointer',
+                    opacity: isSavingHero ? 0.7 : 1
+                  }}
+                >
+                  <Save size={16} />
+                  {isSavingHero ? 'Saving...' : 'Save Changes'}
+                </button>
+              </form>
+            )}
           </div>
         </div>
 

@@ -64,4 +64,17 @@
 /* Accessibility - ensure text is visible on any background color */
 .default-avatar, .image-placeholder {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-} 
+}
+
+/* Avatar placeholder inside profile header - fill parent container */
+.profile-avatar .default-avatar.avatar-placeholder {
+  width: 100% !important;
+  height: 100% !important;
+  font-size: 46px !important;
+}
+
+@media (max-width: 767px) {
+  .profile-avatar .default-avatar.avatar-placeholder {
+    font-size: 32px !important;
+  }
+}

@@ -432,24 +432,48 @@
     gap: 0.5rem;
   }
   
+  /* Mobile sidebar - slides from right, matching admin sidebar design */
   .nav-menu {
     position: fixed;
     top: 70px;
-    left: 0;
-    width: 100%;
+    right: -280px;
+    left: auto;
+    width: 280px;
     height: calc(100vh - 70px);
-    background-color: white;
-    display: none;
+    background-color: #1e40af;
+    display: flex;
     flex-direction: column;
-    padding: 1.5rem;
+    padding: 1.5rem 0;
+    margin: 0;
     z-index: 999;
-    border-top: 1px solid var(--gray-200);
+    border-top: none;
+    border-left: none;
     overflow-y: auto;
     justify-content: flex-start;
+    transition: right 0.3s ease;
+    box-shadow: none;
   }
   
   .mobile-menu-open {
-    display: flex;
+    right: 0;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Mobile sidebar overlay */
+  .mobile-menu-overlay {
+    position: fixed;
+    inset: 0;
+    top: 70px;
+    background-color: rgba(15, 23, 42, 0.35);
+    z-index: 998;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .mobile-menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
   }
   
   .nav-list {
@@ -458,7 +482,8 @@
     background: none;
     border: none;
     padding: 0;
-    gap: 0.5rem;
+    gap: 0;
+    border-radius: 0;
   }
   
   .nav-item {
@@ -467,18 +492,54 @@
   
   .nav-link {
     width: 100%;
-    padding: 1rem 1.25rem;
-    font-size: 1rem;
-    border-radius: 12px;
-    border: 1px solid var(--gray-200);
-    background-color: var(--gray-50);
-    color: var(--text-primary);
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    border-radius: 0;
+    border: none;
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+    gap: 0.75rem;
+  }
+  
+  .nav-link svg {
+    width: 20px;
+    height: 20px;
+    margin-right: 0.75rem;
+    transition: transform 0.2s ease;
+  }
+  
+  .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
+  
+  .nav-link:hover svg {
+    transform: translateY(-1px);
   }
   
   .nav-link.active {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white;
+    background-color: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: #ffffff;
+    border-left: 3px solid #fbbf24;
+  }
+  
+  /* Peso icon styling for mobile sidebar - match admin sidebar */
+  .nav-link .peso-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1;
+    text-align: center;
+    margin-right: 0.75rem;
   }
 }
 

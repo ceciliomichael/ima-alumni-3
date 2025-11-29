@@ -1,5 +1,8 @@
-import { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, Heart, Bookmark, Calendar, User, Share2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { X, ChevronLeft, ChevronRight, Heart, Bookmark, Calendar, User, Loader } from 'lucide-react';
+import { doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
+import { db } from '../../../../firebase/config';
+import { getCurrentUser } from '../../../../services/firebase/userService';
 import { GalleryPost } from '../../../../types';
 import { getAlbumImages } from '../../../../services/firebase/galleryService';
 import './AlbumViewerModal.css';
@@ -16,46 +19,111 @@ const AlbumViewerModal = ({ isOpen, onClose, albumItem, currentImageIndex = 0 }:
   const [albumImages, setAlbumImages] = useState<GalleryPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [isLikeLoading, setIsLikeLoading] = useState(false);
+  const [isBookmarkLoading, setIsBookmarkLoading] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [likeCount, setLikeCount] = useState(0);
+
+  // Fetch current user
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = await getCurrentUser();
+      if (user) {
+        setUserId(user.id);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  // Check if user has liked/bookmarked when image changes
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      if (!userId || albumImages.length === 0) return;
+      
+      const currentImage = albumImages[currentIndex];
+      if (!currentImage) return;
+      
+      try {
+        const galleryRef = doc(db, 'gallery_items', currentImage.id);
+        const galleryDoc = await getDoc(galleryRef);
+        
+        if (galleryDoc.exists()) {
+          const data = galleryDoc.data();
+          setLiked(data.likedBy?.includes(userId) || false);
+          setBookmarked(data.bookmarkedBy?.includes(userId) || false);
+          setLikeCount(data.likedBy?.length || 0);
+        }
+      } catch (error) {
+        console.error('Error checking user status:', error);
+      }
+    };
+    
+    checkUserStatus();
+  }, [userId, currentIndex, albumImages]);
+
+  const loadAlbumImages = useCallback(async () => {
+    if (!albumItem.albumId) {
+      // Fallback: treat as single image
+      setAlbumImages([albumItem]);
+      setIsLoading(false);
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const images = await getAlbumImages(albumItem.albumId);
+      // If no images found, use the albumItem itself
+      if (images.length === 0) {
+        setAlbumImages([albumItem]);
+      } else {
+        setAlbumImages(images);
+      }
+    } catch (error) {
+      console.error('Error loading album images:', error);
+      // Fallback to showing the single item
+      setAlbumImages([albumItem]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [albumItem]);
 
   useEffect(() => {
-    if (isOpen && albumItem.albumId) {
-      loadAlbumImages();
+    if (isOpen) {
+      // Reset image loaded state when modal opens
+      setImageLoaded(false);
+      
+      if (albumItem.albumId && albumItem.isAlbum) {
+        // It's an album - fetch all images in the album
+        loadAlbumImages();
+      } else {
+        // It's a single image - just use the albumItem directly
+        setAlbumImages([albumItem]);
+        setIsLoading(false);
+      }
     }
-  }, [isOpen, albumItem.albumId]);
+  }, [isOpen, albumItem, loadAlbumImages]);
 
   useEffect(() => {
     setCurrentIndex(currentImageIndex);
   }, [currentImageIndex]);
 
-  const loadAlbumImages = async () => {
-    if (!albumItem.albumId) return;
-    
-    setIsLoading(true);
-    try {
-      const images = await getAlbumImages(albumItem.albumId);
-      setAlbumImages(images);
-    } catch (error) {
-      console.error('Error loading album images:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (albumImages.length > 0) {
       setImageLoaded(false);
       setCurrentIndex((prev) => (prev > 0 ? prev - 1 : albumImages.length - 1));
     }
-  };
+  }, [albumImages.length]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (albumImages.length > 0) {
       setImageLoaded(false);
       setCurrentIndex((prev) => (prev < albumImages.length - 1 ? prev + 1 : 0));
     }
-  };
+  }, [albumImages.length]);
 
-  const handleKeyDown = (e: KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (!isOpen) return;
     
     switch (e.key) {
@@ -69,12 +137,80 @@ const AlbumViewerModal = ({ isOpen, onClose, albumItem, currentImageIndex = 0 }:
         handleNext();
         break;
     }
-  };
+  }, [isOpen, onClose, handlePrevious, handleNext]);
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, albumImages.length]);
+  }, [handleKeyDown]);
+
+  const handleLike = async () => {
+    if (!userId) {
+      alert('Please sign in to like photos');
+      return;
+    }
+    
+    const currentImage = albumImages[currentIndex];
+    if (!currentImage) return;
+    
+    setIsLikeLoading(true);
+    
+    try {
+      const galleryRef = doc(db, 'gallery_items', currentImage.id);
+      
+      if (liked) {
+        await updateDoc(galleryRef, {
+          likedBy: arrayRemove(userId)
+        });
+        setLikeCount(prev => prev - 1);
+      } else {
+        await updateDoc(galleryRef, {
+          likedBy: arrayUnion(userId)
+        });
+        setLikeCount(prev => prev + 1);
+      }
+      
+      setLiked(!liked);
+    } catch (error) {
+      console.error('Error updating like status:', error);
+      alert('Failed to update like status. Please try again.');
+    } finally {
+      setIsLikeLoading(false);
+    }
+  };
+
+  const handleBookmark = async () => {
+    if (!userId) {
+      alert('Please sign in to bookmark photos');
+      return;
+    }
+    
+    const currentImage = albumImages[currentIndex];
+    if (!currentImage) return;
+    
+    setIsBookmarkLoading(true);
+    
+    try {
+      const galleryRef = doc(db, 'gallery_items', currentImage.id);
+      
+      if (bookmarked) {
+        await updateDoc(galleryRef, {
+          bookmarkedBy: arrayRemove(userId)
+        });
+      } else {
+        await updateDoc(galleryRef, {
+          bookmarkedBy: arrayUnion(userId)
+        });
+      }
+      
+      setBookmarked(!bookmarked);
+    } catch (error) {
+      console.error('Error updating bookmark status:', error);
+      alert('Failed to update bookmark status. Please try again.');
+    } finally {
+      setIsBookmarkLoading(false);
+    }
+  };
 
   const currentImage = albumImages[currentIndex];
 
@@ -174,17 +310,31 @@ const AlbumViewerModal = ({ isOpen, onClose, albumItem, currentImageIndex = 0 }:
                 </div>
 
                 <div className="image-actions">
-                  <button className="action-button like-button" aria-label="Like image">
-                    <Heart size={20} />
-                    <span>{currentImage.likedBy?.length || 0}</span>
+                  <button 
+                    className={`action-button like-button ${liked ? 'active' : ''}`} 
+                    aria-label="Like image"
+                    onClick={handleLike}
+                    disabled={isLikeLoading}
+                  >
+                    {isLikeLoading ? (
+                      <Loader size={20} className="animate-spin" />
+                    ) : (
+                      <Heart size={20} fill={liked ? 'currentColor' : 'none'} />
+                    )}
+                    <span>{likeCount}</span>
                   </button>
                   
-                  <button className="action-button bookmark-button" aria-label="Bookmark image">
-                    <Bookmark size={20} />
-                  </button>
-                  
-                  <button className="action-button share-button" aria-label="Share image">
-                    <Share2 size={20} />
+                  <button 
+                    className={`action-button bookmark-button ${bookmarked ? 'active' : ''}`} 
+                    aria-label="Bookmark image"
+                    onClick={handleBookmark}
+                    disabled={isBookmarkLoading}
+                  >
+                    {isBookmarkLoading ? (
+                      <Loader size={20} className="animate-spin" />
+                    ) : (
+                      <Bookmark size={20} fill={bookmarked ? 'currentColor' : 'none'} />
+                    )}
                   </button>
                 </div>
 

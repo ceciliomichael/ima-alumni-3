@@ -105,7 +105,8 @@ export const addDonation = async (donation: Omit<Donation, 'id'>): Promise<strin
 export const updateDonation = async (id: string, donation: Partial<Donation>): Promise<void> => {
   try {
     const donationRef = doc(db, DONATIONS_COLLECTION, id);
-    const updateData: any = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateData: Record<string, any> = {
       ...donation,
       updatedAt: serverTimestamp()
     };
@@ -236,12 +237,25 @@ export const generateDonationReport = async (
       byMonth[monthKey].count += 1;
     });
 
+    // Group by year
+    const byYear: Record<string, { amount: number; count: number }> = {};
+    donations.forEach(d => {
+      const date = new Date(d.donationDate);
+      const yearKey = `${date.getFullYear()}`;
+      if (!byYear[yearKey]) {
+        byYear[yearKey] = { amount: 0, count: 0 };
+      }
+      byYear[yearKey].amount += d.amount;
+      byYear[yearKey].count += 1;
+    });
+
     return {
       totalAmount,
       count,
       avgAmount,
       byCategory,
       byMonth,
+      byYear,
       donations
     };
   } catch (error) {

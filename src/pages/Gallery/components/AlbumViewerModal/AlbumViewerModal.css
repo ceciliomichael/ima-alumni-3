@@ -448,18 +448,27 @@
 
 @media (max-width: 768px) {
   .album-viewer-container {
-    width: 95vw;
-    height: 90vh;
-    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
+    border-radius: 0;
+    overflow-y: auto;
   }
   
   .album-viewer-main {
     flex-direction: column;
+    min-height: auto;
+  }
+  
+  .image-display-container {
+    min-height: 300px;
+    flex-shrink: 0;
   }
   
   .image-info-sidebar {
     width: 100%;
-    max-height: 300px;
+    max-height: none;
     border-left: none;
     border-top: 1px solid oklch(0.92 0 0);
   }
@@ -472,8 +481,9 @@
     padding: 1rem 1.5rem;
   }
   
+  /* Hide thumbnail navigation on mobile */
   .thumbnail-navigation {
-    padding: 1rem 1.5rem;
+    display: none;
   }
   
   .nav-control {

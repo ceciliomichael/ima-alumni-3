@@ -35,6 +35,12 @@
   gap: 8px;
 }
 
+@media (max-width: 767px) {
+  .gallery-grid {
+    gap: 4px;
+  }
+}
+
 .gallery-item {
   aspect-ratio: 1;
   border-radius: var(--radius-md);
@@ -43,6 +49,13 @@
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
+  min-height: 44px;
+}
+
+@media (max-width: 767px) {
+  .gallery-item {
+    border-radius: 6px;
+  }
 }
 
 .gallery-item:hover {
@@ -77,10 +90,17 @@
   font-size: 14px;
 }
 
-@media (max-width: 768px) {
-  .gallery-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+@media (max-width: 767px) {
+  .profile-gallery-card {
+    padding: 12px;
+  }
+  
+  .gallery-header h3 {
+    font-size: 15px;
+  }
+  
+  .gallery-count {
+    font-size: 11px;
   }
 }
 

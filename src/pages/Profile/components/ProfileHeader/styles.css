@@ -17,6 +17,12 @@
   transition: all 0.3s ease;
 }
 
+@media (max-width: 767px) {
+  .profile-cover {
+    height: 120px;
+  }
+}
+
 .cover-overlay {
   position: absolute;
   top: 0;
@@ -42,6 +48,20 @@
   transition: all 0.2s ease;
   color: #333;
   z-index: 1;
+  min-height: 44px;
+}
+
+@media (max-width: 767px) {
+  .change-cover-btn {
+    right: 12px;
+    top: 12px;
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+  
+  .change-cover-btn span {
+    display: none;
+  }
 }
 
 .change-cover-btn:hover {
@@ -73,6 +93,15 @@
   justify-content: center;
   border: 4px solid white;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 767px) {
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    margin-top: -40px;
+    border: 3px solid white;
+  }
 }
 
 .profile-avatar img {
@@ -110,6 +139,22 @@
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  min-width: 44px;
+  min-height: 44px;
+}
+
+@media (max-width: 767px) {
+  .change-avatar-btn {
+    width: 28px;
+    height: 28px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  .change-avatar-btn svg {
+    width: 14px;
+    height: 14px;
+  }
 }
 
 .change-avatar-btn:hover {
@@ -133,6 +178,14 @@
   align-items: flex-start;
   gap: 20px;
   width: 100%;
+}
+
+@media (max-width: 767px) {
+  .profile-info-row {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
 }
 
 .profile-left-section {
@@ -190,12 +243,33 @@
   margin-top: 8px;
 }
 
+@media (max-width: 767px) {
+  .personal-info-row {
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
 .personal-info-item {
   display: flex;
   align-items: center;
   gap: 6px;
   color: #666;
   font-size: 13px;
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .personal-info-item {
+    font-size: 12px;
+    padding: 6px 12px;
+    background-color: #f5f5f5;
+    border-radius: 20px;
+    flex-shrink: 0;
+    white-space: normal;
+    max-width: 100%;
+  }
 }
 
 .personal-info-item svg {
@@ -237,6 +311,16 @@
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
+  min-height: 44px;
+}
+
+@media (max-width: 767px) {
+  .edit-profile-btn, .follow-btn, .unfollow-btn {
+    padding: 10px 14px;
+    font-size: 13px;
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .edit-profile-btn {
@@ -285,9 +369,10 @@
 
 .name-and-badge {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+  justify-content: center;
+  gap: 8px;
 }
 
 .profile-name-section h1 {
@@ -296,8 +381,14 @@
   color: #333;
 }
 
+@media (max-width: 767px) {
+  .profile-name-section h1 {
+    font-size: 20px;
+  }
+}
+
 .officer-badge {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   background-color: rgba(var(--primary-rgb), 0.1);
@@ -306,6 +397,19 @@
   border-radius: 30px;
   font-size: 13px;
   font-weight: 500;
+  white-space: nowrap;
+}
+
+@media (max-width: 767px) {
+  .officer-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+  }
+  
+  .officer-badge svg {
+    width: 14px;
+    height: 14px;
+  }
 }
 
 .officer-badge .batch-year {

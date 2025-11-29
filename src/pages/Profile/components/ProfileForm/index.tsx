@@ -355,18 +355,19 @@ const ProfileForm = ({ user, onSave, onCancel, isLoading = false }: ProfileFormP
             <div className="form-group">
               <label htmlFor="batch">
                 <User size={16} />
-                <span>Batch</span>
+                <span>Batch Year</span>
               </label>
               <input 
                 type="text" 
                 id="batch" 
                 name="batch" 
                 value={formData.batch} 
-                onChange={handleInputChange} 
-                placeholder="Your batch year"
-                required
+                readOnly
+                disabled
+                className="readonly-field"
+                title="Batch year cannot be changed. Contact admin if incorrect."
               />
-              {errors.batch && <div className="form-error">{errors.batch}</div>}
+              <p className="form-hint">Batch year cannot be modified. Contact admin if this is incorrect.</p>
             </div>
           </div>
         </div>

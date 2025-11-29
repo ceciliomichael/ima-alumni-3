@@ -636,7 +636,15 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .about-management-container {
-    padding: 1rem;
+    padding: 0.75rem;
+  }
+
+  .about-management-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .about-management-title h2 {
+    font-size: 1.25rem;
   }
 
   .about-management-tabs {
@@ -646,43 +654,160 @@
   .about-management-tab {
     font-size: 0.875rem;
     padding: 0.625rem 0.75rem;
+    min-height: 44px;
   }
 
   .about-management-tab svg {
     display: none;
   }
 
+  .about-management-content {
+    padding: 1rem;
+    min-height: auto;
+  }
+
   .section-header {
     flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  .section-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .section-actions {
+    width: 100%;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .add-btn, .edit-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .btn-primary, .btn-secondary, .btn-danger {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .history-item-card {
+    padding: 1rem;
+  }
+
+  .history-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .action-btn {
+    min-height: 40px;
+    min-width: 40px;
+  }
+
+  .vision-card, .mission-card, .goals-card, .contact-card {
+    padding: 1rem;
   }
 
   .modal-content {
-    margin: 1rem;
-    max-width: calc(100% - 2rem);
+    margin: 0.5rem;
+    max-width: calc(100% - 1rem);
+  }
+
+  .modal-header {
+    padding: 1rem 1rem 0;
+  }
+
+  .modal-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .modal-body {
+    padding: 0 1rem;
   }
 
   .modal-footer {
     flex-direction: column-reverse;
+    padding: 1rem;
+    gap: 0.5rem;
+  }
+
+  .modal-footer .btn-primary,
+  .modal-footer .btn-secondary {
+    width: 100%;
   }
 
   .form-actions {
     flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+
+  .form-actions .btn-primary,
+  .form-actions .btn-secondary {
+    width: 100%;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  .upload-button {
+    min-height: 44px;
+  }
+
+  .org-chart-empty {
+    padding: 2rem 1rem;
+  }
+
+  .org-chart-empty .empty-icon {
+    width: 56px;
+    height: 56px;
   }
 }
 
 @media (max-width: 576px) {
+  .about-management-container {
+    padding: 0.5rem;
+  }
+
   .about-management-header {
     flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  .about-management-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .about-management-title h2 {
+    font-size: 1.125rem;
+  }
+
+  .about-management-tabs {
+    margin-bottom: 1rem;
+  }
+
+  .about-management-tab {
+    font-size: 0.8125rem;
+    padding: 0.5rem 0.65rem;
   }
 
   .history-item-header {
     flex-direction: column;
     gap: 0.75rem;
     align-items: flex-start;
+  }
+
+  .history-item-card h4 {
+    font-size: 1rem;
   }
 
   .contact-card {
@@ -692,5 +817,15 @@
 
   .contact-icon {
     align-self: center;
+    width: 40px;
+    height: 40px;
+  }
+
+  .contact-card h4 {
+    font-size: 0.9375rem;
+  }
+
+  .contact-card p {
+    font-size: 0.875rem;
   }
 }

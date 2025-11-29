@@ -690,4 +690,167 @@
 .view-more-replies:hover {
   color: var(--primary-color);
   text-decoration: underline;
-} 
+}
+
+/* Moderation Status Badges */
+.post-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.moderation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.moderation-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.moderation-rejected {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.rejection-reason {
+  font-size: 0.75rem;
+  color: #991b1b;
+  margin: 0.25rem 0 0 0;
+  font-style: italic;
+  background-color: #fee2e2;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  max-width: 300px;
+}
+
+/* Post Edit Form */
+.post-edit-form {
+  width: 100%;
+}
+
+.post-edit-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  resize: vertical;
+  font-family: inherit;
+  min-height: 80px;
+}
+
+.post-edit-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+}
+
+.post-edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.post-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  border: none;
+}
+
+.post-edit-btn.save {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.post-edit-btn.save:hover:not(:disabled) {
+  background-color: var(--primary-dark);
+}
+
+.post-edit-btn.cancel {
+  background-color: var(--gray-100);
+  color: var(--text-secondary);
+}
+
+.post-edit-btn.cancel:hover:not(:disabled) {
+  background-color: var(--gray-200);
+}
+
+.post-edit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.edit-notice {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+/* Comment Edit Form */
+.comment-edit-form {
+  width: 100%;
+}
+
+.comment-edit-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-family: inherit;
+}
+
+.comment-edit-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.comment-edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.comment-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  border: none;
+}
+
+.comment-edit-btn.save {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.comment-edit-btn.cancel {
+  background-color: var(--gray-100);
+  color: var(--text-secondary);
+}

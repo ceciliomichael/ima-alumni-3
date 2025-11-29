@@ -2,7 +2,7 @@ import { collection, doc, getDoc, getDocs, addDoc, updateDoc, query, where, Upda
 import { db } from '../../firebase/config';
 import { addAlumni, getAlumniByUserId, updateAlumni, getAllAlumni } from './alumniService';
 import { cleanAlumniId } from '../../utils/alumniIdUtils';
-import { updateUserPosts } from './postService';
+import { deleteUserContent, updateUserPosts } from './postService';
 import { getOfficersByAlumniId } from './officerService';
 import { AlumniRecord } from '../../types';
 
@@ -69,6 +69,58 @@ export const getAllUsers = async (): Promise<User[]> => {
   }
 };
 
+// Cleanup helper to remove posts/comments for users already marked as deleted
+// and for users that no longer have an active alumni record
+export const cleanupDeletedUsersContent = async (): Promise<void> => {
+  try {
+    // Load all users (including deleted) and all active alumni records
+    const [querySnapshot, alumniRecords] = await Promise.all([
+      getDocs(collection(db, COLLECTION_NAME)),
+      getAllAlumni()
+    ]);
+
+    const users = querySnapshot.docs
+      .map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      } as User));
+
+    // User IDs that still have an active alumni record
+    const activeAlumniUserIds = new Set(
+      alumniRecords
+        .filter(alumni => alumni.userId)
+        .map(alumni => alumni.userId as string)
+    );
+
+    const deletedUsers = users.filter(user => user.deletedAt);
+
+    // Users that are not marked deleted but also no longer have an alumni record
+    const orphanUsers = users.filter(user =>
+      !user.deletedAt && !activeAlumniUserIds.has(user.id)
+    );
+
+    const idsToCleanup = new Set<string>();
+    deletedUsers.forEach(user => idsToCleanup.add(user.id));
+    orphanUsers.forEach(user => idsToCleanup.add(user.id));
+
+    if (idsToCleanup.size === 0) {
+      return;
+    }
+
+    const ops = Array.from(idsToCleanup).map(async (userId) => {
+      try {
+        await deleteUserContent(userId);
+      } catch (error) {
+        console.error('Error cleaning content for deleted/orphan user:', userId, error);
+      }
+    });
+
+    await Promise.all(ops);
+  } catch (error) {
+    console.error('Error cleaning up deleted/orphan users content:', error);
+  }
+};
+
 // Get user by ID
 export const getUserById = async (userId: string): Promise<User | null> => {
   try {
@@ -109,7 +161,7 @@ export const getUserByEmail = async (email: string): Promise<User | null> => {
   }
 };
 
-// Get user by Alumni ID
+// Get user by Alumni ID (excluding deleted)
 export const getUserByAlumniId = async (alumniId: string): Promise<User | null> => {
   try {
     const cleanId = cleanAlumniId(alumniId);
@@ -121,10 +173,13 @@ export const getUserByAlumniId = async (alumniId: string): Promise<User | null> 
     }
     
     const doc = querySnapshot.docs[0];
-    return {
+    const user = {
       id: doc.id,
       ...doc.data()
     } as User;
+    
+    // Return null if user is deleted
+    return user.deletedAt ? null : user;
   } catch (error) {
     console.error('Error getting user by Alumni ID:', error);
     return null;
@@ -192,6 +247,11 @@ export const loginUser = async (email: string, password: string): Promise<User |
     
     if (!user || user.password !== password) {
       return null; // Invalid credentials
+    }
+
+    // Check if user is deleted
+    if (user.deletedAt) {
+      return null; // User is deleted
     }
 
     if (!user.isActive) {
@@ -439,8 +499,16 @@ export const deleteUser = async (id: string): Promise<boolean> => {
   try {
     const docRef = doc(db, COLLECTION_NAME, id);
     await updateDoc(docRef, {
-      deletedAt: new Date().toISOString()
+      deletedAt: new Date().toISOString(),
+      isActive: false
     });
+    
+    // Remove this user's posts, comments, and replies from the system
+    try {
+      await deleteUserContent(id);
+    } catch (postError) {
+      console.error('Error deleting user content:', postError);
+    }
     
     // If deleting current user, logout
     const currentUser = getCurrentUser();

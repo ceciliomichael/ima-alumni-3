@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Post, User, Comment, Reply } from '../../../../types';
 import { FilePenLine } from 'lucide-react';
 import PostList from '../../../Home/components/PostList/PostList';
@@ -21,12 +21,25 @@ interface ProfilePostsProps {
 }
 
 const ProfilePosts = ({ posts, profileUser, currentUser }: ProfilePostsProps) => {
-  const [updatedPosts, setUpdatedPosts] = useState<Post[]>(posts);
+  const isOwnProfile = profileUser.id === currentUser?.id;
+  
+  // Filter posts based on viewing context (Option B for rejected posts)
+  const filterPostsForView = useCallback((postsToFilter: Post[]) => {
+    if (isOwnProfile) {
+      // Own profile: Show all posts (pending, approved, rejected)
+      return postsToFilter;
+    } else {
+      // Others' profile: Show only approved posts
+      return postsToFilter.filter(post => post.isApproved === true);
+    }
+  }, [isOwnProfile]);
+  
+  const [updatedPosts, setUpdatedPosts] = useState<Post[]>(() => filterPostsForView(posts));
   
   // Sync with posts prop when it changes
   useEffect(() => {
-    setUpdatedPosts(posts);
-  }, [posts]);
+    setUpdatedPosts(filterPostsForView(posts));
+  }, [posts, filterPostsForView]);
   
   // Listen for localStorage changes
   useEffect(() => {
@@ -34,7 +47,7 @@ const ProfilePosts = ({ posts, profileUser, currentUser }: ProfilePostsProps) =>
       try {
         const allPosts = await getAllPosts();
         const userPosts = allPosts.filter(post => post.userId === profileUser.id);
-        setUpdatedPosts(userPosts);
+        setUpdatedPosts(filterPostsForView(userPosts));
       } catch (error) {
         console.error('Error refreshing posts:', error);
       }
@@ -44,7 +57,7 @@ const ProfilePosts = ({ posts, profileUser, currentUser }: ProfilePostsProps) =>
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [profileUser.id]);
+  }, [profileUser.id, filterPostsForView]);
 
   const handleLikePost = async (postId: string) => {
     if (!currentUser) return;
@@ -143,8 +156,6 @@ const ProfilePosts = ({ posts, profileUser, currentUser }: ProfilePostsProps) =>
     }
   };
 
-  const isOwnProfile = profileUser.id === currentUser?.id;
-
   return (
     <div className="profile-posts">
       <div className="posts-header">
@@ -170,6 +181,7 @@ const ProfilePosts = ({ posts, profileUser, currentUser }: ProfilePostsProps) =>
             onToggleCommentReaction={handleToggleCommentReaction}
             onDeletePost={handleDeletePost}
             dateFormat="full"
+            showModerationStatus={isOwnProfile}
           />
         ) : (
           <div className="empty-posts">

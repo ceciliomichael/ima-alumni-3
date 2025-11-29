@@ -1,26 +1,50 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { User, Post } from '../../../../types';
 import { Image, Smile, Send, X } from 'lucide-react';
 import ImagePlaceholder from '../../../../components/ImagePlaceholder/ImagePlaceholder';
 import './PostForm.css';
-import { addPost } from '../../../../services/firebase/postService';
+import { addPost, editPostContent } from '../../../../services/firebase/postService';
 import FeelingSelector from './FeelingSelector';
 import { Feeling } from './types';
 
 interface PostFormProps {
   user: User | null;
   onPostCreated: (post: Post) => void;
+  // Edit mode props
+  editMode?: boolean;
+  postToEdit?: Post;
+  onEditComplete?: (updatedPost: Post) => void;
+  onEditCancel?: () => void;
 }
 
-const PostForm = ({ user, onPostCreated }: PostFormProps) => {
-  const [content, setContent] = useState('');
-  const [isExpanded, setIsExpanded] = useState(false);
+const PostForm = ({ 
+  user, 
+  onPostCreated,
+  editMode = false,
+  postToEdit,
+  onEditComplete,
+  onEditCancel
+}: PostFormProps) => {
+  const [content, setContent] = useState(editMode && postToEdit ? postToEdit.content : '');
+  const [isExpanded, setIsExpanded] = useState(editMode);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<string[]>(editMode && postToEdit?.images ? postToEdit.images : []);
   const [showFeelingSelector, setShowFeelingSelector] = useState(false);
-  const [selectedFeeling, setSelectedFeeling] = useState<Feeling | null>(null);
+  const [selectedFeeling, setSelectedFeeling] = useState<Feeling | null>(
+    editMode && postToEdit?.feeling ? postToEdit.feeling : null
+  );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize edit mode values
+  useEffect(() => {
+    if (editMode && postToEdit) {
+      setContent(postToEdit.content);
+      setSelectedImages(postToEdit.images || []);
+      setSelectedFeeling(postToEdit.feeling || null);
+      setIsExpanded(true);
+    }
+  }, [editMode, postToEdit]);
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setContent(e.target.value);
@@ -86,30 +110,75 @@ const PostForm = ({ user, onPostCreated }: PostFormProps) => {
     setIsSubmitting(true);
     
     try {
-      // Prepare post data
-      const postData: any = {
-        userId: user.id,
-        userName: user.name,
-        content: content.trim(),
-        images: selectedImages,
-        updatedAt: new Date().toISOString()
-      };
+      if (editMode && postToEdit) {
+        // Edit existing post
+        const updates: { content?: string; images?: string[]; feeling?: { emoji: string; text: string } | null } = {
+          content: content.trim(),
+          images: selectedImages,
+          feeling: selectedFeeling
+        };
+        
+        const updatedPost = await editPostContent(postToEdit.id, updates);
+        
+        if (updatedPost && onEditComplete) {
+          onEditComplete(updatedPost);
+        }
+      } else {
+        // Create new post
+        const postData: {
+          userId: string;
+          userName: string;
+          content: string;
+          images: string[];
+          updatedAt: string;
+          isApproved: boolean;
+          userImage?: string;
+          feeling?: { emoji: string; text: string };
+        } = {
+          userId: user.id,
+          userName: user.name,
+          content: content.trim(),
+          images: selectedImages,
+          updatedAt: new Date().toISOString(),
+          isApproved: false // Posts require moderation approval
+        };
 
-      if (user.profileImage) {
-        postData.userImage = user.profileImage;
-      }
+        if (user.profileImage) {
+          postData.userImage = user.profileImage;
+        }
 
-      if (selectedFeeling) {
-        postData.feeling = selectedFeeling;
+        if (selectedFeeling) {
+          postData.feeling = selectedFeeling;
+        }
+        
+        // Use postService to add the post
+        const newPost = await addPost(postData);
+        
+        // Call the callback with the new post
+        onPostCreated(newPost);
+        
+        // Reset form
+        setContent('');
+        setSelectedImages([]);
+        setSelectedFeeling(null);
+        setIsExpanded(false);
+        
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto';
+        }
       }
-      
-      // Use postService to add the post
-      const newPost = await addPost(postData);
-      
-      // Call the callback with the new post
-      onPostCreated(newPost);
-      
-      // Reset form
+    } catch (error) {
+      console.error('Error creating/editing post:', error);
+      alert(editMode ? 'Failed to edit post. Please try again.' : 'Failed to create post. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (editMode && onEditCancel) {
+      onEditCancel();
+    } else {
       setContent('');
       setSelectedImages([]);
       setSelectedFeeling(null);
@@ -118,27 +187,102 @@ const PostForm = ({ user, onPostCreated }: PostFormProps) => {
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto';
       }
-    } catch (error) {
-      console.error('Error creating post:', error);
-      alert('Failed to create post. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleCancel = () => {
-    setContent('');
-    setSelectedImages([]);
-    setSelectedFeeling(null);
-    setIsExpanded(false);
-    
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
     }
   };
 
   if (!user) return null;
 
+  // Render compact edit mode
+  if (editMode) {
+    return (
+      <div className="post-edit-inline">
+        <textarea
+          ref={textareaRef}
+          className="post-edit-textarea"
+          value={content}
+          onChange={handleContentChange}
+          rows={3}
+          autoFocus
+          placeholder="Edit your post..."
+        />
+        
+        {/* Image Preview for Edit */}
+        {selectedImages.length > 0 && (
+          <div className="post-edit-images">
+            {selectedImages.map((image, index) => (
+              <div key={index} className="post-edit-image-item">
+                <img src={image} alt={`Image ${index + 1}`} />
+                <button 
+                  type="button" 
+                  className="post-edit-remove-img"
+                  onClick={() => handleRemoveImage(index)}
+                  title="Remove image"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Feeling for Edit */}
+        {selectedFeeling && (
+          <div className="post-edit-feeling">
+            <span>{selectedFeeling.emoji} {selectedFeeling.text}</span>
+            <button type="button" onClick={() => setSelectedFeeling(null)}>
+              <X size={12} />
+            </button>
+          </div>
+        )}
+
+        <div className="post-edit-toolbar">
+          <div className="post-edit-actions">
+            <button type="button" onClick={handleImageClick} title="Add photo">
+              <Image size={18} />
+            </button>
+            <button type="button" onClick={handleFeelingClick} title="Add feeling">
+              <Smile size={18} />
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              multiple
+              onChange={handleImageChange}
+              style={{ display: 'none' }}
+            />
+          </div>
+          <div className="post-edit-buttons">
+            <button type="button" className="post-edit-cancel" onClick={handleCancel}>
+              Cancel
+            </button>
+            <button 
+              type="button" 
+              className="post-edit-save"
+              onClick={handleSubmit}
+              disabled={isSubmitting || (content.trim() === '' && selectedImages.length === 0)}
+            >
+              {isSubmitting ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </div>
+        
+        {postToEdit?.moderationStatus === 'approved' && (
+          <p className="post-edit-notice">Editing will submit for re-approval</p>
+        )}
+
+        {showFeelingSelector && (
+          <FeelingSelector 
+            onSelectFeeling={handleFeelingSelect}
+            onClose={closeFeelingSelector}
+            selectedFeeling={selectedFeeling}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Regular create post form
   return (
     <div className="post-form-card">
       <form className="post-form" onSubmit={handleSubmit}>
@@ -253,9 +397,7 @@ const PostForm = ({ user, onPostCreated }: PostFormProps) => {
                 className="btn btn-primary post-submit-btn"
                 disabled={(content.trim() === '' && selectedImages.length === 0) || isSubmitting}
               >
-                {isSubmitting ? (
-                  'Posting...'
-                ) : (
+                {isSubmitting ? 'Posting...' : (
                   <>
                     <Send size={16} />
                     <span>Post</span>

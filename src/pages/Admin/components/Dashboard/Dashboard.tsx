@@ -55,7 +55,7 @@ const Dashboard = () => {
         totalOfficers: officers.length,
         totalEvents: eventStats.totalEvents,
         upcomingEvents: eventStats.upcomingEvents,
-        totalJobs: jobStats.totalJobs,
+        totalJobs: jobStats.approvedJobs,
         activeJobs: jobStats.activeJobs,
         totalGalleryItems: galleryStats.totalItems
       });

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { 
   Search, Plus, Edit, Trash,
-  Briefcase, MapPin, Calendar, DollarSign, Mail, Clock
+  Briefcase, MapPin, Calendar, PhilippinePeso, Mail, Clock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -240,7 +240,18 @@ const JobManagement = () => {
                       {isJobActive(job) ? 'Active' : 'Expired'}
                     </span>
                   </div>
-                  <div className="admin-job-company">{job.company}</div>
+                  <div className="admin-job-company-row">
+                    {job.companyLogo ? (
+                      <div className="admin-job-logo">
+                        <img src={job.companyLogo} alt={`${job.company} logo`} />
+                      </div>
+                    ) : (
+                      <div className="admin-job-logo admin-job-logo-placeholder">
+                        <Briefcase size={20} />
+                      </div>
+                    )}
+                    <div className="admin-job-company">{job.company}</div>
+                  </div>
                   <div className="admin-job-location">
                     <MapPin size={14} />
                     {job.location}
@@ -253,7 +264,7 @@ const JobManagement = () => {
                   <div className="admin-job-meta">
                     {job.salary && (
                       <div className="admin-job-meta-item">
-                        <DollarSign size={14} />
+                        <PhilippinePeso size={14} />
                         {job.salary}
                       </div>
                     )}

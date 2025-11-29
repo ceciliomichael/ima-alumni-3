@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Post } from '../../types';
+import { User, Post, Comment, Reply } from '../../types';
 import PostForm from './components/PostForm/PostForm';
 import PostList from './components/PostList/PostList';
 import SidebarLeft from './components/Sidebar/SidebarLeft';
@@ -16,7 +16,7 @@ import {
   toggleCommentReaction,
   deletePost
 } from '../../services/firebase/postService';
-import { getCurrentUser } from '../../services/firebase/userService';
+import { getCurrentUser, cleanupDeletedUsersContent } from '../../services/firebase/userService';
 
 interface HomePageProps {
   user: User | null;
@@ -31,6 +31,8 @@ const HomePage = ({ user }: HomePageProps) => {
   useEffect(() => {
     const init = async () => {
       try {
+        // Clean up any legacy content from users already marked as deleted
+        await cleanupDeletedUsersContent();
         await initializePostData();
         await loadPosts();
       } catch (error) {
@@ -90,7 +92,12 @@ const HomePage = ({ user }: HomePageProps) => {
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
       
-      setPosts(sortedPosts);
+      // Safety net: hide posts that no longer have a valid user
+      const visiblePosts = sortedPosts.filter(post => 
+        post.userId && post.userName !== 'Deleted User'
+      );
+      
+      setPosts(visiblePosts);
     } catch (error) {
       console.error('Error loading posts:', error);
     } finally {
@@ -125,7 +132,7 @@ const HomePage = ({ user }: HomePageProps) => {
     }
   };
 
-  const handleAddComment = async (postId: string, comment: any) => {
+  const handleAddComment = async (postId: string, comment: Comment) => {
     try {
       const updatedPost = await addComment(postId, comment);
       if (updatedPost) {
@@ -141,7 +148,7 @@ const HomePage = ({ user }: HomePageProps) => {
   };
   
   // Add handler for adding a reply to a comment
-  const handleAddReply = async (postId: string, commentId: string, reply: any) => {
+  const handleAddReply = async (postId: string, commentId: string, reply: Reply) => {
     try {
       const updatedPost = await addReplyToComment(postId, commentId, reply);
       if (updatedPost) {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, Briefcase, MapPin, Calendar, Clock, Mail, Link, Plus, Upload } from 'lucide-react';
+import { Search, Briefcase, MapPin, Calendar, Clock, Mail, Link, Plus, Upload, Edit, Trash2 } from 'lucide-react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebase/config';
 import { resizeImage, validateImageFile } from '../../services/firebase/storageService';
@@ -7,8 +7,11 @@ import FeaturedCarousel from '../../components/FeaturedCarousel';
 import './Jobs.css';
 import { 
   addJob,
+  updateJob,
+  deleteJob,
   Job
 } from '../../services/firebase/jobService';
+import { User } from '../../types';
 import { getCurrentUser } from '../../services/firebase/userService';
 
 const JobsPage = () => {
@@ -16,6 +19,9 @@ const JobsPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [showCreateJobModal, setShowCreateJobModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [editingJobId, setEditingJobId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [jobFormData, setJobFormData] = useState({
     title: '',
     company: '',
@@ -36,6 +42,20 @@ const JobsPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(true);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+
+  // Fetch current user on mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      }
+    };
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -106,12 +126,66 @@ const JobsPage = () => {
   });
 
   const handleCreateJob = async () => {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
+    const user = await getCurrentUser();
+    if (!user) {
       alert('You must be logged in to post a job.');
       return;
     }
+    // Reset form for new job
+    setEditingJobId(null);
+    setJobFormData({
+      title: '',
+      company: '',
+      location: '',
+      description: '',
+      requirements: '',
+      contactEmail: '',
+      jobType: 'fullTime',
+      salary: '',
+      applicationType: 'email',
+      applicationUrl: '',
+      deadline: '',
+      companyLogo: ''
+    });
+    setUploadFile(null);
+    setPreviewUrl('');
     setShowCreateJobModal(true);
+  };
+
+  // Handle editing a job (alumni can edit their own jobs)
+  const handleEditJob = (job: Job) => {
+    setEditingJobId(job.id);
+    setJobFormData({
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      description: job.description,
+      requirements: job.requirements,
+      contactEmail: job.contactEmail,
+      jobType: job.jobType,
+      salary: job.salary || '',
+      applicationType: job.applicationType || 'email',
+      applicationUrl: job.applicationUrl || '',
+      deadline: job.deadline ? job.deadline.split('T')[0] : '',
+      companyLogo: job.companyLogo || ''
+    });
+    setPreviewUrl(job.companyLogo || '');
+    setUploadFile(null);
+    setShowCreateJobModal(true);
+  };
+
+  // Handle deleting a job (alumni can delete their own jobs - no approval needed)
+  const handleDeleteJob = async (jobId: string) => {
+    if (!window.confirm('Are you sure you want to delete this job posting? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      await deleteJob(jobId);
+      alert('Job posting has been deleted successfully.');
+    } catch (error) {
+      console.error('Error deleting job:', error);
+      alert('Failed to delete job posting. Please try again.');
+    }
   };
 
   const handleJobFormChange = (
@@ -147,11 +221,13 @@ const JobsPage = () => {
   const handleJobSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
+    const user = await getCurrentUser();
+    if (!user) {
       alert('You must be logged in to post a job');
       return;
     }
+    
+    setIsSubmitting(true);
     
     // Create a deadline Date object if one was provided
     let deadlineDate = undefined;
@@ -167,20 +243,36 @@ const JobsPage = () => {
         logoData = await resizeImage(uploadFile, 400, 400, 0.6, true);
       }
       
-      // Create the job object
-      const newJob = {
-        ...jobFormData,
-        deadline: deadlineDate,
-        isApproved: false, // Jobs require admin approval
-        postedBy: currentUser.id,
-        companyLogo: logoData
-      };
-      
-      // Add the job
-      await addJob(newJob);
+      if (editingJobId) {
+        // Update existing job - requires re-approval
+        const updatedJob = {
+          ...jobFormData,
+          deadline: deadlineDate,
+          isApproved: false, // Edits require admin re-approval
+          moderationStatus: 'pending' as const,
+          rejectionReason: undefined,
+          companyLogo: logoData
+        };
+        
+        await updateJob(editingJobId, updatedJob);
+        alert('Your job posting has been updated and is pending admin approval.');
+      } else {
+        // Create new job
+        const newJob = {
+          ...jobFormData,
+          deadline: deadlineDate,
+          isApproved: false, // Jobs require admin approval
+          postedBy: user.id,
+          companyLogo: logoData
+        };
+        
+        await addJob(newJob);
+        alert('Your job posting has been submitted and is pending approval.');
+      }
       
       // Close the modal and reset form
       setShowCreateJobModal(false);
+      setEditingJobId(null);
       setJobFormData({
         title: '',
         company: '',
@@ -199,12 +291,11 @@ const JobsPage = () => {
       // Reset file upload state
       setUploadFile(null);
       setPreviewUrl('');
-      
-      // Show confirmation
-      alert('Your job posting has been submitted and is pending approval.');
     } catch (error) {
       console.error('Error submitting job:', error);
       alert('There was an error submitting your job posting. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -253,44 +344,51 @@ const JobsPage = () => {
               />
             </div>
 
-            <div className="jobs-tabs">
+            {/* Swipeable filter tabs */}
+            <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
               <button 
-                className={`jobs-tab ${activeFilter === 'all' ? 'active' : ''}`}
+                className={`flex-shrink-0 snap-start flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap
+                  ${activeFilter === 'all' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                 onClick={() => setActiveFilter('all')}
               >
                 <Briefcase size={16} />
                 All Jobs
               </button>
               <button 
-                className={`jobs-tab ${activeFilter === 'recent' ? 'active' : ''}`}
+                className={`flex-shrink-0 snap-start flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap
+                  ${activeFilter === 'recent' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                 onClick={() => setActiveFilter('recent')}
               >
                 <Clock size={16} />
                 Recent
               </button>
               <button 
-                className={`jobs-tab ${activeFilter === 'fullTime' ? 'active' : ''}`}
+                className={`flex-shrink-0 snap-start flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap
+                  ${activeFilter === 'fullTime' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                 onClick={() => setActiveFilter('fullTime')}
               >
                 <Calendar size={16} />
                 Full-time
               </button>
               <button 
-                className={`jobs-tab ${activeFilter === 'partTime' ? 'active' : ''}`}
+                className={`flex-shrink-0 snap-start flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap
+                  ${activeFilter === 'partTime' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                 onClick={() => setActiveFilter('partTime')}
               >
                 <Clock size={16} />
                 Part-time
               </button>
               <button 
-                className={`jobs-tab ${activeFilter === 'contract' ? 'active' : ''}`}
+                className={`flex-shrink-0 snap-start flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap
+                  ${activeFilter === 'contract' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                 onClick={() => setActiveFilter('contract')}
               >
                 <Briefcase size={16} />
                 Contract
               </button>
               <button 
-                className={`jobs-tab ${activeFilter === 'internship' ? 'active' : ''}`}
+                className={`flex-shrink-0 snap-start flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap
+                  ${activeFilter === 'internship' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                 onClick={() => setActiveFilter('internship')}
               >
                 <Clock size={16} />
@@ -318,6 +416,64 @@ const JobsPage = () => {
                 </div>
               </div>
             ) : filteredJobs.length > 0 ? (
+              <>
+              {/* Mobile Job Cards - shown on mobile only */}
+              <div className="mobile-job-cards">
+                {filteredJobs.map((job) => (
+                  <div 
+                    key={job.id} 
+                    className="mobile-job-card"
+                    onClick={() => setSelectedJob(job)}
+                  >
+                    <div className="mobile-job-card-header">
+                      {job.companyLogo ? (
+                        <div className="mobile-job-logo">
+                          <img src={job.companyLogo} alt={job.company} />
+                        </div>
+                      ) : (
+                        <div className="mobile-job-logo mobile-job-logo-placeholder">
+                          <Briefcase size={24} />
+                        </div>
+                      )}
+                      <div className="mobile-job-info">
+                        <h3 className="mobile-job-title">{job.title}</h3>
+                        <p className="mobile-job-company">{job.company}</p>
+                      </div>
+                      <span className={`mobile-job-type ${job.jobType}`}>
+                        {getJobTypeLabel(job.jobType)}
+                      </span>
+                    </div>
+                    <div className="mobile-job-card-body">
+                      <div className="mobile-job-details">
+                        {job.location && (
+                          <span className="mobile-job-detail">
+                            <MapPin size={14} />
+                            {job.location}
+                          </span>
+                        )}
+                        {job.salary && (
+                          <span className="mobile-job-detail">
+                            <span className="peso-sign">₱</span>
+                            {job.salary}
+                          </span>
+                        )}
+                      </div>
+                      {job.deadline && (
+                        <div className="mobile-job-deadline">
+                          <Calendar size={14} />
+                          <span>Deadline: {formatDate(job.deadline)}</span>
+                        </div>
+                      )}
+                    </div>
+                    {!isJobActive(job) && (
+                      <div className="mobile-job-expired-badge">Expired</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Carousel - hidden on mobile */}
+              <div className="desktop-job-carousel">
               <FeaturedCarousel
                 items={filteredJobs}
                 getKey={(job) => job.id}
@@ -368,11 +524,24 @@ const JobsPage = () => {
                       )}
                     </div>
                     
-                    {job.description && (
+                    <div className="job-featured-content-grid">
                       <div className="job-featured-description-section">
-                        <p className="job-featured-description">{job.description}</p>
+                        <h4 className="job-section-title">Job Description</h4>
+                        <p className="job-featured-description">{job.description || 'No description provided.'}</p>
                       </div>
-                    )}
+                      <div className="job-featured-requirements-section">
+                        <h4 className="job-section-title">Requirements</h4>
+                        <ul className="job-requirements-list">
+                          {job.requirements ? (
+                            job.requirements.split('\n').filter(req => req.trim()).map((req, index) => (
+                              <li key={index}>{req.trim()}</li>
+                            ))
+                          ) : (
+                            <li>No requirements specified.</li>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
                     
                     <div className="job-featured-apply-info">
                       <strong>Apply:</strong>
@@ -388,6 +557,28 @@ const JobsPage = () => {
                         <span><MapPin size={14} style={{ display: 'inline', marginLeft: '0.5rem' }} /> In Person</span>
                       )}
                     </div>
+                    
+                    {/* Edit/Delete buttons for job owner */}
+                    {currentUser && job.postedBy === currentUser.id && (
+                      <div className="job-owner-actions">
+                        <button 
+                          className="job-action-btn edit-btn"
+                          onClick={(e) => { e.stopPropagation(); handleEditJob(job); }}
+                          title="Edit job posting"
+                        >
+                          <Edit size={14} />
+                          <span>Edit</span>
+                        </button>
+                        <button 
+                          className="job-action-btn delete-btn"
+                          onClick={(e) => { e.stopPropagation(); handleDeleteJob(job.id); }}
+                          title="Delete job posting"
+                        >
+                          <Trash2 size={14} />
+                          <span>Delete</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
                 renderThumb={(job) => (
@@ -406,6 +597,8 @@ const JobsPage = () => {
                 )}
                 loop={true}
               />
+              </div>
+              </>
             ) : (
               <div className="empty-jobs">
                 <div className="empty-state-icon">
@@ -433,7 +626,7 @@ const JobsPage = () => {
         <div className="modal-overlay" onClick={() => setShowCreateJobModal(false)}>
           <div className="modal-content job-create-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Create Job Opportunity</h2>
+              <h2>{editingJobId ? 'Edit Job Opportunity' : 'Create Job Opportunity'}</h2>
               <button 
                 className="modal-close-btn" 
                 onClick={() => setShowCreateJobModal(false)}
@@ -534,12 +727,14 @@ const JobsPage = () => {
               <div className="form-group">
                 <label htmlFor="salary">Salary (Optional)</label>
                 <input 
-                  type="text" 
+                  type="number" 
                   id="salary"
                   name="salary"
-                  placeholder="e.g., $60,000 - $80,000" 
+                  placeholder="e.g., 60000" 
                   value={jobFormData.salary}
                   onChange={handleJobFormChange}
+                  min="0"
+                  step="1"
                 />
               </div>
               
@@ -622,15 +817,146 @@ const JobsPage = () => {
                 </div>
               )}
               
-              <div className="form-actions">
-                <button type="button" className="cancel-button" onClick={() => setShowCreateJobModal(false)}>
+              <div className="flex flex-col-reverse sm:flex-row justify-center sm:justify-end gap-3 mt-6">
+                <button 
+                  type="button" 
+                  className="w-full sm:w-auto px-6 py-3 rounded-lg border border-gray-200 text-gray-600 font-medium hover:bg-gray-100 transition-colors"
+                  onClick={() => setShowCreateJobModal(false)}
+                >
                   Cancel
                 </button>
-                <button type="submit" className="submit-button">
-                  Submit Job
+                <button 
+                  type="submit" 
+                  className="w-full sm:w-auto px-6 py-3 rounded-lg bg-primary text-white font-medium hover:bg-primary-dark transition-colors disabled:opacity-50"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Submitting...' : editingJobId ? 'Update Job' : 'Submit Job'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Job Detail Modal */}
+      {selectedJob && (
+        <div className="mobile-job-modal-overlay" onClick={() => setSelectedJob(null)}>
+          <div className="mobile-job-modal" onClick={(e) => e.stopPropagation()}>
+            <button 
+              className="mobile-job-modal-close"
+              onClick={() => setSelectedJob(null)}
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            
+            <div className="mobile-job-modal-header">
+              {selectedJob.companyLogo ? (
+                <div className="mobile-job-modal-logo">
+                  <img src={selectedJob.companyLogo} alt={selectedJob.company} />
+                </div>
+              ) : (
+                <div className="mobile-job-modal-logo mobile-job-logo-placeholder">
+                  <Briefcase size={32} />
+                </div>
+              )}
+              <div>
+                <h2 className="mobile-job-modal-title">{selectedJob.title}</h2>
+                <p className="mobile-job-modal-company">{selectedJob.company}</p>
+              </div>
+            </div>
+
+            <div className="mobile-job-modal-badges">
+              <span className={`mobile-job-type ${selectedJob.jobType}`}>
+                {getJobTypeLabel(selectedJob.jobType)}
+              </span>
+              {!isJobActive(selectedJob) && (
+                <span className="mobile-job-expired-tag">Expired</span>
+              )}
+            </div>
+
+            <div className="mobile-job-modal-details">
+              {selectedJob.location && (
+                <div className="mobile-job-modal-detail">
+                  <MapPin size={16} />
+                  <span>{selectedJob.location}</span>
+                </div>
+              )}
+              {selectedJob.salary && (
+                <div className="mobile-job-modal-detail">
+                  <span className="peso-sign">₱</span>
+                  <span>{selectedJob.salary}</span>
+                </div>
+              )}
+              {selectedJob.deadline && (
+                <div className="mobile-job-modal-detail">
+                  <Calendar size={16} />
+                  <span>Deadline: {formatDate(selectedJob.deadline)}</span>
+                </div>
+              )}
+              {selectedJob.postedDate && (
+                <div className="mobile-job-modal-detail">
+                  <Clock size={16} />
+                  <span>Posted: {formatDate(selectedJob.postedDate)}</span>
+                </div>
+              )}
+            </div>
+
+            {selectedJob.description && (
+              <div className="mobile-job-modal-section">
+                <h3>Job Description</h3>
+                <p>{selectedJob.description}</p>
+              </div>
+            )}
+
+            {selectedJob.requirements && (
+              <div className="mobile-job-modal-section">
+                <h3>Requirements</h3>
+                <ul>
+                  {selectedJob.requirements.split('\n').filter(req => req.trim()).map((req, index) => (
+                    <li key={index}>{req.trim()}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="mobile-job-modal-apply">
+              <strong>How to Apply:</strong>
+              {selectedJob.applicationType === 'email' && (
+                <a href={`mailto:${selectedJob.contactEmail}`} className="mobile-apply-link">
+                  <Mail size={16} /> {selectedJob.contactEmail}
+                </a>
+              )}
+              {selectedJob.applicationType === 'website' && (
+                <a href={selectedJob.applicationUrl} target="_blank" rel="noopener noreferrer" className="mobile-apply-link">
+                  <Link size={16} /> Visit Application Portal
+                </a>
+              )}
+              {selectedJob.applicationType === 'inPerson' && (
+                <span className="mobile-apply-text">
+                  <MapPin size={16} /> Apply In Person
+                </span>
+              )}
+            </div>
+
+            {currentUser && selectedJob.postedBy === currentUser.id && (
+              <div className="mobile-job-modal-actions">
+                <button 
+                  className="mobile-modal-btn edit"
+                  onClick={() => { handleEditJob(selectedJob); setSelectedJob(null); }}
+                >
+                  <Edit size={16} />
+                  Edit
+                </button>
+                <button 
+                  className="mobile-modal-btn delete"
+                  onClick={() => { handleDeleteJob(selectedJob.id); setSelectedJob(null); }}
+                >
+                  <Trash2 size={16} />
+                  Delete
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

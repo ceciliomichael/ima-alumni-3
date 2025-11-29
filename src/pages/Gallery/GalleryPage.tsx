@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { Image, Search, Bookmark, Upload, X, FileText } from 'lucide-react';
+import { Image, Search, Bookmark, Upload, X, FileText, LayoutGrid } from 'lucide-react';
 import GalleryCard from './components/GalleryCard';
 import AlbumViewerModal from './components/AlbumViewerModal';
 import FeaturedCarousel from '../../components/FeaturedCarousel';
-import { addGalleryItem, getUniqueAlbums } from '../../services/firebase/galleryService';
-import { GalleryPost } from '../../types';
+import { addGalleryItem, subscribeToUniqueAlbums, createAlbum } from '../../services/firebase/galleryService';
+import { GalleryPost, User } from '../../types';
 import { getCurrentUser } from '../../services/firebase/userService';
 import { resizeImage, validateImageFile } from '../../services/firebase/storageService';
 import './Gallery.css';
@@ -17,13 +17,15 @@ const GalleryPage = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'masonry'>('grid');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadStep, setUploadStep] = useState<'select' | 'details' | 'success'>('select');
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [uploadFiles, setUploadFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [uploadDetails, setUploadDetails] = useState({
     title: '',
     album: 'Homecoming'
   });
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  
+  const MAX_UPLOAD_FILES = 10;
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Album viewer modal state
@@ -38,7 +40,17 @@ const GalleryPage = () => {
     'Batch Reunions', 
     'Career Events', 
     'Awards', 
-    'Community Service'
+    'Community Service',
+    'Other'
+  ];
+  
+  // Known category slugs (excluding All Photos and Other)
+  const knownCategorySlugs = [
+    'homecoming',
+    'batch-reunions',
+    'career-events',
+    'awards',
+    'community-service'
   ];
   
   // Fetch current user
@@ -55,35 +67,28 @@ const GalleryPage = () => {
     fetchUser();
   }, []);
   
-  // Load gallery items from Firestore
+  // Subscribe to gallery items from Firestore (real-time)
   useEffect(() => {
-    const fetchGalleryItems = async () => {
-      setIsLoading(true);
-      try {
-        // Use getUniqueAlbums to get albums and single images
-        const items = await getUniqueAlbums();
-        // Filter for approved items only
-        const approvedItems = items.filter(item => item.isApproved);
-        setGalleryImages(approvedItems);
-      } catch (error) {
-        console.error('Error fetching gallery items:', error);
-        setGalleryImages([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    setIsLoading(true);
     
-    fetchGalleryItems();
+    // Subscribe to real-time updates
+    const unsubscribe = subscribeToUniqueAlbums((items) => {
+      // Filter for approved items only
+      const approvedItems = items.filter(item => item.isApproved);
+      setGalleryImages(approvedItems);
+      setIsLoading(false);
+    });
+    
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
 
-  // Clean up the object URL when the component unmounts
+  // Clean up the object URLs when the component unmounts
   useEffect(() => {
     return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
+      previewUrls.forEach(url => URL.revokeObjectURL(url));
     };
-  }, [previewUrl]);
+  }, [previewUrls]);
 
   // Filter images based on search term, active album, and view mode (bookmarks)
   const filteredImages = galleryImages.filter(image => {
@@ -97,6 +102,9 @@ const GalleryPage = () => {
     let matchesAlbum = false;
     if (activeAlbum === 'all') {
       matchesAlbum = true;
+    } else if (activeAlbum === 'other') {
+      // "Other" shows items that don't match any known category
+      matchesAlbum = !knownCategorySlugs.includes(image.albumCategory || '');
     } else {
       // Compare the selected activeAlbum (e.g., 'batch-reunions')
       // with the stored image.albumCategory
@@ -151,8 +159,9 @@ const GalleryPage = () => {
     
     setShowUploadModal(true);
     setUploadStep('select');
-    setUploadFile(null);
-    setPreviewUrl('');
+    setUploadFiles([]);
+    previewUrls.forEach(url => URL.revokeObjectURL(url));
+    setPreviewUrls([]);
     setUploadDetails({
       title: '',
       album: 'Homecoming'
@@ -161,28 +170,46 @@ const GalleryPage = () => {
 
   const closeUploadModal = () => {
     setShowUploadModal(false);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl('');
-    }
+    previewUrls.forEach(url => URL.revokeObjectURL(url));
+    setPreviewUrls([]);
+    setUploadFiles([]);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      const file = files[0];
-      if (file.type.startsWith('image/')) {
-        setUploadFile(file);
-        const objectUrl = URL.createObjectURL(file);
-        setPreviewUrl(objectUrl);
-        setUploadStep('details');
-        setUploadDetails({
-          ...uploadDetails,
-          title: file.name.split('.')[0].replace(/[_-]/g, ' ')
-        });
-      } else {
-        alert('Please select an image file.');
+      // Convert FileList to array and filter for images only
+      const fileArray = Array.from(files).filter(file => file.type.startsWith('image/'));
+      
+      if (fileArray.length === 0) {
+        alert('Please select image files only.');
+        return;
       }
+      
+      if (fileArray.length > MAX_UPLOAD_FILES) {
+        alert(`You can upload a maximum of ${MAX_UPLOAD_FILES} images at once. You selected ${fileArray.length}.`);
+        return;
+      }
+      
+      // Clean up old preview URLs
+      previewUrls.forEach(url => URL.revokeObjectURL(url));
+      
+      // Create preview URLs for all files
+      const newPreviewUrls = fileArray.map(file => URL.createObjectURL(file));
+      
+      setUploadFiles(fileArray);
+      setPreviewUrls(newPreviewUrls);
+      setUploadStep('details');
+      
+      // Set default title based on first file or "Album" if multiple
+      const defaultTitle = fileArray.length === 1 
+        ? fileArray[0].name.split('.')[0].replace(/[_-]/g, ' ')
+        : `Photo Album (${fileArray.length} photos)`;
+      
+      setUploadDetails({
+        ...uploadDetails,
+        title: defaultTitle
+      });
     }
   };
 
@@ -202,8 +229,8 @@ const GalleryPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const handleUploadSubmit = async () => {
-    if (!uploadFile) {
-      alert('Please select an image to upload');
+    if (uploadFiles.length === 0) {
+      alert('Please select at least one image to upload');
       return;
     }
 
@@ -217,46 +244,67 @@ const GalleryPage = () => {
         return;
       }
       
-      // Validate file
-      const validation = validateImageFile(uploadFile, 5); // 5MB max
-      if (!validation.valid) {
-        alert(validation.message);
-        return;
+      // Validate all files
+      for (const file of uploadFiles) {
+        const validation = validateImageFile(file, 5); // 5MB max per file
+        if (!validation.valid) {
+          alert(`File "${file.name}": ${validation.message}`);
+          return;
+        }
       }
-      
-      // Resize and convert to base64 with more aggressive compression
-      const base64Image = await resizeImage(uploadFile, 800, 800, 0.6, true);
       
       // Format the album category properly for storage
       const albumCategory = uploadDetails.album.toLowerCase().replace(/\s+/g, '-');
       
-      // Create gallery item
-      const newGalleryItem: Omit<GalleryPost, 'id' | 'postedDate'> = {
-        title: uploadDetails.title,
-        description: `Uploaded by ${currentUser.name}`,
-        imageUrl: base64Image,
-        albumCategory: albumCategory, // Save to albumCategory field
-        event: '', // Keep event empty - would be linked to a specific event in admin
-        isApproved: false, // Needs admin approval
-        postedBy: currentUser.id,
-        likedBy: [], // Initialize with empty array
-        bookmarkedBy: [] // Initialize with empty array
-      };
-      
-      // Add to Firestore
-      await addGalleryItem(newGalleryItem);
+      if (uploadFiles.length === 1) {
+        // Single image upload - use existing logic
+        const base64Image = await resizeImage(uploadFiles[0], 800, 800, 0.6, true);
+        
+        const newGalleryItem: Omit<GalleryPost, 'id' | 'postedDate'> = {
+          title: uploadDetails.title,
+          description: `Uploaded by ${currentUser.name}`,
+          imageUrl: base64Image,
+          albumCategory: albumCategory,
+          event: '',
+          isApproved: false,
+          postedBy: currentUser.id,
+          likedBy: [],
+          bookmarkedBy: []
+        };
+        
+        await addGalleryItem(newGalleryItem);
+      } else {
+        // Multiple images - create an album
+        const processedImages: Array<{ url: string; title: string }> = [];
+        
+        for (let i = 0; i < uploadFiles.length; i++) {
+          const file = uploadFiles[i];
+          const base64Image = await resizeImage(file, 800, 800, 0.6, true);
+          processedImages.push({
+            url: base64Image,
+            title: file.name.split('.')[0].replace(/[_-]/g, ' ')
+          });
+        }
+        
+        await createAlbum(
+          uploadDetails.title,
+          albumCategory,
+          `Album uploaded by ${currentUser.name}`,
+          processedImages,
+          currentUser.id
+        );
+      }
       
       // Show success message
       setUploadStep('success');
       
       // Refresh gallery after a short delay
       setTimeout(() => {
-        // Gallery will be refreshed automatically by the useEffect
         window.location.reload();
       }, 2000);
     } catch (error) {
-      console.error('Error uploading photo:', error);
-      alert('There was an error uploading your photo. Please try again.');
+      console.error('Error uploading photo(s):', error);
+      alert('There was an error uploading your photo(s). Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -264,10 +312,31 @@ const GalleryPage = () => {
 
   const handleTryAgain = () => {
     setUploadStep('select');
-    setUploadFile(null);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl('');
+    setUploadFiles([]);
+    previewUrls.forEach(url => URL.revokeObjectURL(url));
+    setPreviewUrls([]);
+  };
+  
+  const removeSelectedFile = (index: number) => {
+    const newFiles = [...uploadFiles];
+    const newUrls = [...previewUrls];
+    
+    URL.revokeObjectURL(newUrls[index]);
+    newFiles.splice(index, 1);
+    newUrls.splice(index, 1);
+    
+    setUploadFiles(newFiles);
+    setPreviewUrls(newUrls);
+    
+    // If no files left, go back to select step
+    if (newFiles.length === 0) {
+      setUploadStep('select');
+    } else {
+      // Update title if it was auto-generated
+      const defaultTitle = newFiles.length === 1 
+        ? newFiles[0].name.split('.')[0].replace(/[_-]/g, ' ')
+        : `Photo Album (${newFiles.length} photos)`;
+      setUploadDetails(prev => ({ ...prev, title: defaultTitle }));
     }
   };
 
@@ -307,6 +376,14 @@ const GalleryPage = () => {
               </button>
               <div className="view-toggle">
                 <button 
+                  className={`view-mode-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                  onClick={() => setViewMode('grid')}
+                  aria-label="Gallery view"
+                  title="Show all photos"
+                >
+                  <LayoutGrid size={18} />
+                </button>
+                <button 
                   className={`view-mode-btn ${viewMode === 'masonry' ? 'active' : ''}`}
                   onClick={() => handleViewModeChange('masonry')}
                   aria-label="Bookmarks view"
@@ -330,15 +407,20 @@ const GalleryPage = () => {
               />
             </div>
             
-            <div className="gallery-filters">
+            {/* Swipeable filter buttons */}
+            <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
               {albumCategories.map((album, index) => (
                 <button 
                   key={index} 
-                  className={`album-filter ${
-                    album.toLowerCase() === 'all photos' 
-                      ? activeAlbum === 'all' ? 'active' : ''
-                      : activeAlbum === album.toLowerCase().replace(/\s+/g, '-') ? 'active' : ''
-                  }`}
+                  className={`flex-shrink-0 snap-start px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap
+                    ${album.toLowerCase() === 'all photos' 
+                      ? activeAlbum === 'all' 
+                        ? 'bg-primary text-white' 
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : activeAlbum === album.toLowerCase().replace(/\s+/g, '-') 
+                        ? 'bg-primary text-white' 
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
                   onClick={() => handleAlbumChange(album)}
                 >
                   {album}
@@ -436,7 +518,7 @@ const GalleryPage = () => {
         <div className="modal-overlay">
           <div className="upload-modal">
             <div className="modal-header">
-              <h2>Upload a Photo</h2>
+              <h2>Upload Photos</h2>
               <button className="close-modal" onClick={closeUploadModal}>
                 <X size={20} />
               </button>
@@ -452,13 +534,14 @@ const GalleryPage = () => {
                       <polyline points="21 15 16 10 5 21"></polyline>
                       <path d="M12 12 L18 18"></path>
                     </svg>
-                    <h3>Select a photo to upload</h3>
-                    <p>Click to browse or drag and drop your photo here</p>
+                    <h3>Select photos to upload</h3>
+                    <p>Click to browse or drag and drop (up to {MAX_UPLOAD_FILES} photos)</p>
                     <input
                       type="file"
                       ref={fileInputRef}
                       onChange={handleFileSelect}
                       accept="image/*"
+                      multiple
                       style={{ display: 'none' }}
                     />
                   </div>
@@ -469,7 +552,8 @@ const GalleryPage = () => {
                       <h4>Upload Guidelines</h4>
                       <ul>
                         <li>Accepted formats: JPG, PNG, GIF</li>
-                        <li>Maximum file size: 10MB</li>
+                        <li>Maximum file size: 5MB per image</li>
+                        <li>Upload up to {MAX_UPLOAD_FILES} images at once</li>
                         <li>All uploads require admin approval</li>
                         <li>Photos must be appropriate for all audiences</li>
                       </ul>
@@ -478,10 +562,10 @@ const GalleryPage = () => {
                 </div>
               )}
 
-              {uploadStep === 'details' && previewUrl && (
+              {uploadStep === 'details' && previewUrls.length > 0 && (
                 <div className="upload-details-step">
                   <div className="form-group">
-                    <label htmlFor="title">Photo Title*</label>
+                    <label htmlFor="title">{uploadFiles.length > 1 ? 'Album Title*' : 'Photo Title*'}</label>
                     <input
                       type="text"
                       id="title"
@@ -494,7 +578,7 @@ const GalleryPage = () => {
                   </div>
                   
                   <div className="form-group">
-                    <label htmlFor="album">Album*</label>
+                    <label htmlFor="album">Category*</label>
                     <select
                       id="album"
                       name="album"
@@ -515,9 +599,22 @@ const GalleryPage = () => {
                     <p>Your upload will be reviewed by an admin before appearing in the gallery.</p>
                   </div>
 
-                  <div className="preview-image-container">
-                    <img src={previewUrl} alt="Preview" className="preview-image" />
+                  <div className="preview-images-grid">
+                    {previewUrls.map((url, index) => (
+                      <div key={index} className="preview-image-item">
+                        <img src={url} alt={`Preview ${index + 1}`} className="preview-image" />
+                        <button 
+                          type="button" 
+                          className="remove-image-btn"
+                          onClick={() => removeSelectedFile(index)}
+                          title="Remove image"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
                   </div>
+                  <p className="selected-count">{uploadFiles.length} {uploadFiles.length === 1 ? 'photo' : 'photos'} selected</p>
                 </div>
               )}
 
@@ -532,8 +629,8 @@ const GalleryPage = () => {
                     </svg>
                   </div>
                   <h3>Thank you for your submission!</h3>
-                  <p>Your photo has been successfully uploaded and is pending admin approval.</p>
-                  <p>You'll be notified when your photo is approved and added to the gallery.</p>
+                  <p>Your {uploadFiles.length > 1 ? 'photos have' : 'photo has'} been successfully uploaded and {uploadFiles.length > 1 ? 'are' : 'is'} pending admin approval.</p>
+                  <p>You'll be notified when your {uploadFiles.length > 1 ? 'photos are' : 'photo is'} approved and added to the gallery.</p>
                 </div>
               )}
             </div>
@@ -555,7 +652,7 @@ const GalleryPage = () => {
                     onClick={handleUploadSubmit}
                     disabled={!uploadDetails.title || isSubmitting}
                   >
-                    {isSubmitting ? 'Uploading...' : 'Upload Photo'}
+                    {isSubmitting ? 'Uploading...' : `Upload ${uploadFiles.length > 1 ? 'Photos' : 'Photo'}`}
                   </button>
                 </>
               )}

@@ -164,19 +164,20 @@ const ProfileHeader = ({
             
             <div className="profile-name-section">
               <div className="name-and-badge">
-                <h1>
-                  {user.name}
-                  {/* Officer badge - only show if user has an officer position and has chosen to display it */}
-                  {showOfficerInfo && user.officerPosition && (
-                    <div className="officer-badge" title={`${user.officerPosition.title} since ${formatDate(user.officerPosition.startDate)}`}>
-                      <Award size={16} />
-                      <span>{user.officerPosition.title}</span>
-                      {user.officerPosition.batchYear && (
-                        <span className="batch-year">Batch {user.officerPosition.batchYear}</span>
-                      )}
-                    </div>
-                  )}
-                </h1>
+                <h1>{user.name}</h1>
+                {/* Officer badge - only show if user has an officer position and has chosen to display it */}
+                {showOfficerInfo && user.officerPosition && (
+                  <div
+                    className="officer-badge"
+                    title={`${user.officerPosition.title} since ${formatDate(user.officerPosition.startDate)}`}
+                  >
+                    <Award size={16} />
+                    <span>{user.officerPosition.title}</span>
+                    {user.officerPosition.batchYear && (
+                      <span className="batch-year">Batch {user.officerPosition.batchYear}</span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
             

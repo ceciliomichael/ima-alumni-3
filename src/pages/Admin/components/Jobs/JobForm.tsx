@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Save, Briefcase, Building, MapPin, 
-  DollarSign, Mail, Calendar, Link, FileText, CheckCircle, Clock,
+  PhilippinePeso, Mail, Calendar, Link, FileText, CheckCircle, Clock,
   Plus, Image
 } from 'lucide-react';
 import { 
@@ -455,17 +455,19 @@ const JobForm = () => {
             <div className="admin-form-row admin-form-row-2">
               <div className="admin-form-group">
                 <label htmlFor="salary" className="admin-form-label">
-                  <DollarSign size={16} className="admin-form-icon" />
+                  <PhilippinePeso size={16} className="admin-form-icon" />
                   Salary (Optional)
                 </label>
                 <input
-                  type="text"
+                  type="number"
                   id="salary"
                   name="salary"
                   className="admin-form-input"
                   value={formData.salary || ''}
                   onChange={handleChange}
-                  placeholder="e.g. $60,000 - $80,000"
+                  placeholder="e.g. 60000"
+                  min="0"
+                  step="1"
                 />
               </div>
               

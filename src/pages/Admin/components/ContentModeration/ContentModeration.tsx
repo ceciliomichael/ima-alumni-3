@@ -6,13 +6,13 @@ import {
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import AdminLayout from '../../layout/AdminLayout';
 import { 
-  subscribeToPendingPosts,
+  subscribeToPosts,
   moderatePost,
   deletePost,
   type Post 
 } from '../../../../services/firebase/postService';
 import { 
-  subscribeToPendingJobs,
+  subscribeToJobs,
   approveJob,
   deleteJob,
   Job 
@@ -50,15 +50,15 @@ const ContentModeration = () => {
   useEffect(() => {
     setLoading(true);
 
-    const unsubscribePosts = subscribeToPendingPosts((pendingPosts) => {
+    const unsubscribePosts = subscribeToPosts((allPosts) => {
       // Apply current filter to incoming posts
-      const filtered = filterByStatus(pendingPosts);
+      const filtered = filterByStatus(allPosts);
       setPosts(filtered);
       setLoading(false);
     });
 
-    const unsubscribeJobs = subscribeToPendingJobs((pendingJobs) => {
-      const filtered = filterByStatus(pendingJobs);
+    const unsubscribeJobs = subscribeToJobs((allJobs) => {
+      const filtered = filterByStatus(allJobs);
       setJobs(filtered);
       setLoading(false);
     });

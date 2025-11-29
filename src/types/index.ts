@@ -63,6 +63,7 @@ export interface Comment {
   userImage?: string;
   content: string;
   createdAt: string;
+  updatedAt?: string;
   replies: Reply[];
   reactions: CommentReaction[];
   isApproved?: boolean;
@@ -243,6 +244,7 @@ export interface DonationReport {
   avgAmount: number;
   byCategory: Record<string, { amount: number; count: number }>;
   byMonth: Record<string, { amount: number; count: number }>;
+  byYear: Record<string, { amount: number; count: number }>;
   donations: Donation[];
 }
 
@@ -255,4 +257,15 @@ export interface DonationGoal {
   isActive: boolean;
   createdAt?: string | { seconds: number; nanoseconds: number };
   updatedAt?: string | { seconds: number; nanoseconds: number };
+}
+
+// Homepage Hero Content (editable from Admin settings)
+export interface HomepageHeroContent {
+  title: string;
+  subtitle: string;
+  description: string;
+  ctaLabel: string;
+  ctaUrl: string;
+  updatedAt?: string;
+  updatedBy?: string;
 }

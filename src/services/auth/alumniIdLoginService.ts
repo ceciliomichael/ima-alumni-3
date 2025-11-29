@@ -1,6 +1,7 @@
 import { getUserByAlumniId, setCurrentUser, getUserById, approveUser, createUser } from '../firebase/userService';
 import { getAlumniByAlumniId, updateAlumni } from '../firebase/alumniService';
 import { User } from '../firebase/userService';
+import { AlumniRecord } from '../../types';
 import { validateAndFormatAlumniId, cleanAlumniId } from '../../utils/alumniIdUtils';
 import { generateInitialPassword } from '../../utils/passwordUtils';
 
@@ -11,12 +12,13 @@ export interface AlumniIdLoginResult {
 }
 
 /**
- * Find active user by Alumni ID
+ * Find active user by Alumni ID (excludes deleted and inactive users)
  */
 export const findActiveUserByAlumniId = async (alumniId: string): Promise<User | null> => {
   try {
     const user = await getUserByAlumniId(alumniId);
-    return user && user.isActive ? user : null;
+    // Double-check: user must exist, be active, and not be deleted
+    return user && user.isActive && !user.deletedAt ? user : null;
   } catch (error) {
     console.error('Error finding user by Alumni ID:', error);
     return null;
@@ -28,7 +30,7 @@ export const findActiveUserByAlumniId = async (alumniId: string): Promise<User |
  * If the alumni has no user, auto-provision a minimal active user and link it.
  * If the user exists but inactive while alumni is active, auto-approve the user.
  */
-const ensureUserFromAlumniRecord = async (alumniRecord: any): Promise<User | null> => {
+const ensureUserFromAlumniRecord = async (alumniRecord: AlumniRecord): Promise<User | null> => {
   try {
     if (alumniRecord.userId) {
       const linkedUser = await getUserById(alumniRecord.userId);
@@ -97,28 +99,13 @@ export const loginByAlumniIdAndPassword = async (alumniId: string, password: str
 
     const cleanId = cleanAlumniId(alumniId);
 
-    // 1) Try direct user match first
-    const user = await findActiveUserByAlumniId(cleanId);
-    
-    if (user) {
-      // Verify password
-      if (user.password !== password) {
-        return {
-          success: false,
-          error: 'Invalid Alumni ID or password'
-        };
-      }
-      setCurrentUser(user);
-      return { success: true, user };
-    }
-
-    // 2) Check if Alumni ID exists in alumni records
+    // 1) SECURITY: Always verify alumni record exists and is active first
     const alumniRecord = await getAlumniByAlumniId(cleanId);
     
     if (!alumniRecord) {
       return {
         success: false,
-        error: 'Invalid LRN or password'
+        error: 'Invalid Alumni ID'
       };
     }
 
@@ -129,6 +116,21 @@ export const loginByAlumniIdAndPassword = async (alumniId: string, password: str
       };
     }
 
+    // 2) Alumni record is valid - now check for existing user account
+    const user = await findActiveUserByAlumniId(cleanId);
+    
+    if (user) {
+      // Verify password
+      if (user.password !== password) {
+        return {
+          success: false,
+          error: 'Invalid Password'
+        };
+      }
+      setCurrentUser(user);
+      return { success: true, user };
+    }
+
     // 3) Alumni record exists but no user - auto-provision with default password
     const ensuredUser = await ensureUserFromAlumniRecord(alumniRecord);
     
@@ -137,7 +139,7 @@ export const loginByAlumniIdAndPassword = async (alumniId: string, password: str
       if (ensuredUser.password !== password) {
         return {
           success: false,
-          error: 'Invalid Alumni ID or password'
+          error: 'Invalid Password'
         };
       }
       setCurrentUser(ensuredUser);
@@ -180,15 +182,7 @@ export const loginByAlumniId = async (alumniId: string): Promise<AlumniIdLoginRe
 
     const cleanId = cleanAlumniId(alumniId);
 
-    // 1) Try direct user match first
-    const user = await findActiveUserByAlumniId(cleanId);
-    
-    if (user) {
-      setCurrentUser(user);
-      return { success: true, user };
-    }
-
-    // 2) Check if Alumni ID exists in alumni records
+    // 1) SECURITY: Always verify alumni record exists and is active first
     const alumniRecord = await getAlumniByAlumniId(cleanId);
     
     if (!alumniRecord) {
@@ -203,6 +197,14 @@ export const loginByAlumniId = async (alumniId: string): Promise<AlumniIdLoginRe
         success: false,
         error: 'Your account is not active. Please contact the administrator for assistance.'
       };
+    }
+
+    // 2) Alumni record is valid - now check for existing user account
+    const user = await findActiveUserByAlumniId(cleanId);
+    
+    if (user) {
+      setCurrentUser(user);
+      return { success: true, user };
     }
 
     // 3) Alumni record exists but no user - auto-provision

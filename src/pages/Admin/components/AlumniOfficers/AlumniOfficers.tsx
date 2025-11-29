@@ -72,16 +72,29 @@ const AlumniOfficers = () => {
     }
   };
 
+  // Helper function to get alumni record by ID
+  const getAlumniById = (alumniId: string): AlumniRecord | undefined => {
+    return allAlumni.find(a => a.id === alumniId);
+  };
+
   // Helper function to get alumni name by ID
   const getAlumniName = (alumniId: string): string => {
-    const alumni = allAlumni.find(a => a.id === alumniId);
+    const alumni = getAlumniById(alumniId);
     return alumni ? alumni.name : 'Unknown Alumni';
   };
 
   // Helper function to get alumni batch by ID
   const getAlumniBatch = (alumniId: string): string => {
-    const alumni = allAlumni.find(a => a.id === alumniId);
+    const alumni = getAlumniById(alumniId);
     return alumni ? alumni.batch : 'Unknown';
+  };
+
+  // Helper function to get alumni profile image
+  const getAlumniPhoto = (officer: OfficerPosition): string | undefined => {
+    // Prefer officer-specific photo, fallback to alumni profile image
+    if (officer.photo) return officer.photo;
+    const alumni = getAlumniById(officer.alumniId);
+    return alumni?.profileImage;
   };
 
   const formatDateRange = (startDate: string, endDate?: string): string => {
@@ -158,9 +171,17 @@ const AlumniOfficers = () => {
                         </td>
                         <td>
                           <div className="alumni-name-cell">
-                            <div className="alumni-avatar-placeholder">
-                              {getAlumniName(officer.alumniId).charAt(0)}
-                            </div>
+                            {getAlumniPhoto(officer) ? (
+                              <img 
+                                src={getAlumniPhoto(officer)} 
+                                alt={getAlumniName(officer.alumniId)}
+                                className="alumni-avatar-img"
+                              />
+                            ) : (
+                              <div className="alumni-avatar-placeholder">
+                                {getAlumniName(officer.alumniId).charAt(0)}
+                              </div>
+                            )}
                             <div className="alumni-name-info">
                               <span className="alumni-name">{getAlumniName(officer.alumniId)}</span>
                             </div>

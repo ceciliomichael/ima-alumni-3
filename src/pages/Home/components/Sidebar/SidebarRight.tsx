@@ -15,7 +15,7 @@ interface Event {
   isApproved: boolean;
   createdBy: string;
   coverImage?: string;
-  createdAt?: any;
+  createdAt?: { seconds: number; nanoseconds: number } | string;
 }
 
 interface Job {

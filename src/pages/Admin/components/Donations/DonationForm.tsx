@@ -20,20 +20,23 @@ const DONATION_CATEGORIES = [
   'Other'
 ];
 
-// Currency options
-const CURRENCIES = [
-  'PHP', 'USD', 'EUR', 'GBP', 'AUD', 'CAD', 'JPY'
-];
+// Currency options - restricted to PHP only
+const CURRENCIES = ['PHP'];
+
+// Form-specific type with amount as string to avoid leading zero issues
+interface DonationFormData extends Omit<Donation, 'id' | 'amount'> {
+  amount: string;
+}
 
 const DonationForm = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEditing = Boolean(id);
   
-  const [formData, setFormData] = useState<Omit<Donation, 'id'>>({
+  const [formData, setFormData] = useState<DonationFormData>({
     donorName: '',
     donorEmail: '',
-    amount: 0,
+    amount: '',
     currency: 'PHP',
     purpose: '',
     category: 'General Operations',
@@ -63,7 +66,7 @@ const DonationForm = () => {
             setFormData({
               donorName: donation.donorName,
               donorEmail: donation.donorEmail || '',
-              amount: donation.amount,
+              amount: donation.amount.toString(),
               currency: donation.currency,
               purpose: donation.purpose,
               category: donation.category,
@@ -98,9 +101,10 @@ const DonationForm = () => {
         [name]: checkbox.checked
       }));
     } else if (name === 'amount') {
+      // Allow empty string and valid numeric input (no forced 0)
       setFormData(prev => ({
         ...prev,
-        [name]: parseFloat(value) || 0
+        [name]: value
       }));
     } else {
       setFormData(prev => ({
@@ -113,18 +117,25 @@ const DonationForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.donorName || !formData.purpose || formData.amount <= 0) {
-      alert('Please fill in all required fields');
+    const parsedAmount = parseFloat(formData.amount);
+    if (!formData.donorName || !formData.purpose || isNaN(parsedAmount) || parsedAmount <= 0) {
+      alert('Please fill in all required fields with valid values');
       return;
     }
     
     try {
       setSubmitting(true);
       
+      // Convert form data to Donation type with numeric amount
+      const donationData: Omit<Donation, 'id'> = {
+        ...formData,
+        amount: parsedAmount
+      };
+      
       if (isEditing && id) {
-        await updateDonation(id, formData);
+        await updateDonation(id, donationData);
       } else {
-        await addDonation(formData);
+        await addDonation(donationData);
       }
       
       navigate('/admin/donations');
@@ -217,6 +228,7 @@ const DonationForm = () => {
                     onChange={handleChange}
                     min="0.01"
                     step="0.01"
+                    placeholder="Enter amount"
                     className="admin-form-control"
                     required
                   />

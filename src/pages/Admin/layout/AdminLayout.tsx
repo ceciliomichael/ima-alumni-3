@@ -200,6 +200,14 @@ const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
         </nav>
       </div>
 
+      {/* Click-outside overlay for sidebar */}
+      {sidebarOpen && (
+        <div
+          className="admin-sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Main content */}
       <div className="admin-main">
         <header className="admin-header">
