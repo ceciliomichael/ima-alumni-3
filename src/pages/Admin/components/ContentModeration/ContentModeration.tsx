@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
   MessageSquare, Briefcase, CheckCircle, XCircle, 
-  Search, Filter, AlertCircle, Clock, Trash
+  Search, Filter, AlertCircle, Clock, Trash, Image
 } from 'lucide-react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import AdminLayout from '../../layout/AdminLayout';
@@ -17,9 +17,14 @@ import {
   deleteJob,
   Job 
 } from '../../../../services/firebase/jobService';
+import { 
+  subscribeToGalleryItems,
+  approveGalleryItem,
+} from '../../../../services/firebase/galleryService';
+import { GalleryPost } from '../../../../types';
 import './ContentModeration.css';
 
-type ContentTab = 'posts' | 'jobs';
+type ContentTab = 'posts' | 'jobs' | 'gallery';
 type ModerationFilter = 'all' | 'pending' | 'approved' | 'rejected';
 
 const ContentModeration = () => {
@@ -32,9 +37,10 @@ const ContentModeration = () => {
   // State for different content types
   const [posts, setPosts] = useState<Post[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [galleryItems, setGalleryItems] = useState<GalleryPost[]>([]);
 
   // Moderation modal state
-  const [selectedItem, setSelectedItem] = useState<Post | Job | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Post | Job | GalleryPost | null>(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
 
@@ -46,7 +52,7 @@ const ContentModeration = () => {
     return items;
   }, [filter]);
 
-  // Real-time subscriptions for posts and jobs
+  // Real-time subscriptions for posts, jobs, and gallery
   useEffect(() => {
     setLoading(true);
 
@@ -63,9 +69,16 @@ const ContentModeration = () => {
       setLoading(false);
     });
 
+    const unsubscribeGallery = subscribeToGalleryItems((allGallery) => {
+      const filtered = filterByStatus(allGallery as Array<GalleryPost & { moderationStatus?: string }>);
+      setGalleryItems(filtered);
+      setLoading(false);
+    });
+
     return () => {
       unsubscribePosts();
       unsubscribeJobs();
+      unsubscribeGallery();
     };
   }, [filterByStatus]);
 
@@ -81,6 +94,9 @@ const ContentModeration = () => {
         case 'jobs':
           await approveJob(id, true, adminUser.name);
           break;
+        case 'gallery':
+          await approveGalleryItem(id, true);
+          break;
       }
     } catch (error) {
       console.error('Error approving content:', error);
@@ -90,7 +106,7 @@ const ContentModeration = () => {
     }
   };
 
-  const handleReject = (item: Post | Job) => {
+  const handleReject = (item: Post | Job | GalleryPost) => {
     setSelectedItem(item);
     setShowRejectModal(true);
   };
@@ -106,6 +122,9 @@ const confirmReject = async () => {
         break;
       case 'jobs':
         await approveJob(selectedItem.id, false, adminUser.name, rejectionReason);
+        break;
+      case 'gallery':
+        await approveGalleryItem(selectedItem.id, false, rejectionReason);
         break;
     }
     setShowRejectModal(false);
@@ -257,6 +276,70 @@ const confirmReject = async () => {
     </div>
   );
 
+  const renderGalleryCard = (item: GalleryPost) => (
+    <div key={item.id} className="moderation-card">
+      <div className="moderation-card-header">
+        <div className="moderation-job-info">
+          {item.imageUrl && (
+            <img src={item.imageUrl} alt={item.title} className="moderation-company-logo" />
+          )}
+          <div>
+            <h4>{item.title}</h4>
+            <p className="moderation-company">Gallery Item</p>
+            <p className="moderation-location">{item.albumTitle || 'Single Image'}</p>
+          </div>
+        </div>
+        <div className={`moderation-status ${item.isApproved ? 'approved' : item.moderationStatus === 'rejected' ? 'rejected' : 'pending'}`}>
+          {item.isApproved ? (
+            <><CheckCircle size={16} /> Approved</>
+          ) : item.moderationStatus === 'rejected' ? (
+            <><XCircle size={16} /> Rejected</>
+          ) : (
+            <><Clock size={16} /> Pending</>
+          )}
+        </div>
+      </div>
+
+      <div className="moderation-content">
+        <p>{item.description}</p>
+      </div>
+
+      {item.moderationStatus === 'rejected' && item.rejectionReason && (
+        <div className="moderation-rejection-reason">
+          <AlertCircle size={16} />
+          <span>Rejection reason: {item.rejectionReason}</span>
+        </div>
+      )}
+
+      <div className="moderation-actions">
+        {!item.isApproved && item.moderationStatus !== 'rejected' && (
+          <>
+            <button 
+              className="moderation-btn approve"
+              onClick={() => handleApprove(item.id, 'gallery')}
+            >
+              <CheckCircle size={16} /> Approve
+            </button>
+            <button 
+              className="moderation-btn reject"
+              onClick={() => handleReject(item)}
+            >
+              <XCircle size={16} /> Reject
+            </button>
+          </>
+        )}
+        {item.isApproved && (
+          <button 
+            className="moderation-btn reject"
+            onClick={() => handleReject(item)}
+          >
+            <XCircle size={16} /> Unapprove
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
   const renderJobCard = (job: Job) => (
     <div key={job.id} className="moderation-card">
       <div className="moderation-card-header">
@@ -353,6 +436,16 @@ const confirmReject = async () => {
               <span className="moderation-badge">{jobs.filter(j => !j.isApproved && j.moderationStatus !== 'rejected').length}</span>
             )}
           </button>
+          <button
+            className={`moderation-tab ${activeTab === 'gallery' ? 'active' : ''}`}
+            onClick={() => setActiveTab('gallery')}
+          >
+            <Image size={20} />
+            Gallery
+            {filter === 'pending' && galleryItems.filter(g => !g.isApproved && g.moderationStatus !== 'rejected').length > 0 && (
+              <span className="moderation-badge">{galleryItems.filter(g => !g.isApproved && g.moderationStatus !== 'rejected').length}</span>
+            )}
+          </button>
         </div>
 
         <div className="moderation-toolbar">
@@ -394,6 +487,20 @@ const confirmReject = async () => {
                       <MessageSquare size={48} />
                       <h3>No posts found</h3>
                       <p>There are no posts matching your filter criteria.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'gallery' && (
+                <div className="moderation-grid">
+                  {galleryItems.length > 0 ? (
+                    galleryItems.map(item => renderGalleryCard(item))
+                  ) : (
+                    <div className="moderation-empty">
+                      <Image size={48} />
+                      <h3>No gallery items found</h3>
+                      <p>There are no gallery items matching your filter criteria.</p>
                     </div>
                   )}
                 </div>

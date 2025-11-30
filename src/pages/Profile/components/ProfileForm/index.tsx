@@ -438,37 +438,6 @@ const ProfileForm = ({ user, onSave, onCancel, isLoading = false }: ProfileFormP
           </div>
         </div>
         
-
-        
-        {/* Officer Information section - only show if user has an officer position */}
-        {user.officerPosition && (
-          <div className="form-section">
-            <h3 className="form-section-header">Officer Information</h3>
-            <p className="form-section-description">
-              You are assigned as {user.officerPosition.title}
-              {user.officerPosition.batchYear ? ` for Batch ${user.officerPosition.batchYear}` : ''}.
-            </p>
-            <div className="form-input-group checkbox-group">
-              <label className="checkbox-container">
-                <input
-                  type="checkbox"
-                  checked={formData.showOfficerInfo}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    showOfficerInfo: e.target.checked
-                  })}
-                />
-                <span className="checkbox-label">
-                  Display officer position on my profile
-                </span>
-              </label>
-              <p className="form-hint">
-                When enabled, your position will be visible to other alumni on your profile.
-              </p>
-            </div>
-          </div>
-        )}
-        
         <div className="form-actions">
           <button 
             type="button" 

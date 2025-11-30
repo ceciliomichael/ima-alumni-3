@@ -217,9 +217,12 @@ export interface GalleryPost {
   postedBy: string;
   likedBy?: string[];    // Array of user IDs who liked this post
   bookmarkedBy?: string[]; // Array of user IDs who bookmarked this post
+  moderationStatus?: 'pending' | 'approved' | 'rejected';
+  rejectionReason?: string;
+  moderatedBy?: string;
+  moderatedAt?: string;
 }
 
-// Add the Donation interface
 export interface Donation {
   id: string;
   donorName: string;

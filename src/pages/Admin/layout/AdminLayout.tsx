@@ -22,7 +22,6 @@ const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [pendingModerationCount, setPendingModerationCount] = useState(0);
-  const [pendingGalleryCount, setPendingGalleryCount] = useState(0);
 
   const location = useLocation();
   const { adminUser, adminLogout } = useAdminAuth();
@@ -31,9 +30,12 @@ const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
   useEffect(() => {
     let pendingPostsCountLocal = 0;
     let pendingJobsCountLocal = 0;
+    let pendingGalleryCountLocal = 0;
 
     const updateModerationCount = () => {
-      setPendingModerationCount(pendingPostsCountLocal + pendingJobsCountLocal);
+      setPendingModerationCount(
+        pendingPostsCountLocal + pendingJobsCountLocal + pendingGalleryCountLocal
+      );
     };
 
     const unsubscribePosts = subscribeToPendingPosts((posts) => {
@@ -47,7 +49,8 @@ const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
     });
 
     const unsubscribeGallery = subscribeToPendingGalleryItems((items) => {
-      setPendingGalleryCount(items.length);
+      pendingGalleryCountLocal = items.length;
+      updateModerationCount();
     });
 
     return () => {
@@ -143,9 +146,6 @@ const AdminLayout = ({ children, title = 'Dashboard' }: AdminLayoutProps) => {
           >
             <Image className="admin-menu-icon" />
             Gallery
-            {pendingGalleryCount > 0 && (
-              <span className="sidebar-badge">{pendingGalleryCount > 99 ? '99+' : pendingGalleryCount}</span>
-            )}
           </Link>
           
           <Link 

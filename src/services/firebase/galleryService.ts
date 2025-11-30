@@ -48,7 +48,9 @@ export const subscribeToPendingGalleryItems = (
       ...docSnap.data()
     } as GalleryPost));
 
-    const pendingItems = allItems.filter(item => !item.isApproved);
+    const pendingItems = allItems.filter(
+      item => !item.isApproved && item.moderationStatus !== 'rejected'
+    );
     callback(pendingItems);
   });
 };
@@ -168,8 +170,17 @@ export const searchGalleryItems = async (query: string): Promise<GalleryPost[]> 
 export const approveGalleryItem = async (id: string, approve: boolean, rejectionReason?: string): Promise<GalleryPost | null> => {
   // Get the gallery item first to access postedBy for notification
   const galleryItem = await getGalleryItemById(id);
-  
-  const result = await updateGalleryItem(id, { isApproved: approve });
+
+  const update: Partial<GalleryPost> = {
+    isApproved: approve,
+    moderationStatus: approve ? 'approved' : 'rejected',
+  };
+
+  if (!approve && rejectionReason) {
+    update.rejectionReason = rejectionReason;
+  }
+
+  const result = await updateGalleryItem(id, update);
   
   // Send notification to the poster about moderation decision
   if (galleryItem?.postedBy) {

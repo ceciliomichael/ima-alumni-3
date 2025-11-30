@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Plus, Edit, Trash, Image, CheckCircle, XCircle, Filter, Calendar, Eye } from 'lucide-react';
+import { Search, Plus, Edit, Trash, Image, CheckCircle, Filter, Calendar, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
   deleteGalleryItem, 
-  approveGalleryItem,
   subscribeToGalleryItems
 } from '../../../../services/firebase/galleryService';
 import { GalleryPost } from '../../../../types';
@@ -29,7 +28,7 @@ const GalleryManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [eventFilter, setEventFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
-  const [approvalFilter, setApprovalFilter] = useState<'all' | 'approved' | 'pending'>('all');
+  const [approvalFilter, setApprovalFilter] = useState<'all' | 'approved' | 'pending'>('approved');
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
@@ -78,11 +77,8 @@ const GalleryManagement = () => {
         filteredItems = filteredItems.filter(item => item.albumCategory === formattedCategory);
       }
       
-      // Apply approval filter
-      if (approvalFilter !== 'all') {
-        const isApproved = approvalFilter === 'approved';
-        filteredItems = filteredItems.filter(item => item.isApproved === isApproved);
-      }
+      // Always show only approved items in Gallery Management
+      filteredItems = filteredItems.filter(item => item.isApproved === true);
       
       // Sort by postedDate descending so latest items appear first
       filteredItems.sort((a, b) => {
@@ -98,7 +94,7 @@ const GalleryManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, [allGalleryItems, eventFilter, categoryFilter, approvalFilter]);
+  }, [allGalleryItems, eventFilter, categoryFilter]);
 
   useEffect(() => {
     applyFilters();
@@ -117,7 +113,8 @@ const GalleryManagement = () => {
         try {
           setLoading(true);
           // For now, we filter the in-memory list from the subscription
-          const allItems = allGalleryItems;
+          // Gallery Management should only surface approved items
+          const allItems = allGalleryItems.filter(item => item.isApproved === true);
           const lowerCaseQuery = searchQuery.toLowerCase();
           const results = allItems.filter(item => 
             item.title.toLowerCase().includes(lowerCaseQuery) ||
@@ -159,19 +156,6 @@ const GalleryManagement = () => {
       }
     }
   };
-
-  const handleApprove = async (id: string, approve: boolean) => {
-    try {
-      setLoading(true);
-      await approveGalleryItem(id, approve);
-    } catch (error) {
-      console.error('Error updating gallery item approval status:', error);
-      alert('Failed to update approval status. Please try again.'); // User feedback
-    } finally {
-      setLoading(false);
-    }
-  };
-
 
   // Gets the title of a specific linked event using the item.event (Event ID)
   const getEventTitle = (eventId?: string) => {
@@ -345,26 +329,8 @@ const GalleryManagement = () => {
                     <div className={`admin-gallery-badge ${item.isApproved ? 'admin-badge-success' : 'admin-badge-warning'}`}>
                       {item.isApproved ? 'Approved' : 'Pending'}
                     </div>
-                    
+
                     <div className="admin-gallery-actions">
-                      {!item.isApproved && (
-                        <button 
-                          className="admin-action-btn admin-action-approve"
-                          onClick={() => handleApprove(item.id, true)}
-                          title="Approve"
-                        >
-                          <CheckCircle size={16} />
-                        </button>
-                      )}
-                      {item.isApproved && (
-                        <button 
-                          className="admin-action-btn admin-action-reject"
-                          onClick={() => handleApprove(item.id, false)}
-                          title="Unapprove (Set Pending)"
-                        >
-                          <XCircle size={16} />
-                        </button>
-                      )}
                       <button className="admin-action-btn admin-action-view" onClick={() => handleViewGalleryItem(item)}>
                         <Eye size={16} />
                       </button>
