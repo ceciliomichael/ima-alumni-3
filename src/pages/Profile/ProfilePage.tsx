@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { User, Post } from '../../types';
 import ProfileHeader from './components/ProfileHeader';
 import ProfileGallery from './components/ProfileGallery';
-import ProfileActivity from './components/ProfileActivity';
 import ProfileForm from './components/ProfileForm';
 import ProfilePosts from './components/ProfilePosts';
 import PasswordChange from './components/PasswordChange';
@@ -268,11 +267,6 @@ const ProfilePage = ({
     );
   }
 
-  const activityStats = {
-    posts: posts.length,
-    events: 0
-  };
-
   // Show edit button only if viewing own profile
   const canEdit = !isViewingOtherUser && currentUser?.id === profileUser.id;
   
@@ -334,7 +328,6 @@ const ProfilePage = ({
           <div className="profile-body">
             <div className="profile-sidebar">
               <ProfileGallery posts={posts} />
-              <ProfileActivity stats={activityStats} />
             </div>
             
             <div className="profile-main">
