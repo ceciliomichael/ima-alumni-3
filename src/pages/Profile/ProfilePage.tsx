@@ -270,7 +270,6 @@ const ProfilePage = ({
 
   const activityStats = {
     posts: posts.length,
-    comments: 0,
     events: 0
   };
 

@@ -84,6 +84,13 @@ const GalleryManagement = () => {
         filteredItems = filteredItems.filter(item => item.isApproved === isApproved);
       }
       
+      // Sort by postedDate descending so latest items appear first
+      filteredItems.sort((a, b) => {
+        const aDate = a.postedDate ? new Date(a.postedDate).getTime() : 0;
+        const bDate = b.postedDate ? new Date(b.postedDate).getTime() : 0;
+        return bDate - aDate;
+      });
+
       setGalleryItems(filteredItems);
     } catch (error) {
       console.error('Error loading gallery data:', error);
@@ -116,6 +123,13 @@ const GalleryManagement = () => {
             item.title.toLowerCase().includes(lowerCaseQuery) ||
             item.description.toLowerCase().includes(lowerCaseQuery)
           );
+          // Sort search results by postedDate descending
+          results.sort((a, b) => {
+            const aDate = a.postedDate ? new Date(a.postedDate).getTime() : 0;
+            const bDate = b.postedDate ? new Date(b.postedDate).getTime() : 0;
+            return bDate - aDate;
+          });
+
           setGalleryItems(results);
         } catch (error) {
           console.error('Error searching gallery items:', error);

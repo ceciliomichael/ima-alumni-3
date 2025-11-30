@@ -4,7 +4,6 @@ import './styles.css';
 interface ProfileActivityProps {
   stats: {
     posts: number;
-    comments: number;
     events: number;
   };
 }
@@ -26,17 +25,6 @@ const ProfileActivity = ({ stats }: ProfileActivityProps) => {
               <div 
                 className="stat-bar-fill posts" 
                 style={{ width: `${Math.min(stats.posts * 10, 100)}%` }}
-              ></div>
-            </div>
-          </div>
-          
-          <div className="activity-stat">
-            <div className="stat-number">{stats.comments}</div>
-            <div className="stat-label">Comments</div>
-            <div className="stat-bar">
-              <div 
-                className="stat-bar-fill comments" 
-                style={{ width: `${Math.min(stats.comments * 10, 100)}%` }}
               ></div>
             </div>
           </div>

@@ -68,11 +68,21 @@ const PostForm = ({
     const files = e.target.files;
     if (!files) return;
 
-    // Convert images to base64
-    Array.from(files).forEach(file => {
+    const existingCount = selectedImages.length;
+    const newFiles = Array.from(files);
+
+    // Enforce single-image limit
+    if (existingCount + newFiles.length > 1) {
+      alert('Failed to post. Limited to 1 photo only');
+      e.target.value = '';
+      return;
+    }
+
+    // Convert images to base64 (at most one due to the check above)
+    newFiles.forEach(file => {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
         if (result) {
           setSelectedImages(prev => [...prev, result]);
         }
@@ -102,8 +112,14 @@ const PostForm = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if ((!content.trim() && selectedImages.length === 0) || !user) {
+      return;
+    }
+
+    // Defensive check to ensure we never submit more than one image
+    if (selectedImages.length > 1) {
+      alert('Failed to post. Limited to 1 photo only');
       return;
     }
     
@@ -364,7 +380,6 @@ const PostForm = ({
                 ref={fileInputRef}
                 className="file-input"
                 accept="image/*"
-                multiple
                 onChange={handleImageChange}
                 style={{ display: 'none' }}
               />
