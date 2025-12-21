@@ -8,6 +8,7 @@ import {
 } from '../../../../services/firebase/donationService';
 import { Donation } from '../../../../types';
 import AdminLayout from '../../layout/AdminLayout';
+import FormLabel from '../../../../components/ui/FormLabel';
 
 // Donation categories
 const DONATION_CATEGORIES = [
@@ -178,9 +179,9 @@ const DonationForm = () => {
             
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label htmlFor="donorName" className="admin-form-label">
-                  Donor Name*
-                </label>
+                <FormLabel htmlFor="donorName" className="admin-form-label" required>
+                  Donor Name
+                </FormLabel>
                 <input
                   type="text"
                   id="donorName"
@@ -216,9 +217,9 @@ const DonationForm = () => {
             
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label htmlFor="amount" className="admin-form-label">
-                  Amount*
-                </label>
+                <FormLabel htmlFor="amount" className="admin-form-label" required>
+                  Amount
+                </FormLabel>
                 <div className="admin-form-amount-group">
                   <input
                     type="number"
@@ -236,9 +237,9 @@ const DonationForm = () => {
               </div>
               
               <div className="admin-form-group">
-                <label htmlFor="currency" className="admin-form-label">
-                  Currency*
-                </label>
+                <FormLabel htmlFor="currency" className="admin-form-label" required>
+                  Currency
+                </FormLabel>
                 <select
                   id="currency"
                   name="currency"
@@ -258,9 +259,9 @@ const DonationForm = () => {
             
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label htmlFor="purpose" className="admin-form-label">
-                  Purpose/Title*
-                </label>
+                <FormLabel htmlFor="purpose" className="admin-form-label" required>
+                  Purpose/Title
+                </FormLabel>
                 <input
                   type="text"
                   id="purpose"
@@ -276,9 +277,9 @@ const DonationForm = () => {
               </div>
               
               <div className="admin-form-group">
-                <label htmlFor="category" className="admin-form-label">
-                  Category*
-                </label>
+                <FormLabel htmlFor="category" className="admin-form-label" required>
+                  Category
+                </FormLabel>
                 <select
                   id="category"
                   name="category"
@@ -314,9 +315,9 @@ const DonationForm = () => {
             </div>
             
             <div className="admin-form-group">
-              <label htmlFor="donationDate" className="admin-form-label">
-                Donation Date*
-              </label>
+              <FormLabel htmlFor="donationDate" className="admin-form-label" required>
+                Donation Date
+              </FormLabel>
               <input
                 type="date"
                 id="donationDate"

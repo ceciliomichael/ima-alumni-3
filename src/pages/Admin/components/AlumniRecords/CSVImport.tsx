@@ -4,6 +4,7 @@ import { Upload, FileText, AlertCircle, CheckCircle, X, ArrowLeft } from 'lucide
 import { useNavigate } from 'react-router-dom';
 import { importAlumniFromCSV } from '../../../../services/firebase/alumniService';
 import AdminLayout from '../../layout/AdminLayout';
+import FormLabel from '../../../../components/ui/FormLabel';
 import './AlumniRecords.css';
 
 interface ImportResult {
@@ -149,7 +150,7 @@ const CSVImport = () => {
             {/* File Upload Section */}
             <div className="csv-upload-section">
               <div className="form-section">
-                <label htmlFor="batchYear" className="admin-form-label">Batch Year *</label>
+                <FormLabel htmlFor="batchYear" className="admin-form-label" required>Batch Year</FormLabel>
                 <input
                   type="text"
                   id="batchYear"
@@ -164,7 +165,7 @@ const CSVImport = () => {
               </div>
 
               <div className="form-section">
-                <label className="admin-form-label">CSV File *</label>
+                <FormLabel className="admin-form-label" required>CSV File</FormLabel>
                 
                 {!selectedFile ? (
                   <div className="csv-upload-area">

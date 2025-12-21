@@ -13,6 +13,7 @@ import {
 } from '../../services/firebase/jobService';
 import { User } from '../../types';
 import { getCurrentUser } from '../../services/firebase/userService';
+import FormLabel from '../../components/ui/FormLabel';
 
 const JobsPage = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -637,7 +638,7 @@ const JobsPage = () => {
             </div>
             <form className="job-form" onSubmit={handleJobSubmit}>
               <div className="form-group">
-                <label htmlFor="jobTitle">Job Title</label>
+                <FormLabel htmlFor="jobTitle" required>Job Title</FormLabel>
                 <input 
                   type="text" 
                   id="jobTitle"
@@ -650,7 +651,7 @@ const JobsPage = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="company">Company Name</label>
+                <FormLabel htmlFor="company" required>Company Name</FormLabel>
                 <input 
                   type="text" 
                   id="company"
@@ -695,7 +696,7 @@ const JobsPage = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="location">Location</label>
+                <FormLabel htmlFor="location" required>Location</FormLabel>
                 <input 
                   type="text" 
                   id="location"
@@ -708,7 +709,7 @@ const JobsPage = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="jobType">Job Type</label>
+                <FormLabel htmlFor="jobType" required>Job Type</FormLabel>
                 <select 
                   id="jobType"
                   name="jobType"
@@ -750,7 +751,7 @@ const JobsPage = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="description">Job Description</label>
+                <FormLabel htmlFor="description" required>Job Description</FormLabel>
                 <textarea 
                   id="description"
                   name="description"
@@ -762,7 +763,7 @@ const JobsPage = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="requirements">Requirements</label>
+                <FormLabel htmlFor="requirements" required>Requirements</FormLabel>
                 <textarea 
                   id="requirements"
                   name="requirements"
@@ -774,7 +775,7 @@ const JobsPage = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="applicationType">Application Method</label>
+                <FormLabel htmlFor="applicationType" required>Application Method</FormLabel>
                 <select 
                   id="applicationType"
                   name="applicationType"
@@ -790,7 +791,7 @@ const JobsPage = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="contactEmail">Contact Email</label>
+                <FormLabel htmlFor="contactEmail" required>Contact Email</FormLabel>
                 <input 
                   type="email" 
                   id="contactEmail"
@@ -804,7 +805,7 @@ const JobsPage = () => {
               
               {jobFormData.applicationType === 'website' && (
                 <div className="form-group">
-                  <label htmlFor="applicationUrl">Application URL</label>
+                  <FormLabel htmlFor="applicationUrl" required>Application URL</FormLabel>
                   <input 
                     type="url" 
                     id="applicationUrl"

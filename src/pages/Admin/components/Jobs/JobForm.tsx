@@ -14,6 +14,7 @@ import {
 import { resizeImage, validateImageFile } from '../../../../services/firebase/storageService';
 import { validateTitle, validateCompanyName, validateLocation } from '../../../../utils/formValidation';
 import AdminLayout from '../../layout/AdminLayout';
+import FormLabel from '../../../../components/ui/FormLabel';
 import './Jobs.css';
 import './JobForm.css';
 
@@ -286,10 +287,10 @@ const JobForm = () => {
             
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label htmlFor="title" className="admin-form-label">
+                <FormLabel htmlFor="title" className="admin-form-label" required>
                   <Briefcase size={16} className="admin-form-icon" />
-                  Job Title *
-                </label>
+                  Job Title
+                </FormLabel>
                 <input
                   type="text"
                   id="title"
@@ -305,10 +306,10 @@ const JobForm = () => {
             
             <div className="admin-form-row admin-form-row-2">
               <div className="admin-form-group">
-                <label htmlFor="company" className="admin-form-label">
+                <FormLabel htmlFor="company" className="admin-form-label" required>
                   <Building size={16} className="admin-form-icon" />
-                  Company *
-                </label>
+                  Company
+                </FormLabel>
                 <input
                   type="text"
                   id="company"
@@ -322,10 +323,10 @@ const JobForm = () => {
               </div>
               
               <div className="admin-form-group">
-                <label htmlFor="location" className="admin-form-label">
+                <FormLabel htmlFor="location" className="admin-form-label" required>
                   <MapPin size={16} className="admin-form-icon" />
-                  Location *
-                </label>
+                  Location
+                </FormLabel>
                 <input
                   type="text"
                   id="location"
@@ -384,10 +385,10 @@ const JobForm = () => {
             
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label className="admin-form-label">
+                <FormLabel className="admin-form-label" required>
                   <Briefcase size={16} className="admin-form-icon" />
-                  Job Type *
-                </label>
+                  Job Type
+                </FormLabel>
                 <div className="admin-job-type-options">
                   <div className="admin-job-type-option admin-job-type-fullTime">
                     <input
@@ -494,10 +495,10 @@ const JobForm = () => {
             
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label htmlFor="description" className="admin-form-label">
+                <FormLabel htmlFor="description" className="admin-form-label" required>
                   <FileText size={16} className="admin-form-icon" />
-                  Job Description *
-                </label>
+                  Job Description
+                </FormLabel>
                 <textarea
                   id="description"
                   name="description"
@@ -513,10 +514,10 @@ const JobForm = () => {
             
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label htmlFor="requirements" className="admin-form-label">
+                <FormLabel htmlFor="requirements" className="admin-form-label" required>
                   <FileText size={16} className="admin-form-icon" />
-                  Job Requirements *
-                </label>
+                  Job Requirements
+                </FormLabel>
                 <textarea
                   id="requirements"
                   name="requirements"
@@ -536,10 +537,10 @@ const JobForm = () => {
             
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label className="admin-form-label">
+                <FormLabel className="admin-form-label" required>
                   <Mail size={16} className="admin-form-icon" />
-                  Application Method *
-                </label>
+                  Application Method
+                </FormLabel>
                 <div className="admin-job-application-options">
                   <div className="admin-job-application-option">
                     <input
@@ -591,10 +592,10 @@ const JobForm = () => {
             
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label htmlFor="contactEmail" className="admin-form-label">
+                <FormLabel htmlFor="contactEmail" className="admin-form-label" required>
                   <Mail size={16} className="admin-form-icon" />
-                  Contact Email *
-                </label>
+                  Contact Email
+                </FormLabel>
                 <input
                   type="email"
                   id="contactEmail"
@@ -611,10 +612,10 @@ const JobForm = () => {
             {formData.applicationType === 'website' && (
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="applicationUrl" className="admin-form-label">
+                  <FormLabel htmlFor="applicationUrl" className="admin-form-label" required>
                     <Link size={16} className="admin-form-icon" />
-                    Application URL *
-                  </label>
+                    Application URL
+                  </FormLabel>
                   <input
                     type="url"
                     id="applicationUrl"

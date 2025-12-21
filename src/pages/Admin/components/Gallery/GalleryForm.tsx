@@ -12,6 +12,7 @@ import { getAllEvents, Event } from '../../../../services/firebase/eventService'
 import { resizeImage, validateImageFile } from '../../../../services/firebase/storageService';
 import { validateTitle } from '../../../../utils/formValidation';
 import AdminLayout from '../../layout/AdminLayout';
+import FormLabel from '../../../../components/ui/FormLabel';
 import './Gallery.css';
 import './GalleryForm.css';
 
@@ -399,10 +400,10 @@ const GalleryForm = () => {
             {isAlbum ? (
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="albumTitle" className="admin-form-label">
+                  <FormLabel htmlFor="albumTitle" className="admin-form-label" required>
                     <Images size={16} className="admin-form-icon" />
-                    Album Title *
-                  </label>
+                    Album Title
+                  </FormLabel>
                   <input
                     type="text"
                     id="albumTitle"
@@ -418,10 +419,10 @@ const GalleryForm = () => {
               <>
                 <div className="admin-form-row">
                   <div className="admin-form-group">
-                    <label htmlFor="title" className="admin-form-label">
+                    <FormLabel htmlFor="title" className="admin-form-label" required>
                       <Image size={16} className="admin-form-icon" />
-                      Title *
-                    </label>
+                      Title
+                    </FormLabel>
                     <input
                       type="text"
                       id="title"
@@ -437,10 +438,10 @@ const GalleryForm = () => {
                 
                 <div className="admin-form-row">
                   <div className="admin-form-group">
-                    <label htmlFor="description" className="admin-form-label">
+                    <FormLabel htmlFor="description" className="admin-form-label" required>
                       <Image size={16} className="admin-form-icon" />
-                      Description *
-                    </label>
+                      Description
+                    </FormLabel>
                     <textarea
                       id="description"
                       name="description"
@@ -458,10 +459,10 @@ const GalleryForm = () => {
             
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label className="admin-form-label">
+                <FormLabel className="admin-form-label" required>
                   <Filter size={16} className="admin-form-icon" />
-                  Album Category *
-                </label>
+                  Album Category
+                </FormLabel>
                 <div className="admin-gallery-category-selector">
                   {EVENT_CATEGORIES.map(category => (
                     <div 
@@ -584,10 +585,10 @@ const GalleryForm = () => {
               <>
                 <div className="admin-form-row">
                   <div className="admin-form-group">
-                    <label htmlFor="imageUrl" className="admin-form-label">
+                    <FormLabel htmlFor="imageUrl" className="admin-form-label" required={!uploadFile}>
                       <Image size={16} className="admin-form-icon" />
-                      Image URL {!uploadFile && '*'}
-                    </label>
+                      Image URL
+                    </FormLabel>
                     <input
                       type="text"
                       id="imageUrl"

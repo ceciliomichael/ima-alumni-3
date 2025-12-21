@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '../../layout/AdminLayout';
 import ConfirmDialog from '../../../../components/ConfirmDialog';
+import FormLabel from '../../../../components/ui/FormLabel';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import { updateAdminPassword, verifyAdminPassword } from '../../../../services/firebase/adminService';
 import { getHomepageHero, updateHomepageHero, DEFAULT_HERO_CONTENT } from '../../../../services/firebase/homepageService';
@@ -290,9 +291,9 @@ const Settings = () => {
             
             <form onSubmit={handlePasswordSubmit} style={{ maxWidth: '400px' }}>
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                <FormLabel style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-primary)' }} required>
                   Current Password
-                </label>
+                </FormLabel>
                 <div style={{ position: 'relative' }}>
                   <input
                     type={showCurrentPassword ? 'text' : 'password'}
@@ -336,9 +337,9 @@ const Settings = () => {
               </div>
               
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                <FormLabel style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-primary)' }} required>
                   New Password
-                </label>
+                </FormLabel>
                 <div style={{ position: 'relative' }}>
                   <input
                     type={showNewPassword ? 'text' : 'password'}
@@ -382,9 +383,9 @@ const Settings = () => {
               </div>
               
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+                <FormLabel style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500, color: 'var(--text-primary)' }} required>
                   Confirm New Password
-                </label>
+                </FormLabel>
                 <div style={{ position: 'relative' }}>
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}

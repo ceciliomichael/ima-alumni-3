@@ -1,0 +1,5 @@
+.form-label-required::after {
+  content: " *";
+  color: var(--error-color, #ef4444);
+  margin-left: 2px;
+}

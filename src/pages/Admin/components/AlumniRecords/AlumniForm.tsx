@@ -13,6 +13,7 @@ import { generateAlumniId, validateAndFormatAlumniId, formatAlumniId, cleanAlumn
 import { processImageFile } from '../../../../utils/imageUtils';
 import { validateName } from '../../../../utils/formValidation';
 import AdminLayout from '../../layout/AdminLayout';
+import FormLabel from '../../../../components/ui/FormLabel';
 import './AlumniRecords.css';
 
 const AlumniForm = () => {
@@ -279,9 +280,9 @@ const AlumniForm = () => {
                       <form className="admin-form" onSubmit={handleSubmit}>
             <div className="form-grid">
               <div className="form-section">
-                <label htmlFor="name" className="admin-form-label">
-                  <User size={16} className="form-icon" /> Full Name *
-                </label>
+                <FormLabel htmlFor="name" className="admin-form-label" required>
+                  <User size={16} className="form-icon" /> Full Name
+                </FormLabel>
                 <input
                   type="text"
                   id="name"
@@ -296,9 +297,9 @@ const AlumniForm = () => {
               </div>
 
               <div className="form-section">
-                <label htmlFor="alumniId" className="admin-form-label">
-                  <CreditCard size={16} className="form-icon" /> Alumni ID *
-                </label>
+                <FormLabel htmlFor="alumniId" className="admin-form-label" required>
+                  <CreditCard size={16} className="form-icon" /> Alumni ID
+                </FormLabel>
                 <div className="alumni-id-input-group">
                   <input
                     type="text"
@@ -330,9 +331,9 @@ const AlumniForm = () => {
               </div>
               
               <div className="form-section">
-                <label htmlFor="email" className="admin-form-label">
-                  <Mail size={16} className="form-icon" /> Email Address *
-                </label>
+                <FormLabel htmlFor="email" className="admin-form-label" required>
+                  <Mail size={16} className="form-icon" /> Email Address
+                </FormLabel>
                 <input
                   type="email"
                   id="email"
@@ -347,9 +348,9 @@ const AlumniForm = () => {
               </div>
               
               <div className="form-section">
-                <label htmlFor="batch" className="admin-form-label">
-                  <Calendar size={16} className="form-icon" /> Batch Year *
-                </label>
+                <FormLabel htmlFor="batch" className="admin-form-label" required>
+                  <Calendar size={16} className="form-icon" /> Batch Year
+                </FormLabel>
                 <input
                   type="text"
                   id="batch"

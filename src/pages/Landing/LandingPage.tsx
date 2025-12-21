@@ -32,7 +32,7 @@ const LandingPage = ({ showProceedButton = false }: LandingPageProps) => {
       <div className="landing-center">
         <div className="welcome-section">
           <h1 className="welcome-title">WELCOME</h1>
-          <h2 className="welcome-subtitle">ALUMNIANS</h2>
+          <h2 className="welcome-subtitle">ALUMNI</h2>
         </div>
         
         <div className="landing-carousel-section">

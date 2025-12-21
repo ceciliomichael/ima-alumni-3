@@ -13,6 +13,7 @@ import {
 import { OfficerPosition, AlumniRecord } from '../../../../types';
 import { processImageFile } from '../../../../utils/imageUtils';
 import AdminLayout from '../../layout/AdminLayout';
+import FormLabel from '../../../../components/ui/FormLabel';
 import './AlumniOfficers.css';
 
 const OFFICER_POSITIONS = [
@@ -310,7 +311,7 @@ const OfficerForm = () => {
               
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="title" className="admin-form-label">Position Title *</label>
+                  <FormLabel htmlFor="title" className="admin-form-label" required>Position Title</FormLabel>
                   <select
                     id="title"
                     name="title"
@@ -330,7 +331,7 @@ const OfficerForm = () => {
               {isBatchPosition && (
                 <div className="admin-form-row">
                   <div className="admin-form-group">
-                    <label htmlFor="batchYear" className="admin-form-label">Batch Year *</label>
+                    <FormLabel htmlFor="batchYear" className="admin-form-label" required>Batch Year</FormLabel>
                     <input
                       type="text"
                       id="batchYear"
@@ -347,7 +348,7 @@ const OfficerForm = () => {
               
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label htmlFor="alumniId" className="admin-form-label">Assigned Alumni *</label>
+                  <FormLabel htmlFor="alumniId" className="admin-form-label" required>Assigned Alumni</FormLabel>
                   <select
                     id="alumniId"
                     name="alumniId"
@@ -409,7 +410,7 @@ const OfficerForm = () => {
               
               <div className="admin-form-row admin-form-row-2">
                 <div className="admin-form-group">
-                  <label htmlFor="startDate" className="admin-form-label">Start Date *</label>
+                  <FormLabel htmlFor="startDate" className="admin-form-label" required>Start Date</FormLabel>
                   <input
                     type="date"
                     id="startDate"

@@ -10,6 +10,7 @@ import {
 } from '../../../../services/firebase/eventService';
 import { validateTitle, validateLocation } from '../../../../utils/formValidation';
 import AdminLayout from '../../layout/AdminLayout';
+import FormLabel from '../../../../components/ui/FormLabel';
 import './Events.css';
 import './EventForm.css';
 
@@ -261,10 +262,10 @@ const EventForm = () => {
             
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label htmlFor="title" className="admin-form-label">
+                <FormLabel htmlFor="title" className="admin-form-label" required>
                   <Calendar size={16} className="admin-form-icon" />
-                  Event Title *
-                </label>
+                  Event Title
+                </FormLabel>
                 <input
                   type="text"
                   id="title"
@@ -280,10 +281,10 @@ const EventForm = () => {
             
             <div className="admin-form-row admin-form-row-2">
               <div className="admin-form-group">
-                <label htmlFor="location" className="admin-form-label">
+                <FormLabel htmlFor="location" className="admin-form-label" required>
                   <MapPin size={16} className="admin-form-icon" />
-                  Location *
-                </label>
+                  Location
+                </FormLabel>
                 <input
                   type="text"
                   id="location"
@@ -297,10 +298,10 @@ const EventForm = () => {
               </div>
               
               <div className="admin-form-group">
-                <label htmlFor="date" className="admin-form-label">
+                <FormLabel htmlFor="date" className="admin-form-label" required>
                   <Calendar size={16} className="admin-form-icon" />
-                  Start Date and Time *
-                </label>
+                  Start Date and Time
+                </FormLabel>
                 <input
                   type="datetime-local"
                   id="date"
@@ -315,10 +316,10 @@ const EventForm = () => {
 
             <div className="admin-form-row admin-form-row-2">
               <div className="admin-form-group">
-                <label htmlFor="endDate" className="admin-form-label">
+                <FormLabel htmlFor="endDate" className="admin-form-label" required>
                   <Clock size={16} className="admin-form-icon" />
-                  End Date and Time *
-                </label>
+                  End Date and Time
+                </FormLabel>
                 <input
                   type="datetime-local"
                   id="endDate"
@@ -333,10 +334,10 @@ const EventForm = () => {
             
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label htmlFor="description" className="admin-form-label">
+                <FormLabel htmlFor="description" className="admin-form-label" required>
                   <Calendar size={16} className="admin-form-icon" />
-                  Description *
-                </label>
+                  Description
+                </FormLabel>
                 <textarea
                   id="description"
                   name="description"

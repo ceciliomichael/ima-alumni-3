@@ -7,6 +7,7 @@ import { addGalleryItem, subscribeToUniqueAlbums, createAlbum } from '../../serv
 import { GalleryPost, User } from '../../types';
 import { getCurrentUser } from '../../services/firebase/userService';
 import { resizeImage, validateImageFile } from '../../services/firebase/storageService';
+import FormLabel from '../../components/ui/FormLabel';
 import './Gallery.css';
 
 const GalleryPage = () => {
@@ -565,7 +566,7 @@ const GalleryPage = () => {
               {uploadStep === 'details' && previewUrls.length > 0 && (
                 <div className="upload-details-step">
                   <div className="form-group">
-                    <label htmlFor="title">{uploadFiles.length > 1 ? 'Album Title*' : 'Photo Title*'}</label>
+                    <FormLabel htmlFor="title" required>{uploadFiles.length > 1 ? 'Album Title' : 'Photo Title'}</FormLabel>
                     <input
                       type="text"
                       id="title"
@@ -578,7 +579,7 @@ const GalleryPage = () => {
                   </div>
                   
                   <div className="form-group">
-                    <label htmlFor="album">Category*</label>
+                    <FormLabel htmlFor="album" required>Category</FormLabel>
                     <select
                       id="album"
                       name="album"

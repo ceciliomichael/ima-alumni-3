@@ -1,6 +1,7 @@
 import { useState, ChangeEvent } from 'react';
 import { Save, X, User, AtSign, Briefcase, Building, MapPin, FileText, Camera, Image } from 'lucide-react';
 import { User as UserType } from '../../../../types';
+import FormLabel from '../../../../components/ui/FormLabel';
 import './styles.css';
 
 interface ProfileFormProps {
@@ -319,10 +320,10 @@ const ProfileForm = ({ user, onSave, onCancel, isLoading = false }: ProfileFormP
           
           <div className="form-grid">
             <div className="form-group">
-              <label htmlFor="name">
+              <FormLabel htmlFor="name" required>
                 <User size={16} />
                 <span>Full Name</span>
-              </label>
+              </FormLabel>
               <input 
                 type="text" 
                 id="name" 
@@ -336,10 +337,10 @@ const ProfileForm = ({ user, onSave, onCancel, isLoading = false }: ProfileFormP
             </div>
             
             <div className="form-group">
-              <label htmlFor="email">
+              <FormLabel htmlFor="email" required>
                 <AtSign size={16} />
                 <span>Email</span>
-              </label>
+              </FormLabel>
               <input 
                 type="email" 
                 id="email" 
@@ -353,10 +354,10 @@ const ProfileForm = ({ user, onSave, onCancel, isLoading = false }: ProfileFormP
             </div>
             
             <div className="form-group">
-              <label htmlFor="batch">
+              <FormLabel htmlFor="batch" required>
                 <User size={16} />
                 <span>Batch Year</span>
-              </label>
+              </FormLabel>
               <input 
                 type="text" 
                 id="batch" 

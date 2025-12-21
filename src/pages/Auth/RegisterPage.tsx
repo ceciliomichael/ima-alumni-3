@@ -2,6 +2,7 @@ import { useState, ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { UserPlus, Mail, Lock, User, GraduationCap, Camera, Image } from 'lucide-react';
 import { registerUser } from '../../services/firebase/userService';
+import FormLabel from '../../components/ui/FormLabel';
 import './Auth.css';
 
 const RegisterPage = () => {
@@ -381,7 +382,7 @@ const RegisterPage = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="name" className="form-label">Full Name</label>
+                <FormLabel htmlFor="name" className="form-label" required>Full Name</FormLabel>
                 <div className="input-group">
                   <div className="input-icon">
                     <User size={18} />
@@ -400,7 +401,7 @@ const RegisterPage = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="email" className="form-label">Email Address</label>
+                <FormLabel htmlFor="email" className="form-label" required>Email Address</FormLabel>
                 <div className="input-group">
                   <div className="input-icon">
                     <Mail size={18} />
@@ -419,7 +420,7 @@ const RegisterPage = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="batch" className="form-label">Batch Year</label>
+                <FormLabel htmlFor="batch" className="form-label" required>Batch Year</FormLabel>
                 <div className="input-group">
                   <div className="input-icon">
                     <GraduationCap size={18} />
@@ -438,7 +439,7 @@ const RegisterPage = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="password" className="form-label">Password</label>
+                <FormLabel htmlFor="password" className="form-label" required>Password</FormLabel>
                 <div className="input-group">
                   <div className="input-icon">
                     <Lock size={18} />
@@ -457,7 +458,7 @@ const RegisterPage = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
+                <FormLabel htmlFor="confirmPassword" className="form-label" required>Confirm Password</FormLabel>
                 <div className="input-group">
                   <div className="input-icon">
                     <Lock size={18} />
