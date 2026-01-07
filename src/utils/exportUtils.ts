@@ -296,30 +296,32 @@ export const exportReportToPDF = (report: DonationReport): void => {
         </tbody>
       </table>
 
-      <h2>Yearly Breakdown</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Year</th>
-            <th style="text-align: right;">Amount</th>
-            <th style="text-align: center;">Count</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${Object.entries(report.byYear)
-            .sort((a, b) => a[0].localeCompare(b[0]))
-            .map(([year, data]) => {
-              const breakdown = data as { amount: number; count: number };
-              return `
-              <tr>
-                <td>${year}</td>
-                <td class="amount">₱${breakdown.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td style="text-align: center;">${breakdown.count}</td>
-              </tr>
-            `;
-            }).join('')}
-        </tbody>
-      </table>
+      ${Object.keys(report.byYear).length > 1 ? `
+        <h2>Yearly Breakdown</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th style="text-align: right;">Amount</th>
+              <th style="text-align: center;">Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${Object.entries(report.byYear)
+              .sort((a, b) => a[0].localeCompare(b[0]))
+              .map(([year, data]) => {
+                const breakdown = data as { amount: number; count: number };
+                return `
+                <tr>
+                  <td>${year}</td>
+                  <td class="amount">₱${breakdown.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  <td style="text-align: center;">${breakdown.count}</td>
+                </tr>
+              `;
+              }).join('')}
+          </tbody>
+        </table>
+      ` : ''}
 
       <h2>Detailed Donations</h2>
       <table>

@@ -41,6 +41,7 @@ const DonationReports = () => {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [category, setCategory] = useState('All Categories');
+  const [donorFilter, setDonorFilter] = useState('');
 
   useEffect(() => {
     // Set default date range to current year
@@ -71,7 +72,8 @@ const DonationReports = () => {
       const reportData = await generateDonationReport(
         startDate || undefined,
         endDate || undefined,
-        category !== 'All Categories' ? category : undefined
+        category !== 'All Categories' ? category : undefined,
+        donorFilter || undefined
       );
       setReport(reportData);
     } catch (error) {
@@ -182,6 +184,17 @@ const DonationReports = () => {
                 className="filter-input"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+
+            <div className="filter-group">
+              <label className="filter-label">Donor Name</label>
+              <input
+                type="text"
+                className="filter-input"
+                value={donorFilter}
+                onChange={(e) => setDonorFilter(e.target.value)}
+                placeholder="Search donor..."
               />
             </div>
 
@@ -335,7 +348,7 @@ const DonationReports = () => {
               )}
 
               {/* Yearly Breakdown */}
-              {Object.keys(report.byYear).length > 0 && (
+              {Object.keys(report.byYear).length > 1 && (
                 <div className="report-section breakdown-section">
                   <h2 className="section-title">Yearly Breakdown</h2>
                   <div className="breakdown-grid breakdown-grid-compact">

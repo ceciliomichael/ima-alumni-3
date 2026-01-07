@@ -194,7 +194,8 @@ export const getDonationsByPeriod = async (
 export const generateDonationReport = async (
   startDate?: string,
   endDate?: string,
-  category?: string
+  category?: string,
+  donorName?: string
 ): Promise<DonationReport> => {
   try {
     let donations = await getAllDonations();
@@ -208,6 +209,10 @@ export const generateDonationReport = async (
     }
     if (category && category !== 'All Categories') {
       donations = donations.filter(d => d.category === category);
+    }
+    if (donorName) {
+      const term = donorName.toLowerCase();
+      donations = donations.filter(d => d.donorName.toLowerCase().includes(term));
     }
 
     // Calculate aggregates
