@@ -7,16 +7,18 @@ import {
   Hash,
   Calendar,
   ChevronDown,
-  Database
+  Database,
+  Settings
 } from 'lucide-react';
 import AdminLayout from '../../layout/AdminLayout';
 import { generateDonationReport, migrateExistingDonations } from '../../../../services/firebase/donationService';
-import { DonationReport } from '../../../../types';
+import { DonationReport, ReportSignatory } from '../../../../types';
 import { 
   exportDonationsToCSV, 
   exportReportSummaryToCSV, 
   exportReportToPDF 
 } from '../../../../utils/exportUtils';
+import SignatorySettingsModal from './SignatorySettingsModal';
 import './DonationReports.css';
 
 // Donation categories
@@ -42,8 +44,25 @@ const DonationReports = () => {
   const [endDate, setEndDate] = useState('');
   const [category, setCategory] = useState('All Categories');
   const [donorFilter, setDonorFilter] = useState('');
+  const [showSettings, setShowSettings] = useState(false);
+  const [signatory, setSignatory] = useState<ReportSignatory>({
+    name: 'HON. MARIANO L. MAGLAHUS JR.',
+    title: 'Alumni President',
+    organization: 'Immaculate Mary Academy',
+    address: 'Poblacion Weste, Catigbian, Bohol'
+  });
 
   useEffect(() => {
+    // Load saved signatory settings
+    const savedSignatory = localStorage.getItem('donationReportSignatory');
+    if (savedSignatory) {
+      try {
+        setSignatory(JSON.parse(savedSignatory));
+      } catch (e) {
+        console.error('Failed to parse saved signatory settings');
+      }
+    }
+
     // Set default date range to current year
     const now = new Date();
     const yearStart = new Date(now.getFullYear(), 0, 1);
@@ -103,6 +122,11 @@ const DonationReports = () => {
     }
   };
 
+  const handleSaveSettings = (newSignatory: ReportSignatory) => {
+    setSignatory(newSignatory);
+    localStorage.setItem('donationReportSignatory', JSON.stringify(newSignatory));
+  };
+
   const handleExportCSVDetails = () => {
     if (!report) return;
     exportDonationsToCSV(
@@ -123,7 +147,7 @@ const DonationReports = () => {
 
   const handleExportPDF = () => {
     if (!report) return;
-    exportReportToPDF(report);
+    exportReportToPDF(report, signatory);
     setShowExportMenu(false);
   };
 
@@ -219,6 +243,14 @@ const DonationReports = () => {
               >
                 <FileText size={18} />
                 Generate Report
+              </button>
+
+              <button 
+                className="btn-settings"
+                onClick={() => setShowSettings(true)}
+                title="Report Settings"
+              >
+                <Settings size={18} />
               </button>
 
               <div className="export-dropdown">
@@ -428,6 +460,13 @@ const DonationReports = () => {
           </div>
         )}
       </div>
+
+      <SignatorySettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        onSave={handleSaveSettings}
+        initialData={signatory}
+      />
     </AdminLayout>
   );
 };

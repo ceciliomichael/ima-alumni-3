@@ -272,3 +272,10 @@ export interface HomepageHeroContent {
   updatedAt?: string;
   updatedBy?: string;
 }
+
+export interface ReportSignatory {
+  name: string;
+  title: string;
+  organization: string;
+  address: string;
+}

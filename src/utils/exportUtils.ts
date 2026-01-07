@@ -1,4 +1,4 @@
-import { Donation, DonationReport } from '../types';
+import { Donation, DonationReport, ReportSignatory } from '../types';
 
 // Export donations to CSV
 export const exportDonationsToCSV = (donations: Donation[], filename: string = 'donations-report.csv'): void => {
@@ -128,7 +128,7 @@ export const exportReportSummaryToCSV = (report: DonationReport, filename: strin
 };
 
 // Export report to PDF (using browser print)
-export const exportReportToPDF = (report: DonationReport): void => {
+export const exportReportToPDF = (report: DonationReport, signatory?: ReportSignatory): void => {
   // Create a new window with formatted report content
   const printWindow = window.open('', '', 'width=800,height=600');
   
@@ -139,6 +139,15 @@ export const exportReportToPDF = (report: DonationReport): void => {
 
   const assetBaseUrl = window.location.origin;
 
+  const defaultSignatory = {
+    name: 'HON. MARIANO L. MAGLAHUS JR.',
+    title: 'Alumni President',
+    organization: 'Immaculate Mary Academy',
+    address: 'Poblacion Weste, Catigbian, Bohol'
+  };
+
+  const finalSignatory = signatory || defaultSignatory;
+
   const htmlContent = `
     <!DOCTYPE html>
     <html>
@@ -147,42 +156,52 @@ export const exportReportToPDF = (report: DonationReport): void => {
       <style>
         body {
           font-family: Arial, sans-serif;
-          padding: 20px;
+          padding: 15px 20px;
           color: #333;
+          font-size: 12px;
         }
         .report-header {
           width: 100%;
-          border-bottom: 3px solid #0f172a;
-          padding-bottom: 12px;
-          margin-bottom: 20px;
+          border-bottom: 2px solid #0f172a;
+          padding-bottom: 8px;
+          margin-bottom: 12px;
         }
         .header-banner {
-          max-width: 400px;
+          max-width: 350px;
           height: auto;
           display: block;
           margin: 0 auto;
         }
         h1 {
           color: #1e40af;
-          border-bottom: 3px solid #fbbf24;
-          padding-bottom: 10px;
+          border-bottom: 2px solid #fbbf24;
+          padding-bottom: 6px;
+          margin: 8px 0;
+          font-size: 18px;
+        }
+        .report-meta {
+          font-size: 11px;
+          color: #666;
+          margin-bottom: 10px;
         }
         h2 {
           color: #1e40af;
-          margin-top: 30px;
+          margin-top: 15px;
+          margin-bottom: 8px;
           border-bottom: 1px solid #e5e7eb;
-          padding-bottom: 5px;
+          padding-bottom: 4px;
+          font-size: 14px;
         }
         .summary {
           background-color: #f3f4f6;
-          padding: 15px;
-          border-radius: 8px;
-          margin: 20px 0;
+          padding: 10px 12px;
+          border-radius: 6px;
+          margin: 10px 0;
         }
         .summary-item {
           display: flex;
           justify-content: space-between;
-          padding: 8px 0;
+          padding: 5px 0;
           border-bottom: 1px solid #d1d5db;
         }
         .summary-item:last-child {
@@ -194,16 +213,17 @@ export const exportReportToPDF = (report: DonationReport): void => {
         table {
           width: 100%;
           border-collapse: collapse;
-          margin: 20px 0;
+          margin: 8px 0;
+          font-size: 11px;
         }
         th {
           background-color: #1e40af;
           color: white;
-          padding: 12px;
+          padding: 8px 10px;
           text-align: left;
         }
         td {
-          padding: 10px 12px;
+          padding: 6px 10px;
           border-bottom: 1px solid #e5e7eb;
         }
         tr:hover {
@@ -214,9 +234,39 @@ export const exportReportToPDF = (report: DonationReport): void => {
           font-weight: bold;
           color: #059669;
         }
+        .signature-section {
+          margin-top: 30px;
+          page-break-inside: avoid;
+        }
+        .signature-row {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 20px;
+        }
+        .signature-block {
+          text-align: center;
+          width: 45%;
+        }
+        .signature-line {
+          border-top: 1px solid #333;
+          margin-top: 40px;
+          padding-top: 5px;
+        }
+        .signature-name {
+          font-weight: bold;
+          font-size: 12px;
+        }
+        .signature-title {
+          font-size: 11px;
+          color: #555;
+        }
+        .salutation {
+          margin-top: 20px;
+          font-size: 11px;
+        }
         @media print {
           body {
-            padding: 0;
+            padding: 10px;
           }
           button {
             display: none;
@@ -346,6 +396,24 @@ export const exportReportToPDF = (report: DonationReport): void => {
           `).join('')}
         </tbody>
       </table>
+
+      <div class="signature-section">
+        <p class="salutation">Sir/Ma'am:</p>
+        <p style="margin: 10px 0; font-size: 11px;">
+          This report is a summary of the donations received for the period indicated above.
+        </p>
+        
+        <div class="signature-row" style="justify-content: flex-end;">
+          <div class="signature-block">
+            <div class="signature-line">
+              <div class="signature-name">${finalSignatory.name}</div>
+              <div class="signature-title">${finalSignatory.title}</div>
+              <div class="signature-title">${finalSignatory.organization}</div>
+              <div class="signature-title">${finalSignatory.address}</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <script>
         window.onload = () => {
