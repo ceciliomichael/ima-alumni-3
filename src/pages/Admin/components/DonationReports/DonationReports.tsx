@@ -11,7 +11,7 @@ import {
   Settings
 } from 'lucide-react';
 import AdminLayout from '../../layout/AdminLayout';
-import { generateDonationReport, migrateExistingDonations } from '../../../../services/firebase/donationService';
+import { generateDonationReport, migrateExistingDonations, getUniqueDonors } from '../../../../services/firebase/donationService';
 import { DonationReport, ReportSignatory, ReportSections } from '../../../../types';
 import { 
   exportDonationsToCSV, 
@@ -44,6 +44,7 @@ const DonationReports = () => {
   const [endDate, setEndDate] = useState('');
   const [category, setCategory] = useState('All Categories');
   const [donorFilter, setDonorFilter] = useState('');
+  const [donorsList, setDonorsList] = useState<string[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [signatory, setSignatory] = useState<ReportSignatory>({
     name: 'HON. MARIANO L. MAGLAHUS JR.',
@@ -80,7 +81,19 @@ const DonationReports = () => {
 
     // Check if migration might be needed
     checkMigrationStatus();
+    
+    // Fetch unique donors for dropdown
+    fetchDonorsList();
   }, []);
+
+  const fetchDonorsList = async () => {
+    try {
+      const donors = await getUniqueDonors();
+      setDonorsList(donors);
+    } catch (error) {
+      console.error('Error fetching donors list:', error);
+    }
+  };
 
   const checkMigrationStatus = async () => {
     try {
@@ -252,13 +265,16 @@ const DonationReports = () => {
 
             <div className="filter-group">
               <label className="filter-label">Donor Name</label>
-              <input
-                type="text"
-                className="filter-input"
+              <select
+                className="filter-select"
                 value={donorFilter}
                 onChange={(e) => setDonorFilter(e.target.value)}
-                placeholder="Search donor..."
-              />
+              >
+                <option value="">All Donors</option>
+                {donorsList.map(donor => (
+                  <option key={donor} value={donor}>{donor}</option>
+                ))}
+              </select>
             </div>
 
             <div className="filter-group">

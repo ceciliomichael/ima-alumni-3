@@ -33,6 +33,18 @@ export const getAllDonations = async (): Promise<Donation[]> => {
   }
 };
 
+// Get unique donor names for dropdown filters
+export const getUniqueDonors = async (): Promise<string[]> => {
+  try {
+    const donations = await getAllDonations();
+    const uniqueDonors = [...new Set(donations.map(d => d.donorName))];
+    return uniqueDonors.sort((a, b) => a.localeCompare(b));
+  } catch (error) {
+    console.error('Error getting unique donors:', error);
+    throw error;
+  }
+};
+
 // Get featured/public donations only
 export const getPublicDonations = async (): Promise<Donation[]> => {
   try {
