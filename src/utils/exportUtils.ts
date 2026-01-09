@@ -1,4 +1,4 @@
-import { Donation, DonationReport, ReportSignatory } from '../types';
+import { Donation, DonationReport, ReportSignatory, ReportSections } from '../types';
 
 // Export donations to CSV
 export const exportDonationsToCSV = (donations: Donation[], filename: string = 'donations-report.csv'): void => {
@@ -62,50 +62,81 @@ export const exportDonationsToCSV = (donations: Donation[], filename: string = '
 };
 
 // Export report summary to CSV
-export const exportReportSummaryToCSV = (report: DonationReport, filename: string = 'donation-summary.csv'): void => {
-  const summaryRows = [
+export const exportReportSummaryToCSV = (
+  report: DonationReport, 
+  filename: string = 'donation-summary.csv',
+  sections?: ReportSections
+): void => {
+  // Default to all sections enabled if not provided
+  const enabledSections = sections || {
+    categoryBreakdown: true,
+    monthlyBreakdown: true,
+    yearlyBreakdown: true,
+    detailedDonations: true,
+  };
+
+  // Build summary rows conditionally based on enabled sections
+  const summaryRows: string[][] = [
     ['Metric', 'Value'],
     ['Total Donations', report.count.toString()],
     ['Total Amount', report.totalAmount.toFixed(2)],
     ['Average Amount', report.avgAmount.toFixed(2)],
-    [''],
-    ['Category Breakdown', ''],
-    ['Category', 'Amount', 'Count'],
-    ...Object.entries(report.byCategory).map(([category, data]) => {
-      const breakdown = data as { amount: number; count: number };
-      return [
-        category,
-        breakdown.amount.toFixed(2),
-        breakdown.count.toString()
-      ];
-    }),
-    [''],
-    ['Monthly Breakdown', ''],
-    ['Month', 'Amount', 'Count'],
-    ...Object.entries(report.byMonth)
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([month, data]) => {
+  ];
+
+  // Add Category Breakdown if enabled
+  if (enabledSections.categoryBreakdown && Object.keys(report.byCategory).length > 0) {
+    summaryRows.push(
+      [''],
+      ['Category Breakdown', ''],
+      ['Category', 'Amount', 'Count'],
+      ...Object.entries(report.byCategory).map(([category, data]) => {
         const breakdown = data as { amount: number; count: number };
         return [
-          month,
-          breakdown.amount.toFixed(2),
-          breakdown.count.toString()
-        ];
-      }),
-    [''],
-    ['Yearly Breakdown', ''],
-    ['Year', 'Amount', 'Count'],
-    ...Object.entries(report.byYear)
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([year, data]) => {
-        const breakdown = data as { amount: number; count: number };
-        return [
-          year,
+          category,
           breakdown.amount.toFixed(2),
           breakdown.count.toString()
         ];
       })
-  ];
+    );
+  }
+
+  // Add Monthly Breakdown if enabled
+  if (enabledSections.monthlyBreakdown && Object.keys(report.byMonth).length > 0) {
+    summaryRows.push(
+      [''],
+      ['Monthly Breakdown', ''],
+      ['Month', 'Amount', 'Count'],
+      ...Object.entries(report.byMonth)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([month, data]) => {
+          const breakdown = data as { amount: number; count: number };
+          return [
+            month,
+            breakdown.amount.toFixed(2),
+            breakdown.count.toString()
+          ];
+        })
+    );
+  }
+
+  // Add Yearly Breakdown if enabled
+  if (enabledSections.yearlyBreakdown && Object.keys(report.byYear).length > 1) {
+    summaryRows.push(
+      [''],
+      ['Yearly Breakdown', ''],
+      ['Year', 'Amount', 'Count'],
+      ...Object.entries(report.byYear)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([year, data]) => {
+          const breakdown = data as { amount: number; count: number };
+          return [
+            year,
+            breakdown.amount.toFixed(2),
+            breakdown.count.toString()
+          ];
+        })
+    );
+  }
 
   const csvContent = summaryRows
     .map(row => row.map(cell => {
@@ -128,7 +159,19 @@ export const exportReportSummaryToCSV = (report: DonationReport, filename: strin
 };
 
 // Export report to PDF (using browser print)
-export const exportReportToPDF = (report: DonationReport, signatory?: ReportSignatory): void => {
+export const exportReportToPDF = (
+  report: DonationReport, 
+  signatory?: ReportSignatory,
+  sections?: ReportSections
+): void => {
+  // Default to all sections enabled if not provided
+  const enabledSections = sections || {
+    categoryBreakdown: true,
+    monthlyBreakdown: true,
+    yearlyBreakdown: true,
+    detailedDonations: true,
+  };
+
   // Create a new window with formatted report content
   const printWindow = window.open('', '', 'width=800,height=600');
   
@@ -296,57 +339,61 @@ export const exportReportToPDF = (report: DonationReport, signatory?: ReportSign
         </div>
       </div>
 
-      <h2>Breakdown by Category</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Category</th>
-            <th style="text-align: right;">Amount</th>
-            <th style="text-align: center;">Count</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${Object.entries(report.byCategory)
-            .sort((a, b) => (b[1] as { amount: number; count: number }).amount - (a[1] as { amount: number; count: number }).amount)
-            .map(([category, data]) => {
-              const breakdown = data as { amount: number; count: number };
-              return `
-              <tr>
-                <td>${category}</td>
-                <td class="amount">₱${breakdown.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td style="text-align: center;">${breakdown.count}</td>
-              </tr>
-            `;
-            }).join('')}
-        </tbody>
-      </table>
+      ${enabledSections.categoryBreakdown && Object.keys(report.byCategory).length > 0 ? `
+        <h2>Breakdown by Category</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th style="text-align: right;">Amount</th>
+              <th style="text-align: center;">Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${Object.entries(report.byCategory)
+              .sort((a, b) => (b[1] as { amount: number; count: number }).amount - (a[1] as { amount: number; count: number }).amount)
+              .map(([category, data]) => {
+                const breakdown = data as { amount: number; count: number };
+                return `
+                <tr>
+                  <td>${category}</td>
+                  <td class="amount">₱${breakdown.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  <td style="text-align: center;">${breakdown.count}</td>
+                </tr>
+              `;
+              }).join('')}
+          </tbody>
+        </table>
+      ` : ''}
 
-      <h2>Monthly Breakdown</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Month</th>
-            <th style="text-align: right;">Amount</th>
-            <th style="text-align: center;">Count</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${Object.entries(report.byMonth)
-            .sort((a, b) => a[0].localeCompare(b[0]))
-            .map(([month, data]) => {
-              const breakdown = data as { amount: number; count: number };
-              return `
-              <tr>
-                <td>${month}</td>
-                <td class="amount">₱${breakdown.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-                <td style="text-align: center;">${breakdown.count}</td>
-              </tr>
-            `;
-            }).join('')}
-        </tbody>
-      </table>
+      ${enabledSections.monthlyBreakdown && Object.keys(report.byMonth).length > 0 ? `
+        <h2>Monthly Breakdown</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th style="text-align: right;">Amount</th>
+              <th style="text-align: center;">Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${Object.entries(report.byMonth)
+              .sort((a, b) => a[0].localeCompare(b[0]))
+              .map(([month, data]) => {
+                const breakdown = data as { amount: number; count: number };
+                return `
+                <tr>
+                  <td>${month}</td>
+                  <td class="amount">₱${breakdown.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                  <td style="text-align: center;">${breakdown.count}</td>
+                </tr>
+              `;
+              }).join('')}
+          </tbody>
+        </table>
+      ` : ''}
 
-      ${Object.keys(report.byYear).length > 1 ? `
+      ${enabledSections.yearlyBreakdown && Object.keys(report.byYear).length > 0 ? `
         <h2>Yearly Breakdown</h2>
         <table>
           <thead>
@@ -373,29 +420,31 @@ export const exportReportToPDF = (report: DonationReport, signatory?: ReportSign
         </table>
       ` : ''}
 
-      <h2>Detailed Donations</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Donor</th>
-            <th>Category</th>
-            <th>Purpose</th>
-            <th style="text-align: right;">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${report.donations.map((donation: Donation) => `
+      ${enabledSections.detailedDonations && report.donations.length > 0 ? `
+        <h2>Detailed Donations</h2>
+        <table>
+          <thead>
             <tr>
-              <td>${new Date(donation.donationDate).toLocaleDateString()}</td>
-              <td>${donation.donorName}${donation.isAnonymous ? ' (Anonymous)' : ''}</td>
-              <td>${donation.category}</td>
-              <td>${donation.purpose}</td>
-              <td class="amount">₱${donation.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+              <th>Date</th>
+              <th>Donor</th>
+              <th>Category</th>
+              <th>Purpose</th>
+              <th style="text-align: right;">Amount</th>
             </tr>
-          `).join('')}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            ${report.donations.map((donation: Donation) => `
+              <tr>
+                <td>${new Date(donation.donationDate).toLocaleDateString()}</td>
+                <td>${donation.donorName}${donation.isAnonymous ? ' (Anonymous)' : ''}</td>
+                <td>${donation.category}</td>
+                <td>${donation.purpose}</td>
+                <td class="amount">₱${donation.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      ` : ''}
 
       <div class="signature-section">
         <p class="salutation">Sir/Ma'am:</p>

@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '../../layout/AdminLayout';
 import { generateDonationReport, migrateExistingDonations } from '../../../../services/firebase/donationService';
-import { DonationReport, ReportSignatory } from '../../../../types';
+import { DonationReport, ReportSignatory, ReportSections } from '../../../../types';
 import { 
   exportDonationsToCSV, 
   exportReportSummaryToCSV, 
@@ -51,6 +51,15 @@ const DonationReports = () => {
     organization: 'Immaculate Mary Academy',
     address: 'Poblacion Weste, Catigbian, Bohol'
   });
+  
+  // Section selection state (all enabled by default)
+  const [sections, setSections] = useState<ReportSections>({
+    categoryBreakdown: true,
+    monthlyBreakdown: true,
+    yearlyBreakdown: true,
+    detailedDonations: true,
+  });
+  const [showSectionSelector, setShowSectionSelector] = useState(false);
 
   useEffect(() => {
     // Load saved signatory settings
@@ -127,6 +136,35 @@ const DonationReports = () => {
     localStorage.setItem('donationReportSignatory', JSON.stringify(newSignatory));
   };
 
+  // Section selection helpers
+  const handleToggleSection = (sectionKey: keyof ReportSections) => {
+    setSections(prev => ({
+      ...prev,
+      [sectionKey]: !prev[sectionKey]
+    }));
+  };
+
+  const handleSelectAllSections = () => {
+    setSections({
+      categoryBreakdown: true,
+      monthlyBreakdown: true,
+      yearlyBreakdown: true,
+      detailedDonations: true,
+    });
+  };
+
+  const handleDeselectAllSections = () => {
+    setSections({
+      categoryBreakdown: false,
+      monthlyBreakdown: false,
+      yearlyBreakdown: false,
+      detailedDonations: false,
+    });
+  };
+
+  const isAllSelected = Object.values(sections).every(val => val);
+  const isNoneSelected = Object.values(sections).every(val => !val);
+
   const handleExportCSVDetails = () => {
     if (!report) return;
     exportDonationsToCSV(
@@ -140,14 +178,15 @@ const DonationReports = () => {
     if (!report) return;
     exportReportSummaryToCSV(
       report,
-      `donation-summary-${startDate || 'all'}-to-${endDate || 'all'}.csv`
+      `donation-summary-${startDate || 'all'}-to-${endDate || 'all'}.csv`,
+      sections
     );
     setShowExportMenu(false);
   };
 
   const handleExportPDF = () => {
     if (!report) return;
-    exportReportToPDF(report, signatory);
+    exportReportToPDF(report, signatory, sections);
     setShowExportMenu(false);
   };
 
@@ -294,6 +333,94 @@ const DonationReports = () => {
           </div>
         </div>
 
+        {/* Section Selector */}
+        {report && (
+          <div className="section-selector-container">
+            <button
+              className="section-selector-toggle"
+              onClick={() => setShowSectionSelector(!showSectionSelector)}
+            >
+              <FileText size={16} />
+              Select Report Sections
+              <ChevronDown 
+                size={16} 
+                style={{ 
+                  transform: showSectionSelector ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s'
+                }} 
+              />
+            </button>
+
+            {showSectionSelector && (
+              <div className="section-selector-panel">
+                <div className="section-selector-header">
+                  <span className="section-selector-title">Choose sections to display and export:</span>
+                  <div className="section-selector-actions">
+                    <button
+                      className="section-selector-action-btn"
+                      onClick={handleSelectAllSections}
+                      disabled={isAllSelected}
+                    >
+                      Select All
+                    </button>
+                    <button
+                      className="section-selector-action-btn"
+                      onClick={handleDeselectAllSections}
+                      disabled={isNoneSelected}
+                    >
+                      Deselect All
+                    </button>
+                  </div>
+                </div>
+
+                <div className="section-checkboxes">
+                  <label className="section-checkbox-item">
+                    <input
+                      type="checkbox"
+                      checked={sections.categoryBreakdown}
+                      onChange={() => handleToggleSection('categoryBreakdown')}
+                    />
+                    <span>Breakdown by Category</span>
+                  </label>
+
+                  <label className="section-checkbox-item">
+                    <input
+                      type="checkbox"
+                      checked={sections.monthlyBreakdown}
+                      onChange={() => handleToggleSection('monthlyBreakdown')}
+                    />
+                    <span>Monthly Breakdown</span>
+                  </label>
+
+                  <label className="section-checkbox-item">
+                    <input
+                      type="checkbox"
+                      checked={sections.yearlyBreakdown}
+                      onChange={() => handleToggleSection('yearlyBreakdown')}
+                    />
+                    <span>Yearly Breakdown</span>
+                  </label>
+
+                  <label className="section-checkbox-item">
+                    <input
+                      type="checkbox"
+                      checked={sections.detailedDonations}
+                      onChange={() => handleToggleSection('detailedDonations')}
+                    />
+                    <span>Detailed Donations Table</span>
+                  </label>
+                </div>
+
+                <div className="section-selector-info">
+                  <small>
+                    Note: Selected sections will be included in the report display and all exports (CSV, PDF).
+                  </small>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Loading State */}
         {loading && (
           <div className="loading-container">
@@ -333,7 +460,7 @@ const DonationReports = () => {
             </div>
 
             {/* Category Breakdown */}
-            {Object.keys(report.byCategory).length > 0 && (
+            {sections.categoryBreakdown && Object.keys(report.byCategory).length > 0 && (
               <div className="report-section">
                 <h2 className="section-title">Breakdown by Category</h2>
                 <div className="breakdown-grid">
@@ -356,7 +483,7 @@ const DonationReports = () => {
             {/* Monthly and Yearly Breakdown */}
             <div className="breakdown-row">
               {/* Monthly Breakdown */}
-              {Object.keys(report.byMonth).length > 0 && (
+              {sections.monthlyBreakdown && Object.keys(report.byMonth).length > 0 && (
                 <div className="report-section breakdown-section">
                   <h2 className="section-title">Monthly Breakdown</h2>
                   <div className="breakdown-grid breakdown-grid-compact">
@@ -380,7 +507,7 @@ const DonationReports = () => {
               )}
 
               {/* Yearly Breakdown */}
-              {Object.keys(report.byYear).length > 1 && (
+              {sections.yearlyBreakdown && Object.keys(report.byYear).length > 0 && (
                 <div className="report-section breakdown-section">
                   <h2 className="section-title">Yearly Breakdown</h2>
                   <div className="breakdown-grid breakdown-grid-compact">
@@ -405,7 +532,7 @@ const DonationReports = () => {
             </div>
 
             {/* Detailed Donations Table */}
-            {report.donations.length > 0 && (
+            {sections.detailedDonations && report.donations.length > 0 && (
               <div className="report-section">
                 <h2 className="section-title">Detailed Donations ({report.donations.length})</h2>
                 <div className="donations-table-wrapper">

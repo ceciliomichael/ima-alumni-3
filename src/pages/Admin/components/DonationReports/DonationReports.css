@@ -631,3 +631,162 @@
   to { transform: translateY(0); opacity: 1; }
 }
 
+/* Section Selector Styles */
+.section-selector-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.section-selector-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: white;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2937;
+  transition: background 0.2s;
+}
+
+.section-selector-toggle:hover {
+  background: #f9fafb;
+}
+
+.section-selector-panel {
+  border-top: 1px solid #e5e7eb;
+  padding: 20px;
+  background: #f9fafb;
+  animation: slideDown 0.2s ease-out;
+}
+
+.section-selector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.section-selector-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.section-selector-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.section-selector-action-btn {
+  padding: 6px 12px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.section-selector-action-btn:hover:not(:disabled) {
+  background: #1e40af;
+  color: white;
+  border-color: #1e40af;
+}
+
+.section-selector-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.section-checkboxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.section-checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.section-checkbox-item:hover {
+  border-color: #1e40af;
+  background: #eff6ff;
+}
+
+.section-checkbox-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #1e40af;
+}
+
+.section-checkbox-item span {
+  font-size: 14px;
+  color: #1f2937;
+  font-weight: 500;
+  user-select: none;
+}
+
+.section-selector-info {
+  padding: 12px;
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+  border-radius: 6px;
+}
+
+.section-selector-info small {
+  font-size: 13px;
+  color: #78350f;
+  line-height: 1.5;
+}
+
+@keyframes slideDown {
+  from { 
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .section-selector-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .section-selector-actions {
+    width: 100%;
+  }
+
+  .section-selector-action-btn {
+    flex: 1;
+  }
+
+  .section-checkboxes {
+    grid-template-columns: 1fr;
+  }
+}
+

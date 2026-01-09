@@ -279,3 +279,10 @@ export interface ReportSignatory {
   organization: string;
   address: string;
 }
+
+export interface ReportSections {
+  categoryBreakdown: boolean;
+  monthlyBreakdown: boolean;
+  yearlyBreakdown: boolean;
+  detailedDonations: boolean;
+}
